@@ -29,6 +29,11 @@ loadfonts(device="postscript")
 
 require(tidyverse)
 
+# Activar las credenciales de google
+v_usuaria <- "regina"
+# v_usuaria <- "katia"
+googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
+googlesheets4::gs4_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
 
 # Funciones con direcciones de las carpetas
 paste_inp               <- function(x){paste0("01_datos_crudos/", x)}
@@ -143,3 +148,77 @@ d_monitoreo <-
     ) %>% 
     ungroup() %>% 
     glimpse()
+
+## 1.3. Preparación web -----
+# Función para llamar a los logos de github
+pegar_logo <- function(x){
+    paste0(
+        # Nombre de la imagen 
+        "![", x, "]", 
+        # URL
+        "(https://raw.githubusercontent.com/mexicocomovamos/mcv_inflacion/main/00_documentaci%C3%B3n/00_%C3%ADconos/", 
+        x, ".png)")}
+
+# Guardar productos en orden alfabético 
+v_productos <- sort(unique(d_monitoreo$ccif))
+
+# Clasificación según tipo de inflación 
+v_subyacente <- c(
+    v_productos[19], v_productos[12], v_productos[1 ], v_productos[15], 
+    v_productos[14], v_productos[11], v_productos[20], v_productos[17], 
+    v_productos[18], v_productos[3 ], v_productos[21])
+
+v_nosubyacente <- v_productos[!(v_productos %in% v_subyacente)]
+
+# Procesamiento 
+df_formato <- d_monitoreo %>% 
+    # Dejar el último dato 
+    filter(fecha == max(fecha)) %>% 
+    # Crear variables para tabla (Markdown y html)
+    mutate(
+        # Añadir símbolo de cambio 
+        cambio = case_when(
+            var_anual >  0 ~ "▲",
+            var_anual <  0 ~ "▼",
+            var_anual == 0 ~ "~"), 
+        # Texto para la tabla
+        texto = paste0(
+            # Nombre del producto en negritas 
+            "**", ccif,"**", "<br>", 
+            "Anual: "  , scales::percent(var_mensual, accuracy = 0.1), "<br>", 
+            "Mensual: ", scales::percent(var_anual  , accuracy = 0.1)
+        ), 
+        # Logotipo para la tabla
+        logo = case_when(
+            ccif == v_productos[1 ] ~ pegar_logo("Aceite"),
+            ccif == v_productos[11] ~ pegar_logo("Jugos"),
+            ccif == v_productos[12] ~ pegar_logo("Leche"),
+            ccif == v_productos[15] ~ pegar_logo("PanDeCaja"),
+            ccif == v_productos[17] ~ pegar_logo("Restaurantes"),
+            ccif == v_productos[14] ~ pegar_logo("Taqueria"),
+            ccif == v_productos[19] ~ pegar_logo("Tortilla"), 
+            ccif == v_productos[20] ~ pegar_logo("Transporte_aereo"))) %>% 
+    # Distinguir entre productos subyacentes y no subyacentes
+    mutate(tipo = if_else(
+        ccif %in% v_subyacente, "subyacente", "nosubyacente")) %>% 
+    select(tipo, logo, texto, cambio) 
+    
+# Separar productos subyacentes de no subyacentes y pegarlas de manera horizontal
+df_web <- df_formato                %>% 
+    filter(tipo == "subyacente")    %>% 
+    mutate(id = 1:11) %>% 
+    left_join(df_formato %>% 
+                  filter(tipo != "subyacente") %>% 
+                  mutate(id = 1:10), 
+              by = "id") %>% 
+    select(-c(starts_with("id"), starts_with("tipo")))
+
+## 2. Guardar -----
+# ---- Guardar en la base en el drive
+# Obtener identificador del archivo en drive
+v_id <- as.character(
+    googledrive::drive_get(
+        "https://docs.google.com/spreadsheets/d/1nF7WojsA4aSlimdFQgmR5c60UPXZSlhPJh8u2i8V63Y/edit#gid=0")[1, 2])
+
+# Serie quincenal
+googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "último_periodo")
