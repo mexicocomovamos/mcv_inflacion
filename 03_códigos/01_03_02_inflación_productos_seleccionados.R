@@ -7,7 +7,7 @@
 # Correos:                    katia@mexicocomovamos.mx | regimedina19@gmail.com
 # 
 # Fecha de creación:          02 de junio de 2022
-# Última actualización:       10 de junio de 2022
+# Última actualización:       16 de junio de 2022
 #------------------------------------------------------------------------------#
 
 Sys.setlocale("LC_TIME", "es_ES")
@@ -43,9 +43,10 @@ require(tidyverse)
 
 
 # Funciones con direcciones de las carpetas
-paste_inp               <- function(x){paste0("01_datos_crudos/", x)}
-paste_out               <- function(x){paste0("02_datos_limpios/", x)}
-paste_info              <- function(x){paste0("04_infobites/", x)}
+paste_inp   <- function(x){paste0("01_datos_crudos/", x)}
+paste_out   <- function(x){paste0("02_datos_limpios/", x)}
+paste_code  <- function(x){paste0("03_códigos/"      , x)}
+paste_info  <- function(x){paste0("04_infobites/", x)}
 
 
 # Colores MCV -----
@@ -69,8 +70,7 @@ mcv_blacks <- c("black", "#D2D0CD", "#777777")
 
 # Identificadores INEGI ----
 # Token para API del INEGI
-v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"  # Token Katia
-# v_token_inegi           <- "5a24690d-3bab-47c3-a541-66e01117db8a"    # Token Regina
+source(paste_code("00_token.R"))
 
 d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>% 
     glimpse
@@ -1805,7 +1805,7 @@ rm(list=ls(pattern="^v_pacic"))
 
 # 5. Productos de salud --------------------------------------------------------
 
-# ---- Ruta dentro del catáloto 
+# ---- Ruta dentro del catálogo 
 # CCIF > 06 Salud > 06.1 Productos, artefactos y equipos médicos >
 # 06.1.1 Productos farmacéuticos 
 
@@ -1947,7 +1947,7 @@ ggsave(g, filename = paste_info("01_03_02_05_01_farma.png"),
 
 
 # 6. Servicios de salud para pacientes externos --------------------------------
-# ---- Ruta dentro del catáloto 
+# ---- Ruta dentro del catálogo 
 # CCIF > 06 Salud > 06.2. Servicios para pacientes externos 
 
 # ---- Enlistar productos del catálogo
@@ -2078,10 +2078,9 @@ ggsave(g, filename = paste_info("01_03_02_05_02_pacientes.png"),
        # type = "cairo", device = "png",
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
-
 # 7. Servicios de hospital -----------------------------------------------------
 
-# ---- Ruta dentro del catáloto 
+# ---- Ruta dentro del catálogo 
 # CCIF > 06 Salud > 06.3. Servicios de hospital > 06.3.0 Servicios de hospital 
 
 # ---- Enlistar productos del catálogo
@@ -2142,13 +2141,6 @@ ifelse(v_quincena == 1,
        df_06_03_servicios_hospital %>% 
            glimpse
 )
-
-# ggplot(df_06_03_servicios_hospital %>% 
-#            filter(str_detect(tipo, "Servicios")), 
-#        aes(x = date, y = values, group = tipo, color = tipo)) +
-#     # facet_wrap(~tipo) +
-#     geom_line() +
-#     theme_minimal()
 
 
 # ---- Gráfica 
@@ -2228,5 +2220,148 @@ g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 ggsave(g, filename = paste_info("01_03_02_05_04_hospitales.png"),
        # type = "cairo", device = "png",
        width = 16, height = 9, dpi = 100, bg= "transparent")
+
+
+# 8. Productos de la peda ------------------------------------------------------
+
+# ---- Ruta dentro del catálogo 
+# CCIF > 06 Salud > 06.3. Servicios de hospital > 06.3.0 Servicios de hospital 
+
+# ---- Enlistar productos del catálogo
+v_productos <- c(
+    "Tequila", "Cerveza", "Cigarrillos", "Papas fritas", "Analgésicos")
+
+# ---- Seleccionar productos del catálogo de identificadores 
+df_productos <- d_inpc_ccif_ids %>% 
+    # Cambiar el nombre de la categoría general (homónima de categoría específica)
+    mutate(ccif = if_else(
+        id_ccif_0 == "02_021_0213", "Cerveza (categoría)", ccif)) %>% 
+    filter(ccif %in% v_productos)
+
+# ---- Obtener identificadores de productos seleccionados
+v_ids_q <- unique(df_productos$id_inegi_q) # Identificadores de la quincena
+v_ids_m <- unique(df_productos$id_inegi_m) # Identificadores del mes 
+v_ids   <- if_else(rep(v_quincena == 1, length(v_ids_q)), # Evaluar quincena
+                   v_ids_q, v_ids_m)  # Seleccionar identificadores adecuados
+
+# ---- Importar las series de los productos 
+df_series <- data.frame()
+
+for(i in 1:length(v_ids)){
+    print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
+    
+    df_data <- inegi_series(
+        serie = v_ids[i], 
+        token = v_token_inegi, 
+        database = "BIE", 
+        as_tt = TRUE) %>% 
+        mutate(
+            tipo = v_productos[i], 
+            ord  = i)
+    
+    df_series <- df_series %>% bind_rows(df_data)
+}
+
+# ---- Limpiar la info 
+# Filtrar fechas 
+df_fiesta <- df_series                      %>% 
+    filter(date >= "2002-07-01")            %>% 
+    # Ordenar factores 
+    # mutate(tipo = factor(tipo, levels = v_productos)) %>% 
+    glimpse()
+
+# Dejar datos mensuales o quincenales
+ifelse(v_quincena == 1, 
+       # Para la serie quincenal, dejar solo datos de la primera quincena
+       df_fiesta <- df_fiesta %>% 
+           filter(!date_shortcut %% 2 == 0)             %>% 
+           glimpse, 
+       # Serie mensual 
+       df_fiesta %>% 
+           glimpse
+)
+
+# ---- Gráfica 
+titulo  <- "Índice de precios al consumidor de productos para la peda "
+eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
+
+g <- 
+    ggplot(
+        df_fiesta %>% 
+            arrange(date) %>% 
+            group_by(tipo) %>% 
+            mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+            filter(date >= "2015-01-01"),
+        aes(
+            x = date,
+            y = values,
+            group = reorder(tipo, desc(ord)),
+            col = reorder(tipo, desc(ord)),
+            label = ifelse(
+                date == max(date),
+                paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
+                NA
+            )
+        ))+
+    geom_line(size = 2.5, lineend = "round", show.legend = F, 
+              # aes(
+              # color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo),
+              # linetype = if_else(tipo == v_productos[1], "solid", "dashed")
+              # )
+              ) + 
+    ggrepel::geom_text_repel(
+        # aes(color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo)), 
+        nudge_x = 100, direction = "y", hjust = "left",
+        size = 5,
+        segment.curvature = -0.1,
+        segment.ncp = 3,
+        segment.angle = 20,
+        family = "Ubuntu", fontface = "bold", show.legend = F
+    ) +
+    geom_point(aes(
+        # color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo),
+        y = ifelse(date == max(date), values, NA)),
+        size = 4, show.legend = F) +
+    scale_color_manual(
+        "", 
+        values = c(mcv_semaforo[4], mcv_discrete_7)
+    ) +
+    scale_x_date(
+        date_labels = "%b %y",
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_fiesta$date))-1)*30)+1), "month"), 
+                          to = floor_date(as.Date(max(df_fiesta$date)), "month"), 
+                          by = "6 month"),
+        expand = expansion(mult = c(0.02, 0.15))
+    ) +
+    #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
+    scale_y_continuous(labels = scales::number_format(accuracy = 1L),
+                       limits = c(70, 140)) +
+    theme_minimal() +
+    labs(
+        title = titulo,
+        subtitle = subtitulo, caption = nota,
+        color="", shape="", y = eje_y
+    ) +
+    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+          plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
+          plot.caption = element_text(size = 25, colour = "#777777"),
+          plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
+          panel.grid.minor  = element_blank(),
+          panel.background = element_rect(fill = "transparent",colour = NA),
+          text = element_text(family = "Ubuntu"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size = 25),
+          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
+          axis.text.y = element_text(size = 20),
+          legend.text = element_text(size = 30),
+          legend.position = "none")
+
+g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+
+ggsave(g, filename = paste_info("01_03_02_05_05_peda.png"),
+       type = "cairo", device = "png",
+       width = 16, height = 9, dpi = 100, bg= "transparent")
+
+
 
 # FIN. -------------------------------------------------------------------------
