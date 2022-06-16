@@ -33,9 +33,7 @@ require(tidyverse)
 # Funciones con direcciones de las carpetas
 paste_inp               <- function(x){paste0("01_datos_crudos/", x)}
 paste_out               <- function(x){paste0("02_datos_limpios/", x)}
-paste_csv               <- function(x){paste0("04_csvs/", x)}
-paste_info              <- function(x){paste0("05_infobites/", x)}
-paste_des               <- function(x){paste0("07_descargables/", x)}
+paste_info              <- function(x){paste0("04_infobites/", x)}
 
 # Función para abreviar términos
 str_wrap_long <- function(stringr, 
