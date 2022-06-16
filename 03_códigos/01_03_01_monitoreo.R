@@ -1,7 +1,20 @@
+#------------------------------------------------------------------------------#
+# Proyecto:                   MICROSITIO DE INFLACIÓN 
+# Objetivo:                   Preparar datos para tablas en Data Wrapper 
+#
+# Encargadas:     
+# Correos:                    katia@mexicocomovamos.mx | regimedina19@gmail.com
+# 
+# Fecha de creación:          15 de junio de 2022
+# Última actualización:       16 de junio de 2022
+#------------------------------------------------------------------------------#
+
+# 0. Configuración inicial -----------------------------------------------------
+
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
-# Paquetes ----
+## Paquetes ----
 if(!require("lubridate")) install.packages("lubridate") & require("lubridate")
 if(!require("hot.deck"))  install.packages("hot.deck")  & require("hot.deck")
 if(!require("zoo"))       install.packages("zoo")       & require("zoo")
@@ -29,16 +42,18 @@ loadfonts(device="postscript")
 
 require(tidyverse)
 
-# Activar las credenciales de google
+## Credenciales de google ----
 v_usuaria <- "regina"
 # v_usuaria <- "katia"
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
 googlesheets4::gs4_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
 
-# Funciones con direcciones de las carpetas
-paste_inp               <- function(x){paste0("01_datos_crudos/", x)}
-paste_out               <- function(x){paste0("02_datos_limpios/", x)}
-paste_info              <- function(x){paste0("04_infobites/", x)}
+## Funciones ----
+# Directorios de las carpetas 
+paste_inp   <- function(x){paste0("01_datos_crudos/" , x)}
+paste_out   <- function(x){paste0("02_datos_limpios/", x)}
+paste_code  <- function(x){paste0("03_códigos/"      , x)}
+paste_info  <- function(x){paste0("04_infobites/"    , x)}
 
 # Función para abreviar términos
 str_wrap_long <- function(stringr, 
@@ -52,8 +67,7 @@ str_wrap_long <- function(stringr,
                              width))
 }
 
-
-# Colores MCV -----
+## Colores MCV -----
 mcv_discrete <- c(
     "#6950d8", "#3CEAFA", "#00b783", "#ff6260", "#ffaf84", "#ffbd41"
 )
@@ -69,6 +83,8 @@ mcv_semaforo <- c(
     "#ff6260" # rojo
 )
 
+mcv_morados  <- c("#6950D8", "#A99BE9")                       # Morados
+
 mcv_blacks <- c("black", "#D2D0CD", "#777777")
 
 mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D", 
@@ -76,15 +92,15 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
                      "#00D2D1", "#FF43FA", mcv_blacks[3], mcv_blacks[2])
 
 
-# Identificadores INEGI ----
+## Identificadores INEGI ----
 # Token para API del INEGI
-v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
+source(paste_code("00_token.R"))
 
-# 0. Abrir INPC complete ----
+# 1. Procesamiento para tabla --------------------------------------------------
+## 1.0. Abrir INPC complete ----
 d_inpc <- readRDS(paste_out("01_01_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
-# 1. Procesamiento para tabla ----
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
     "01_011_0111_014", 
@@ -150,6 +166,7 @@ d_monitoreo <-
     glimpse()
 
 ## 1.3. Preparación web -----
+
 # Función para llamar a los logos de github
 pegar_logo <- function(x){
     paste0(
@@ -159,7 +176,7 @@ pegar_logo <- function(x){
         "(https://raw.githubusercontent.com/mexicocomovamos/mcv_inflacion/main/00_documentaci%C3%B3n/00_%C3%ADconos/", 
         x, ".png)")}
 
-# Guardar productos en orden alfabético 
+# Guardar nombres productos en orden alfabético 
 v_productos <- sort(unique(d_monitoreo$ccif))
 
 # Clasificación según tipo de inflación 
@@ -170,17 +187,25 @@ v_subyacente <- c(
 
 v_nosubyacente <- v_productos[!(v_productos %in% v_subyacente)]
 
-# Procesamiento 
+# Procesamiento (formato largo)
 df_formato <- d_monitoreo %>% 
-    # Dejar el último dato 
+    # Dejar solo datos de la última actualización 
     filter(fecha == max(fecha)) %>% 
     # Crear variables para tabla (Markdown y html)
     mutate(
-        # Añadir símbolo de cambio 
+        # Símbolo de cambio 
         cambio = case_when(
             var_anual >  0 ~ "▲",
             var_anual <  0 ~ "▼",
-            var_anual == 0 ~ "~"), 
+            var_anual == 0 ~ "~" ),
+            # HTML
+            # var_anual >  0 ~ "<font color = \"#00b783\"> ▲ </font>",
+            # var_anual <  0 ~ "<font color = \"#ff6260\"> ▼ </font>",
+            # var_anual == 0 ~ "<font color = \"#777777\"> ~ </font>"), 
+            # CSS
+            # var_anual >  0 ~ "<p style = \"color:#00b783\"> ▲ </p>",
+            # var_anual <  0 ~ "<p style = \"color:#ff6260\"> ▼ </p>",
+            # var_anual == 0 ~ "<p style = \"color:#777777\"> ~ </p>"),
         # Texto para la tabla
         texto = paste0(
             # Nombre del producto en negritas 
@@ -203,22 +228,26 @@ df_formato <- d_monitoreo %>%
         ccif %in% v_subyacente, "subyacente", "nosubyacente")) %>% 
     select(tipo, logo, texto, cambio) 
     
-# Separar productos subyacentes de no subyacentes y pegarlas de manera horizontal
+# Cambiar a formato ancho (distinguir subyacente y no subyacente)
 df_web <- df_formato                %>% 
     filter(tipo == "subyacente")    %>% 
-    mutate(id = 1:11) %>% 
-    left_join(df_formato %>% 
-                  filter(tipo != "subyacente") %>% 
-                  mutate(id = 1:10), 
-              by = "id") %>% 
+    mutate(id = 1:11)               %>%  # El id solo sirve para pegar
+    left_join(
+        df_formato            %>% 
+            filter(tipo != "subyacente") %>% 
+            mutate(id = 1:10), 
+        by = "id")            %>% 
     select(-c(starts_with("id"), starts_with("tipo")))
 
-## 2. Guardar -----
-# ---- Guardar en la base en el drive
+# 2. Guardar -------------------------------------------------------------------
+
 # Obtener identificador del archivo en drive
 v_id <- as.character(
     googledrive::drive_get(
         "https://docs.google.com/spreadsheets/d/1nF7WojsA4aSlimdFQgmR5c60UPXZSlhPJh8u2i8V63Y/edit#gid=0")[1, 2])
 
-# Serie quincenal
-googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "último_periodo")
+# Escribir datos en drive 
+googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "tasas")
+
+
+# FIN --------------------------------------------------------------------------
