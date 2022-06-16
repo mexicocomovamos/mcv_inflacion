@@ -210,8 +210,8 @@ df_formato <- d_monitoreo %>%
         texto = paste0(
             # Nombre del producto en negritas 
             "**", ccif,"**", "<br>", 
-            "Anual: "  , scales::percent(var_mensual, accuracy = 0.1), "<br>", 
-            "Mensual: ", scales::percent(var_anual  , accuracy = 0.1)
+            "Anual: "  , scales::percent(var_anual  , accuracy = 0.1), "<br>", 
+            "Mensual: ", scales::percent(var_mensual, accuracy = 0.1)
         ), 
         # Logotipo para la tabla
         logo = case_when(
