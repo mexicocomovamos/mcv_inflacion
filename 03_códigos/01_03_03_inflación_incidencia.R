@@ -78,7 +78,7 @@ v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -86,7 +86,7 @@ d_inpc <- data.frame()
 
 if(v_quincena==1){
     
-    for(i in 348:length(unique(d_inpc_complete$id_ccif_0))) {
+    for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
         
         print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
         tempo <- inegi_series(

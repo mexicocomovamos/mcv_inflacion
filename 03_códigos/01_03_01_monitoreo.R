@@ -102,6 +102,7 @@ source(paste_code("00_token.R"))
 d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
+v_quincena <- 1
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
     "01_011_0111_014", 
@@ -132,40 +133,83 @@ v_prods_nosuby <- c(
 )
 
 ## 1.2. Limpieza de datos ----
-d_monitoreo <- 
-    d_inpc %>% 
-    filter(date > "2015-12-17") %>% 
-    filter(id_ccif_0 %in% v_prods_suby) %>% 
-    mutate(tipo = "Subyacente") %>% 
-    bind_rows(
+if(v_quincena == 1){
+    
+    d_monitoreo <- 
         d_inpc %>% 
-            filter(date > "2015-12-17") %>% 
-            filter(id_ccif_0 %in% v_prods_nosuby) %>% 
-            mutate(tipo = "No subyacente")
-    ) %>% 
-    select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
-    arrange(fecha) %>% 
-    left_join(
+        filter(date > "2015-12-17") %>% 
+        filter(!date_shortcut %% 2 == 0) %>% 
+        filter(id_ccif_0 %in% v_prods_suby) %>% 
+        mutate(tipo = "Subyacente") %>% 
+        bind_rows(
+            d_inpc %>% 
+                filter(date > "2015-12-17") %>% 
+                filter(!date_shortcut %% 2 == 0) %>% 
+                filter(id_ccif_0 %in% v_prods_nosuby) %>% 
+                mutate(tipo = "No subyacente")
+        ) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        arrange(fecha) %>% 
+        left_join(
+            d_inpc %>% 
+                filter(id_ccif_0=="00") %>% 
+                filter(date > "2015-12-17") %>% 
+                filter(!date_shortcut %% 2 == 0) %>% 
+                select(fecha = date, inpc = values) %>% 
+                arrange(fecha)
+        ) %>% 
+        group_by(ccif, id_ccif_0) %>% 
+        mutate(
+            ccif = case_when(
+                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+                T ~ ccif
+            ),
+            var_mensual = (values - lag(values))/lag(values),
+            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            var_anual = (values - lag(values, 12))/lag(values, 12),
+            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
+        ) %>% 
+        ungroup() %>% 
+        glimpse()
+    
+} else{
+    
+    d_monitoreo <- 
         d_inpc %>% 
-            filter(id_ccif_0=="00") %>% 
-            filter(date > "2015-12-17") %>% 
-            select(fecha = date, inpc = values) %>% 
-            arrange(fecha)
-    ) %>% 
-    group_by(ccif, id_ccif_0) %>% 
-    mutate(
-        ccif = case_when(
-            id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-            id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-            T ~ ccif
-        ),
-        var_mensual = (values - lag(values))/lag(values),
-        incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
-        var_anual = (values - lag(values, 12))/lag(values, 12),
-        incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
-    ) %>% 
-    ungroup() %>% 
-    glimpse()
+        filter(date > "2015-12-17") %>% 
+        filter(id_ccif_0 %in% v_prods_suby) %>% 
+        mutate(tipo = "Subyacente") %>% 
+        bind_rows(
+            d_inpc %>% 
+                filter(date > "2015-12-17") %>% 
+                filter(id_ccif_0 %in% v_prods_nosuby) %>% 
+                mutate(tipo = "No subyacente")
+        ) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        arrange(fecha) %>% 
+        left_join(
+            d_inpc %>% 
+                filter(id_ccif_0=="00") %>% 
+                filter(date > "2015-12-17") %>% 
+                select(fecha = date, inpc = values) %>% 
+                arrange(fecha)
+        ) %>% 
+        group_by(ccif, id_ccif_0) %>% 
+        mutate(
+            ccif = case_when(
+                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+                T ~ ccif
+            ),
+            var_mensual = (values - lag(values))/lag(values),
+            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            var_anual = (values - lag(values, 12))/lag(values, 12),
+            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
+        ) %>% 
+        ungroup() %>% 
+        glimpse()
+}
 
 ## 1.3. Preparación web -----
 
