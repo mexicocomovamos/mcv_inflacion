@@ -35,6 +35,7 @@ if(!require("ggpubr")) install.packages("ggpubr") & require("ggpubr")
 if(!require("mxmaps")) install.packages("mxmaps") & require("mxmaps")
 if(!require("inegiR")) install.packages("inegiR") & require("inegiR")
 if(!require("ggalluvial")) install.packages("ggalluvial") & require("ggalluvial")
+if(!require("DatawRappr")) install.packages("DatawRappr") & require("DatawRappr")
 require(extrafont)
 
 loadfonts(device="pdf")
@@ -98,7 +99,7 @@ source(paste_code("00_token.R"))
 
 # 1. Procesamiento para tabla --------------------------------------------------
 ## 1.0. Abrir INPC complete ----
-d_inpc <- readRDS(paste_out("01_01_inpc_complete_prods_ccif.RDS")) %>% 
+d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
 ## 1.1. Identificadores de productos para seguimiento ----
@@ -120,6 +121,7 @@ v_prods_nosuby <- c(
     "07_072_0722_219",
     "04_045_0452_144",
     "04_045_0451_143",
+    "01_011_0112_018",
     "01_011_0112_022",
     "01_011_0117_062",
     "01_011_0116_046",
@@ -216,13 +218,13 @@ df_formato <- d_monitoreo %>%
         # Logotipo para la tabla
         logo = case_when(
             ccif == v_productos[1 ] ~ pegar_logo("Aceite"),
-            ccif == v_productos[11] ~ pegar_logo("Jugos"),
-            ccif == v_productos[12] ~ pegar_logo("Leche"),
-            ccif == v_productos[15] ~ pegar_logo("PanDeCaja"),
-            ccif == v_productos[17] ~ pegar_logo("Restaurantes"),
-            ccif == v_productos[14] ~ pegar_logo("Taqueria"),
-            ccif == v_productos[19] ~ pegar_logo("Tortilla"), 
-            ccif == v_productos[20] ~ pegar_logo("Transporte_aereo"))) %>% 
+            ccif == v_productos[12] ~ pegar_logo("Jugos"),
+            ccif == v_productos[13] ~ pegar_logo("Leche"),
+            ccif == v_productos[16] ~ pegar_logo("PanDeCaja"),
+            ccif == v_productos[18] ~ pegar_logo("Restaurantes"),
+            ccif == v_productos[15] ~ pegar_logo("Taqueria"),
+            ccif == v_productos[20] ~ pegar_logo("Tortilla"), 
+            ccif == v_productos[21] ~ pegar_logo("Transporte_aereo"))) %>% 
     # Distinguir entre productos subyacentes y no subyacentes
     mutate(tipo = if_else(
         ccif %in% v_subyacente, "subyacente", "nosubyacente")) %>% 
@@ -235,7 +237,7 @@ df_web <- df_formato                %>%
     left_join(
         df_formato            %>% 
             filter(tipo != "subyacente") %>% 
-            mutate(id = 1:10), 
+            mutate(id = 1:11), 
         by = "id")            %>% 
     select(-c(starts_with("id"), starts_with("tipo")))
 
@@ -244,10 +246,13 @@ df_web <- df_formato                %>%
 # Obtener identificador del archivo en drive
 v_id <- as.character(
     googledrive::drive_get(
-        "https://docs.google.com/spreadsheets/d/1nF7WojsA4aSlimdFQgmR5c60UPXZSlhPJh8u2i8V63Y/edit#gid=0")[1, 2])
+        "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
 
 # Escribir datos en drive 
 googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "tasas")
 
+# 3. Republicar en DW
+
+DatawRappr::dw_publish_chart(chart_id = "zt54l", api_key = dw_token)
 
 # FIN --------------------------------------------------------------------------
