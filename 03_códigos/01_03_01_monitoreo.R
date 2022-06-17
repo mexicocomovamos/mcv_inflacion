@@ -35,6 +35,7 @@ if(!require("ggpubr")) install.packages("ggpubr") & require("ggpubr")
 if(!require("mxmaps")) install.packages("mxmaps") & require("mxmaps")
 if(!require("inegiR")) install.packages("inegiR") & require("inegiR")
 if(!require("ggalluvial")) install.packages("ggalluvial") & require("ggalluvial")
+if(!require("DatawRappr")) install.packages("DatawRappr") & require("DatawRappr")
 require(extrafont)
 
 loadfonts(device="pdf")
@@ -98,9 +99,10 @@ source(paste_code("00_token.R"))
 
 # 1. Procesamiento para tabla --------------------------------------------------
 ## 1.0. Abrir INPC complete ----
-d_inpc <- readRDS(paste_out("01_01_inpc_complete_prods_ccif.RDS")) %>% 
+d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
+v_quincena <- 1
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
     "01_011_0111_014", 
@@ -120,6 +122,7 @@ v_prods_nosuby <- c(
     "07_072_0722_219",
     "04_045_0452_144",
     "04_045_0451_143",
+    "01_011_0112_018",
     "01_011_0112_022",
     "01_011_0117_062",
     "01_011_0116_046",
@@ -130,40 +133,83 @@ v_prods_nosuby <- c(
 )
 
 ## 1.2. Limpieza de datos ----
-d_monitoreo <- 
-    d_inpc %>% 
-    filter(date > "2015-12-17") %>% 
-    filter(id_ccif_0 %in% v_prods_suby) %>% 
-    mutate(tipo = "Subyacente") %>% 
-    bind_rows(
+if(v_quincena == 1){
+    
+    d_monitoreo <- 
         d_inpc %>% 
-            filter(date > "2015-12-17") %>% 
-            filter(id_ccif_0 %in% v_prods_nosuby) %>% 
-            mutate(tipo = "No subyacente")
-    ) %>% 
-    select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
-    arrange(fecha) %>% 
-    left_join(
+        filter(date > "2015-12-17") %>% 
+        filter(!date_shortcut %% 2 == 0) %>% 
+        filter(id_ccif_0 %in% v_prods_suby) %>% 
+        mutate(tipo = "Subyacente") %>% 
+        bind_rows(
+            d_inpc %>% 
+                filter(date > "2015-12-17") %>% 
+                filter(!date_shortcut %% 2 == 0) %>% 
+                filter(id_ccif_0 %in% v_prods_nosuby) %>% 
+                mutate(tipo = "No subyacente")
+        ) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        arrange(fecha) %>% 
+        left_join(
+            d_inpc %>% 
+                filter(id_ccif_0=="00") %>% 
+                filter(date > "2015-12-17") %>% 
+                filter(!date_shortcut %% 2 == 0) %>% 
+                select(fecha = date, inpc = values) %>% 
+                arrange(fecha)
+        ) %>% 
+        group_by(ccif, id_ccif_0) %>% 
+        mutate(
+            ccif = case_when(
+                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+                T ~ ccif
+            ),
+            var_mensual = (values - lag(values))/lag(values),
+            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            var_anual = (values - lag(values, 12))/lag(values, 12),
+            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
+        ) %>% 
+        ungroup() %>% 
+        glimpse()
+    
+} else{
+    
+    d_monitoreo <- 
         d_inpc %>% 
-            filter(id_ccif_0=="00") %>% 
-            filter(date > "2015-12-17") %>% 
-            select(fecha = date, inpc = values) %>% 
-            arrange(fecha)
-    ) %>% 
-    group_by(ccif, id_ccif_0) %>% 
-    mutate(
-        ccif = case_when(
-            id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-            id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-            T ~ ccif
-        ),
-        var_mensual = (values - lag(values))/lag(values),
-        incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
-        var_anual = (values - lag(values, 12))/lag(values, 12),
-        incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
-    ) %>% 
-    ungroup() %>% 
-    glimpse()
+        filter(date > "2015-12-17") %>% 
+        filter(id_ccif_0 %in% v_prods_suby) %>% 
+        mutate(tipo = "Subyacente") %>% 
+        bind_rows(
+            d_inpc %>% 
+                filter(date > "2015-12-17") %>% 
+                filter(id_ccif_0 %in% v_prods_nosuby) %>% 
+                mutate(tipo = "No subyacente")
+        ) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        arrange(fecha) %>% 
+        left_join(
+            d_inpc %>% 
+                filter(id_ccif_0=="00") %>% 
+                filter(date > "2015-12-17") %>% 
+                select(fecha = date, inpc = values) %>% 
+                arrange(fecha)
+        ) %>% 
+        group_by(ccif, id_ccif_0) %>% 
+        mutate(
+            ccif = case_when(
+                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+                T ~ ccif
+            ),
+            var_mensual = (values - lag(values))/lag(values),
+            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            var_anual = (values - lag(values, 12))/lag(values, 12),
+            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
+        ) %>% 
+        ungroup() %>% 
+        glimpse()
+}
 
 ## 1.3. Preparación web -----
 
@@ -216,13 +262,13 @@ df_formato <- d_monitoreo %>%
         # Logotipo para la tabla
         logo = case_when(
             ccif == v_productos[1 ] ~ pegar_logo("Aceite"),
-            ccif == v_productos[11] ~ pegar_logo("Jugos"),
-            ccif == v_productos[12] ~ pegar_logo("Leche"),
-            ccif == v_productos[15] ~ pegar_logo("PanDeCaja"),
-            ccif == v_productos[17] ~ pegar_logo("Restaurantes"),
-            ccif == v_productos[14] ~ pegar_logo("Taqueria"),
-            ccif == v_productos[19] ~ pegar_logo("Tortilla"), 
-            ccif == v_productos[20] ~ pegar_logo("Transporte_aereo"))) %>% 
+            ccif == v_productos[12] ~ pegar_logo("Jugos"),
+            ccif == v_productos[13] ~ pegar_logo("Leche"),
+            ccif == v_productos[16] ~ pegar_logo("PanDeCaja"),
+            ccif == v_productos[18] ~ pegar_logo("Restaurantes"),
+            ccif == v_productos[15] ~ pegar_logo("Taqueria"),
+            ccif == v_productos[20] ~ pegar_logo("Tortilla"), 
+            ccif == v_productos[21] ~ pegar_logo("Transporte_aereo"))) %>% 
     # Distinguir entre productos subyacentes y no subyacentes
     mutate(tipo = if_else(
         ccif %in% v_subyacente, "subyacente", "nosubyacente")) %>% 
@@ -235,7 +281,7 @@ df_web <- df_formato                %>%
     left_join(
         df_formato            %>% 
             filter(tipo != "subyacente") %>% 
-            mutate(id = 1:10), 
+            mutate(id = 1:11), 
         by = "id")            %>% 
     select(-c(starts_with("id"), starts_with("tipo")))
 
@@ -244,10 +290,13 @@ df_web <- df_formato                %>%
 # Obtener identificador del archivo en drive
 v_id <- as.character(
     googledrive::drive_get(
-        "https://docs.google.com/spreadsheets/d/1nF7WojsA4aSlimdFQgmR5c60UPXZSlhPJh8u2i8V63Y/edit#gid=0")[1, 2])
+        "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
 
 # Escribir datos en drive 
 googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "tasas")
 
+# 3. Republicar en DW
+
+DatawRappr::dw_publish_chart(chart_id = "zt54l", api_key = dw_token)
 
 # FIN --------------------------------------------------------------------------
