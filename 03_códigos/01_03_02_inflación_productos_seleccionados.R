@@ -233,7 +233,7 @@ ggplot(data = d_01_ccif %>%
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -395,7 +395,7 @@ ggplot(data = d_02_01_pan_cereales %>%
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -539,7 +539,7 @@ ggplot(data = d_02_02_carnes %>%
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -685,7 +685,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -860,7 +860,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -1035,7 +1035,7 @@ g <-
         caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -1178,7 +1178,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -1332,7 +1332,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -1481,7 +1481,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -1777,7 +1777,7 @@ for(i in 1:4){
             subtitle = subtitulo, caption = nota,
             color="", shape="", y = eje_y
         ) +
-        theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+        theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
               plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
               plot.caption = element_text(size = 25, colour = "#777777"),
               plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -1923,7 +1923,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -2057,7 +2057,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -2219,7 +2219,7 @@ g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 
 ggsave(g, filename = paste_info("01_03_02_05_04_hospitales.png"),
        # type = "cairo", device = "png",
-       width = 16, height = 9, dpi = 100, bg= "transparent")
+       width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
 # 8. Productos de la peda ------------------------------------------------------
@@ -2342,7 +2342,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -2360,7 +2360,7 @@ g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 
 ggsave(g, filename = paste_info("01_03_02_05_05_peda.png"),
        type = "cairo", device = "png",
-       width = 16, height = 9, dpi = 100, bg= "transparent")
+       width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
 

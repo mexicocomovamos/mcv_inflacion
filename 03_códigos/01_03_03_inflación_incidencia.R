@@ -410,7 +410,7 @@ ggplot(
     ) +
     theme_minimal() +
     theme(
-        plot.title = element_text(size = 45, face = "bold", colour = "#6950D8"),
+        plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
         plot.subtitle = element_text(size = 27, colour = "#777777"),
         plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
         plot.caption = element_text(size = 20),
@@ -672,7 +672,7 @@ g <-
     ) +
     theme_minimal() +
     theme(
-        plot.title = element_text(size = 45, face = "bold", colour = "#6950D8"),
+        plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
         plot.subtitle = element_text(size = 27, colour = "#777777"),
         plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
         plot.caption = element_text(size = 20),
@@ -769,7 +769,7 @@ g1 <-
         y = eje_y, x = ""
     ) +
     theme(
-        plot.title = element_text(size = 45, face = "bold", colour = "#6950D8"),
+        plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
         plot.margin= margin(0.4, 0.4, 1, 0.4, "cm"), # margin(top,right, bottom,left)
         strip.text.x = element_text(size = 25),
         panel.grid.minor  = element_blank(),
