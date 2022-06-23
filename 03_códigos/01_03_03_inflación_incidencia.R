@@ -192,32 +192,64 @@ if(v_quincena==1){
         glimpse
 }
 
-
-d_incidencia_prods <- d_inpc_prods %>% 
-    left_join(
-        d_inpc_total
-    ) %>% 
-    group_by(ccif, id_ccif_0) %>% 
-    mutate(
-        ccif = case_when(
-          id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-          id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-          id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
-          id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
-          T ~ ccif
-        ),
-        var_mensual = (values - lag(values))/lag(values),
-        incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador
-    ) %>% 
-    ungroup() %>% 
-    glimpse
-
-d_incidencia_prods_last <- d_incidencia_prods %>% 
-    filter(fecha == last(fecha)) %>% 
-    arrange(-incidencia_mensual) %>% 
-    select(fecha,id_ccif_0,  ccif, var_mensual, incidencia_mensual) %>% 
-    mutate(n = row_number()) %>% 
-    glimpse
+if(v_quincena == 1){
+    
+    d_incidencia_prods <- d_inpc_prods %>% 
+        left_join(
+            d_inpc_total
+        ) %>% 
+        group_by(ccif, id_ccif_0) %>% 
+        mutate(
+            ccif = case_when(
+                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+                id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
+                id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
+                T ~ ccif
+            ),
+            var_quincenal = (values - lag(values))/lag(values),
+            incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador
+        ) %>% 
+        ungroup() %>% 
+        glimpse
+    
+    d_incidencia_prods_last <- d_incidencia_prods %>% 
+        filter(fecha == last(fecha)) %>% 
+        arrange(-incidencia_quincenal) %>% 
+        select(fecha,id_ccif_0,  ccif, var_quincenal, incidencia_quincenal) %>% 
+        mutate(n = row_number()) %>% 
+        glimpse
+    
+    
+} else{
+    
+    d_incidencia_prods <- d_inpc_prods %>% 
+        left_join(
+            d_inpc_total
+        ) %>% 
+        group_by(ccif, id_ccif_0) %>% 
+        mutate(
+            ccif = case_when(
+                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+                id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
+                id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
+                T ~ ccif
+            ),
+            var_mensual = (values - lag(values))/lag(values),
+            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador
+        ) %>% 
+        ungroup() %>% 
+        glimpse
+    
+    d_incidencia_prods_last <- d_incidencia_prods %>% 
+        filter(fecha == last(fecha)) %>% 
+        arrange(-incidencia_mensual) %>% 
+        select(fecha,id_ccif_0,  ccif, var_mensual, incidencia_mensual) %>% 
+        mutate(n = row_number()) %>% 
+        glimpse
+    
+}
 
 d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
     filter(n <= 10 | n >= 289)
@@ -251,46 +283,91 @@ ifelse(
     nota <- "La incidencia mensual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general."
 )
 
-
-g <- 
-ggplot(
-    d_incidencia_prods_last_20,
-    aes(
-        y = reorder(str_wrap_long(stringr = ccif, width = 20), incidencia_mensual),
-        x = incidencia_mensual,
-        fill = ifelse(n <= 10, "1", "2"),
-        label = paste0(
-            round(incidencia_mensual, 3), "\n[", round(var_mensual*100, 2), "%]"
+if(v_quincena==1){
+    g <- 
+        ggplot(
+            d_incidencia_prods_last_20,
+            aes(
+                y = reorder(str_wrap_long(stringr = ccif, width = 20), incidencia_quincenal),
+                x = incidencia_quincenal,
+                fill = ifelse(n <= 10, "1", "2"),
+                label = paste0(
+                    round(incidencia_quincenal, 3), "\n[", round(var_quincenal*100, 2), "%]"
+                )
+            )
+        ) +
+        geom_col() +
+        geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
+        scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
+        scale_x_continuous(
+            labels = scales::number_format(accuracy = 0.1), 
+            limits = c((max(abs(d_incidencia_prods_last_20$incidencia_quincenal)))*-1, 
+                       max(abs(d_incidencia_prods_last_20$incidencia_quincenal)))
+        ) +
+        labs(
+            title = titulo,
+            subtitle = str_wrap(subtitulo, 40),
+            caption = str_wrap(nota, 70)
+        ) +
+        theme_minimal() +
+        theme(
+            plot.title = element_text(size = 40, face = "bold", colour = "#6950D8", hjust = 0.5),
+            plot.subtitle = element_text(size = 30, colour = "#777777", hjust = 0.5),
+            plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
+            plot.caption = element_text(size = 15),
+            panel.background = element_rect(fill = "transparent",colour = NA),
+            axis.title.y = element_blank(),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size = 20),
+            axis.text.y = element_text(size = 15),
+            text = element_text(family = "Ubuntu"),
+            legend.position = "none"
         )
-    )
-) +
-    geom_col() +
-    geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
-    scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
-    scale_x_continuous(
-        labels = scales::number_format(accuracy = 0.1), 
-        limits = c((max(abs(d_incidencia_prods_last_20$incidencia_mensual)))*-1, 
-                   max(abs(d_incidencia_prods_last_20$incidencia_mensual)))
-    ) +
-    labs(
-        title = titulo,
-        subtitle = str_wrap(subtitulo, 40),
-        caption = str_wrap(nota, 70)
-    ) +
-    theme_minimal() +
-    theme(
-        plot.title = element_text(size = 40, face = "bold", colour = "#6950D8", hjust = 0.5),
-        plot.subtitle = element_text(size = 30, colour = "#777777", hjust = 0.5),
-        plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
-        plot.caption = element_text(size = 15),
-        panel.background = element_rect(fill = "transparent",colour = NA),
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 20),
-        axis.text.y = element_text(size = 15),
-        text = element_text(family = "Ubuntu"),
-        legend.position = "none"
-    )
+    
+    
+} else{
+    g <- 
+        ggplot(
+            d_incidencia_prods_last_20,
+            aes(
+                y = reorder(str_wrap_long(stringr = ccif, width = 20), incidencia_mensual),
+                x = incidencia_mensual,
+                fill = ifelse(n <= 10, "1", "2"),
+                label = paste0(
+                    round(incidencia_mensual, 3), "\n[", round(var_mensual*100, 2), "%]"
+                )
+            )
+        ) +
+        geom_col() +
+        geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
+        scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
+        scale_x_continuous(
+            labels = scales::number_format(accuracy = 0.1), 
+            limits = c((max(abs(d_incidencia_prods_last_20$incidencia_mensual)))*-1, 
+                       max(abs(d_incidencia_prods_last_20$incidencia_mensual)))
+        ) +
+        labs(
+            title = titulo,
+            subtitle = str_wrap(subtitulo, 40),
+            caption = str_wrap(nota, 70)
+        ) +
+        theme_minimal() +
+        theme(
+            plot.title = element_text(size = 40, face = "bold", colour = "#6950D8", hjust = 0.5),
+            plot.subtitle = element_text(size = 30, colour = "#777777", hjust = 0.5),
+            plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
+            plot.caption = element_text(size = 15),
+            panel.background = element_rect(fill = "transparent",colour = NA),
+            axis.title.y = element_blank(),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size = 20),
+            axis.text.y = element_text(size = 15),
+            text = element_text(family = "Ubuntu"),
+            legend.position = "none"
+        )
+    
+}
+
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
 ifelse(
     v_quincena == 1,
@@ -428,6 +505,9 @@ ggplot(
         legend.box.just = "right",
         legend.margin = margin(8, 8, 8, 8)
     )
+ggsave(g, filename = paste_info("01_03_03_02_incidencia_anual_sin_fondo.png"), 
+       width = 16, height = 9, 
+       dpi = 200, bg= "transparent")
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 ggsave(g, filename = paste_info("01_03_03_02_incidencia_anual.png"), 
        width = 16, height = 9, 
@@ -759,7 +839,7 @@ g1 <-
         date_labels = "%b-%y"
         
     ) +
-    scale_y_continuous("", limits = c(-2,5.5), breaks = seq(-2,5,1), 
+    scale_y_continuous("", limits = c(-2,6), breaks = seq(-2,6,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[1:5]) +
@@ -835,7 +915,7 @@ g2 <-
         date_labels = "%b-%y"
         
     ) +
-    scale_y_continuous("", limits = c(-2,5.5), breaks = seq(-2,5,1), 
+    scale_y_continuous("", limits = c(-2,6), breaks = seq(-2,6,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[6:9]) +

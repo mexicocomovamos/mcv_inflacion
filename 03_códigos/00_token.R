@@ -20,6 +20,7 @@
 # 1. Registro del TOKEN personal -----------------------------------------------
 
 # Registra aquí tu token personal de la API del INEGI
-v_token_inegi <- "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXX"
+v_token_inegi <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
+dw_token <- "2G3RKs3H5y6dtkQC520BmkHHmkeCIggUqSyFZcQBuuQjXCR7GX8sIrwUk7NZHWoy"
 
 # FIN. -------------------------------------------------------------------------
