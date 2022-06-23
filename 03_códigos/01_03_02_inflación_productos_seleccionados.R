@@ -76,7 +76,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 # 1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 2
+v_quincena <- 1
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena == 1){
@@ -233,7 +233,7 @@ ggplot(data = d_01_ccif %>%
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 37, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -341,7 +341,7 @@ ifelse(
         glimpse
 )
 
-titulo <- "Índice de precios al consumidor de pan y cereales\nseleccionados"
+titulo <- "Índice de precios al consumidor de pan y\ncereales seleccionados"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
 ggplot(data = d_02_01_pan_cereales %>% 
@@ -807,7 +807,7 @@ ifelse(
         glimpse
 )
 
-titulo <- "Índice de precios al consumidor de frutas seleccionadas"
+titulo <- "Índice de precios al consumidor de frutas \nseleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
     ggplot(data = d_02_04_frutas %>% 
@@ -1777,7 +1777,7 @@ for(i in 1:4){
             subtitle = subtitulo, caption = nota,
             color="", shape="", y = eje_y
         ) +
-        theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
+        theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
               plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
               plot.caption = element_text(size = 25, colour = "#777777"),
               plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -2144,7 +2144,7 @@ ifelse(v_quincena == 1,
 
 
 # ---- Gráfica 
-titulo  <- "Índice de precios al consumidor de servicios\n de hospital"
+titulo  <- "Índice de precios al consumidor de servicios\nde hospital"
 eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
@@ -2201,7 +2201,7 @@ g <-
         subtitle = subtitulo, caption = nota,
         color="", shape="", y = eje_y
     ) +
-    theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
           plot.caption = element_text(size = 25, colour = "#777777"),
           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
@@ -2282,7 +2282,7 @@ ifelse(v_quincena == 1,
 )
 
 # ---- Gráfica 
-titulo  <- "Índice de precios al consumidor de productos para la peda "
+titulo  <- "Índice de precios al consumidor de productos para la fiesta "
 eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
@@ -2359,7 +2359,7 @@ g <-
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 
 ggsave(g, filename = paste_info("01_03_02_05_05_peda.png"),
-       type = "cairo", device = "png",
+       #type = "cairo", device = "png",
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
