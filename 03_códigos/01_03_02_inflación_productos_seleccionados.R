@@ -76,7 +76,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 # 1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 1
+v_quincena <- 2
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena == 1){
@@ -1914,9 +1914,9 @@ g <-
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
     ) +
-    #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
-    scale_y_continuous(labels = scales::number_format(accuracy = 1L),
-                       limits = c(70, 130)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
+    # scale_y_continuous(labels = scales::number_format(accuracy = 1L),
+    #                    limits = c(70, 130)) +
     theme_minimal() +
     labs(
         title = titulo,
@@ -2192,9 +2192,7 @@ g <-
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
     ) +
-    #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
-    scale_y_continuous(labels = scales::number_format(accuracy = 1L),
-                       limits = c(80,120)) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
     theme_minimal() +
     labs(
         title = titulo,
