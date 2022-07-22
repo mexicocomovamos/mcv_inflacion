@@ -76,7 +76,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 # 1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 2
+v_quincena <- 1
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena == 1){
@@ -205,7 +205,7 @@ ggplot(data = d_01_ccif %>%
     ggrepel::geom_text_repel(
         aes(color = if_else(tipo == "General", mcv_semaforo[4], tipo)),
         nudge_x = 100, direction = "y", hjust = "left",
-        size = 5.5, segment.curvature = -0.1,
+        size = 5, segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
         family = "Ubuntu", fontface = "bold", show.legend = F
@@ -1503,306 +1503,6 @@ ggsave(g, filename = paste_info("01_03_02_03_bebidas.png"),
 
 rm(list=ls(pattern="^v_bebi"))
 
-# 13. Productos canasta básica PROFECO ----
-
-if(v_quincena == 1){
-    v_total <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Total"]
-    
-    v_pacic_leche <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
-    v_pacic_atún_sardina <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Atún y sardina en lata"]
-    v_pacic_res <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Carne de res"]
-    v_pacic_cerdo <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
-    v_pacic_pollo <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Pollo"]
-    v_pacic_huevo <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Huevo"]
-    
-    v_pacic_frijol <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Frijol"]
-    v_pacic_arroz <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Arroz"]
-    v_pacic_pan_caja <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Pan de caja"]
-    v_pacic_pasta_sopa <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Pasta para sopa"]
-    v_pacic_tortilla <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
-    v_pacic_aceite <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]
-    v_pacic_azúcar <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Azúcar"]
-    
-    v_pacic_cebolla <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Cebolla"]
-    v_pacic_chile <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Chiles envasados"]
-    v_pacic_jitomate <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Jitomate"]
-    v_pacic_limón <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Limón"]
-    v_pacic_manzana <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Manzana"]
-    v_pacic_naranja <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Naranja"]
-    v_pacic_zanahoria <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Zanahoria"]
-    v_pacic_papa <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]
-    
-    v_pacic_jabón <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Jabón de tocador"]
-    v_pacic_papel_higie <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Papel higiénico y pañuelos desechables"]
-    
-} else{
-    v_total <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Total"]
-    
-    v_pacic_leche <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
-    v_pacic_atún_sardina <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Atún y sardina en lata"]
-    v_pacic_res <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Carne de res"]
-    v_pacic_cerdo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
-    v_pacic_pollo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pollo"]
-    v_pacic_huevo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Huevo"]
-    
-    v_pacic_frijol <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Frijol"]
-    v_pacic_arroz <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Arroz"]
-    v_pacic_pan_caja <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pan de caja"]
-    v_pacic_pasta_sopa <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pasta para sopa"]
-    v_pacic_tortilla <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
-    v_pacic_aceite <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]
-    v_pacic_azúcar <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Azúcar"]
-    
-    v_pacic_cebolla <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Cebolla"]
-    v_pacic_chile <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Chiles envasados"]
-    v_pacic_jitomate <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Jitomate"]
-    v_pacic_limón <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Limón"]
-    v_pacic_manzana <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Manzana"]
-    v_pacic_naranja <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Naranja"]
-    v_pacic_zanahoria <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Zanahoria"]
-    v_pacic_papa <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]
-    
-    v_pacic_jabón <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Jabón de tocador"]
-    v_pacic_papel_higie <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Papel higiénico y pañuelos desechables"]
-    
-}
-
-v_pacic_list <- c(
-    
-    v_pacic_leche,
-    v_pacic_atún_sardina,
-    v_pacic_res,
-    v_pacic_cerdo,
-    v_pacic_pollo,
-    v_pacic_huevo,
-    v_pacic_frijol,
-    v_pacic_arroz,
-    v_pacic_pan_caja,
-    v_pacic_pasta_sopa,
-    v_pacic_tortilla,
-    v_pacic_aceite,
-    v_pacic_azúcar,
-    v_pacic_cebolla,
-    v_pacic_chile,
-    v_pacic_jitomate,
-    v_pacic_limón,
-    v_pacic_manzana,
-    v_pacic_naranja,
-    v_pacic_zanahoria,
-    v_pacic_papa,
-    v_pacic_jabón,
-    v_pacic_papel_higie
-    
-)
-
-v_pacic_list_labs <- c(
-    
-    "Leche",
-    "Atún y sardina en lata",
-    "Carne de res",
-    "Carne de cerdo",
-    "Pollo",
-    "Huevo",
-    "Frijol",
-    "Arroz",
-    "Pan de caja",
-    "Pasta para sopa",
-    "Tortilla de maíz",
-    "Aceite vegetal",
-    "Azúcar",
-    "Cebolla",
-    "Chiles envasados",
-    "Jitomate",
-    "Limón",
-    "Manzana",
-    "Naranja",
-    "Zanahoria",
-    "Papa",
-    "Jabón de tocador",
-    "Papel higiénico y pañuelos desechables"
-    
-)
-
-d_04_pacic <- data.frame()
-
-for(i in 1:length(v_pacic_list)){
-    print(paste0(str_pad(i,2,"l","0"), " - ", v_pacic_list_labs[i]))
-    Sys.sleep(0.5)
-    
-    tempo <- inegi_series(
-        serie    = v_pacic_list[i],
-        token    = v_token_inegi, 
-        database = "BIE", 
-        as_tt    = TRUE) %>% 
-        mutate(tipo = v_pacic_list_labs[i])
-    
-    d_04_pacic <- bind_rows(d_04_pacic, tempo)
-    
-}
-
-
-d_04_pacic <- d_04_pacic %>% 
-    mutate(
-        cat = case_when(
-            tipo == "Leche" ~ "1. Productos de origen animal",
-            tipo == "Atún y sardina en lata" ~ "1. Productos de origen animal",
-            tipo == "Carne de res" ~ "1. Productos de origen animal",
-            tipo == "Carne de cerdo" ~ "1. Productos de origen animal",
-            tipo == "Pollo" ~ "1. Productos de origen animal",
-            tipo == "Huevo" ~ "1. Productos de origen animal",
-            tipo == "Frijol" ~ "2. Despensa",
-            tipo == "Arroz" ~ "2. Despensa",
-            tipo == "Pan de caja" ~ "2. Despensa",
-            tipo == "Pasta para sopa" ~ "2. Despensa",
-            tipo == "Tortilla de maíz" ~ "2. Despensa",
-            tipo == "Aceite vegetal" ~ "2. Despensa",
-            tipo == "Azúcar" ~ "2. Despensa",
-            tipo == "Cebolla" ~ "3. Frutas y verduras",
-            tipo == "Chiles envasados" ~ "3. Frutas y verduras",
-            tipo == "Jitomate" ~ "3. Frutas y verduras",
-            tipo == "Limón" ~ "3. Frutas y verduras",
-            tipo == "Manzana" ~ "3. Frutas y verduras",
-            tipo == "Naranja" ~ "3. Frutas y verduras",
-            tipo == "Zanahoria" ~ "3. Frutas y verduras",
-            tipo == "Papa" ~ "3. Frutas y verduras",
-            tipo == "Jabón de tocador" ~ "4. Aseo personal",
-            tipo == "Papel higiénico y pañuelos desechables" ~ "4. Aseo personal",
-            T ~ NA_character_
-        )
-    ) %>% 
-    bind_rows(
-        inegi_series(
-            serie    = v_total,
-            token    = v_token_inegi, 
-            database = "BIE", 
-            as_tt    = TRUE) %>% 
-            mutate(tipo = " General", cat = "1. Productos de origen animal") 
-    ) %>% 
-    bind_rows(
-        inegi_series(
-            serie    = v_total,
-            token    = v_token_inegi, 
-            database = "BIE", 
-            as_tt    = TRUE) %>% 
-            mutate(tipo = " General", cat = "2. Despensa") 
-    ) %>% 
-    bind_rows(
-        inegi_series(
-            serie    = v_total,
-            token    = v_token_inegi, 
-            database = "BIE", 
-            as_tt    = TRUE) %>% 
-            mutate(tipo = " General", cat = "3. Frutas y verduras") 
-    ) %>% 
-    bind_rows(
-        inegi_series(
-            serie    = v_total,
-            token    = v_token_inegi, 
-            database = "BIE", 
-            as_tt    = TRUE) %>% 
-            mutate(tipo = " General", cat = "4. Aseo personal") 
-    ) %>% 
-    arrange(cat, tipo)
-
-ifelse(
-    v_quincena == 1,
-    d_04_pacic <- d_04_pacic %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
-        glimpse,
-    d_04_pacic %>% 
-        glimpse
-)
-
-eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
-
-v_pacic_loop <- unique(d_04_pacic$cat)
-
-for(i in 1:4){
-    
-    d_plot <- d_04_pacic %>% 
-        filter(cat == v_pacic_loop[i]) %>% 
-        arrange(date) %>% 
-        group_by(cat,tipo) %>% 
-        mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-        ungroup() %>% 
-        filter(date >= "2015-01-01")
-    
-    titulo <- paste0("Índice de precios al consumidor de canasta PROFECO\n",
-                     v_pacic_loop[i])
-    g <- 
-    ggplot(data = d_plot,
-           aes(
-               x = date,
-               y = values,
-               group = tipo,
-               col = tipo,
-               label = ifelse(
-                   date == max(date),
-                   paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
-                   NA
-               )
-           ))+
-        geom_line(size = 2.5, lineend = "round", show.legend = F, 
-                  aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo),
-                      linetype = if_else(tipo == "Alimentos", "solid", "dashed"))) + 
-        ggrepel::geom_text_repel(
-            aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo)), 
-            nudge_x = 100, direction = "y", hjust = "left",
-            size = 4,
-            segment.curvature = -0.1,
-            segment.ncp = 3,
-            segment.angle = 20,
-            family = "Ubuntu", fontface = "bold", show.legend = F
-        ) +
-        geom_point(aes(
-            color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo),
-            y = ifelse(date == max(date), values, NA)),
-            size = 4, show.legend = F) +
-        scale_color_manual(
-            "", 
-            values = c(mcv_semaforo[4], mcv_discrete_7, mcv_blacks[2])
-        ) +
-        scale_x_date(
-            date_labels = "%b %y",
-            breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_04_pacic$date))-1)*30)+1), "month"), 
-                              to = floor_date(as.Date(max(d_04_pacic$date)), "month"), 
-                              by = "6 month"),
-            expand = expansion(mult = c(0.02, 0.15))
-        ) +
-        #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
-        scale_y_continuous(labels = scales::number_format(accuracy = 1L)) +
-        theme_minimal() +
-        labs(
-            title = titulo,
-            subtitle = subtitulo, caption = nota,
-            color="", shape="", y = eje_y
-        ) +
-        theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
-              plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
-              plot.caption = element_text(size = 25, colour = "#777777"),
-              plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
-              panel.grid.minor  = element_blank(),
-              panel.background = element_rect(fill = "transparent",colour = NA),
-              text = element_text(family = "Ubuntu"),
-              axis.title.x = element_blank(),
-              axis.title.y = element_text(size = 25),
-              axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
-              axis.text.y = element_text(size = 20),
-              legend.text = element_text(size = 30),
-              legend.position = "none")
-    
-    g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-    ggsave(g, filename = paste_info(
-                   paste0("01_03_02_13_0", 
-                          tolower(str_replace_all(str_remove_all(v_pacic_loop[i], "\\."), " ", "_")),
-                          "_canasta_profeco.png")), 
-           # type = "cairo", device = "png", 
-           width = 16, height = 9,  dpi = 200, bg= "transparent")
-
-}
-
-rm(list=ls(pattern="^v_pacic"))
-
 # 5. Productos de salud --------------------------------------------------------
 
 # ---- Ruta dentro del catálogo 
@@ -2359,6 +2059,308 @@ g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 ggsave(g, filename = paste_info("01_03_02_05_05_peda.png"),
        #type = "cairo", device = "png",
        width = 16, height = 9, dpi = 200, bg= "transparent")
+
+# 13. Productos canasta básica PROFECO ----
+
+if(v_quincena == 1){
+    v_total <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Total"]
+    
+    v_pacic_leche <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
+    v_pacic_atún_sardina <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Atún y sardina en lata"]
+    v_pacic_res <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Carne de res"]
+    v_pacic_cerdo <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
+    v_pacic_pollo <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Pollo"]
+    v_pacic_huevo <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Huevo"]
+    
+    v_pacic_frijol <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Frijol"]
+    v_pacic_arroz <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Arroz"]
+    v_pacic_pan_caja <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Pan de caja"]
+    v_pacic_pasta_sopa <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Pasta para sopa"]
+    v_pacic_tortilla <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
+    v_pacic_aceite <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]
+    v_pacic_azúcar <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Azúcar"]
+    
+    v_pacic_cebolla <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Cebolla"]
+    v_pacic_chile <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Chiles envasados"]
+    v_pacic_jitomate <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Jitomate"]
+    v_pacic_limón <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Limón"]
+    v_pacic_manzana <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Manzana"]
+    v_pacic_plátano <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Plátanos"]
+    v_pacic_zanahoria <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Zanahoria"]
+    v_pacic_papa <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]
+    
+    v_pacic_jabón <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Jabón de tocador"]
+    v_pacic_papel_higie <- d_inpc_ccif_ids$id_inegi_q[d_inpc_ccif_ids$ccif=="Papel higiénico y pañuelos desechables"]
+    
+} else{
+    v_total <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Total"]
+    
+    v_pacic_leche <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
+    v_pacic_atún_sardina <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Atún y sardina en lata"]
+    v_pacic_res <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Carne de res"]
+    v_pacic_cerdo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
+    v_pacic_pollo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pollo"]
+    v_pacic_huevo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Huevo"]
+    
+    v_pacic_frijol <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Frijol"]
+    v_pacic_arroz <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Arroz"]
+    v_pacic_pan_caja <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pan de caja"]
+    v_pacic_pasta_sopa <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pasta para sopa"]
+    v_pacic_tortilla <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
+    v_pacic_aceite <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]
+    v_pacic_azúcar <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Azúcar"]
+    
+    v_pacic_cebolla <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Cebolla"]
+    v_pacic_chile <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Chiles envasados"]
+    v_pacic_jitomate <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Jitomate"]
+    v_pacic_limón <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Limón"]
+    v_pacic_manzana <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Manzana"]
+    v_pacic_plátano <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Plátanos"]
+    v_pacic_zanahoria <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Zanahoria"]
+    v_pacic_papa <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]
+    
+    v_pacic_jabón <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Jabón de tocador"]
+    v_pacic_papel_higie <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Papel higiénico y pañuelos desechables"]
+    
+}
+
+v_pacic_list <- c(
+    
+    v_pacic_leche,
+    v_pacic_atún_sardina,
+    v_pacic_res,
+    v_pacic_cerdo,
+    v_pacic_pollo,
+    v_pacic_huevo,
+    v_pacic_frijol,
+    v_pacic_arroz,
+    v_pacic_pan_caja,
+    v_pacic_pasta_sopa,
+    v_pacic_tortilla,
+    v_pacic_aceite,
+    v_pacic_azúcar,
+    v_pacic_cebolla,
+    v_pacic_chile,
+    v_pacic_jitomate,
+    v_pacic_limón,
+    v_pacic_manzana,
+    v_pacic_plátano,
+    v_pacic_zanahoria,
+    v_pacic_papa,
+    v_pacic_jabón,
+    v_pacic_papel_higie
+    
+)
+
+v_pacic_list_labs <- c(
+    
+    "Leche",
+    "Atún y sardina en lata",
+    "Carne de res",
+    "Carne de cerdo",
+    "Pollo",
+    "Huevo",
+    "Frijol",
+    "Arroz",
+    "Pan de caja",
+    "Pasta para sopa",
+    "Tortilla de maíz",
+    "Aceite vegetal",
+    "Azúcar",
+    "Cebolla",
+    "Chiles envasados",
+    "Jitomate",
+    "Limón",
+    "Manzana",
+    "Plátano",
+    "Zanahoria",
+    "Papa",
+    "Jabón de tocador",
+    "Papel higiénico y pañuelos desechables"
+    
+)
+
+d_04_pacic <- data.frame()
+
+for(i in 1:length(v_pacic_list)){
+    print(paste0(str_pad(i,2,"l","0"), " - ", v_pacic_list_labs[i]))
+    Sys.sleep(0.5)
+    
+    tempo <- inegi_series(
+        serie    = v_pacic_list[i],
+        token    = v_token_inegi, 
+        database = "BIE", 
+        as_tt    = TRUE) %>% 
+        mutate(tipo = v_pacic_list_labs[i])
+    
+    d_04_pacic <- bind_rows(d_04_pacic, tempo)
+    
+}
+
+
+d_04_pacic <- d_04_pacic %>% 
+    mutate(
+        cat = case_when(
+            tipo == "Leche" ~ "1. Productos de origen animal",
+            tipo == "Atún y sardina en lata" ~ "1. Productos de origen animal",
+            tipo == "Carne de res" ~ "1. Productos de origen animal",
+            tipo == "Carne de cerdo" ~ "1. Productos de origen animal",
+            tipo == "Pollo" ~ "1. Productos de origen animal",
+            tipo == "Huevo" ~ "1. Productos de origen animal",
+            tipo == "Frijol" ~ "2. Despensa",
+            tipo == "Arroz" ~ "2. Despensa",
+            tipo == "Pan de caja" ~ "2. Despensa",
+            tipo == "Pasta para sopa" ~ "2. Despensa",
+            tipo == "Tortilla de maíz" ~ "2. Despensa",
+            tipo == "Aceite vegetal" ~ "2. Despensa",
+            tipo == "Azúcar" ~ "2. Despensa",
+            tipo == "Cebolla" ~ "3. Frutas y verduras",
+            tipo == "Chiles envasados" ~ "3. Frutas y verduras",
+            tipo == "Jitomate" ~ "3. Frutas y verduras",
+            tipo == "Limón" ~ "3. Frutas y verduras",
+            tipo == "Manzana" ~ "3. Frutas y verduras",
+            tipo == "Plátano" ~ "3. Frutas y verduras",
+            tipo == "Zanahoria" ~ "3. Frutas y verduras",
+            tipo == "Papa" ~ "3. Frutas y verduras",
+            tipo == "Jabón de tocador" ~ "4. Aseo personal",
+            tipo == "Papel higiénico y pañuelos desechables" ~ "4. Aseo personal",
+            T ~ NA_character_
+        )
+    ) %>% 
+    bind_rows(
+        inegi_series(
+            serie    = v_total,
+            token    = v_token_inegi, 
+            database = "BIE", 
+            as_tt    = TRUE) %>% 
+            mutate(tipo = " General", cat = "1. Productos de origen animal") 
+    ) %>% 
+    bind_rows(
+        inegi_series(
+            serie    = v_total,
+            token    = v_token_inegi, 
+            database = "BIE", 
+            as_tt    = TRUE) %>% 
+            mutate(tipo = " General", cat = "2. Despensa") 
+    ) %>% 
+    bind_rows(
+        inegi_series(
+            serie    = v_total,
+            token    = v_token_inegi, 
+            database = "BIE", 
+            as_tt    = TRUE) %>% 
+            mutate(tipo = " General", cat = "3. Frutas y verduras") 
+    ) %>% 
+    bind_rows(
+        inegi_series(
+            serie    = v_total,
+            token    = v_token_inegi, 
+            database = "BIE", 
+            as_tt    = TRUE) %>% 
+            mutate(tipo = " General", cat = "4. Aseo personal") 
+    ) %>% 
+    arrange(cat, tipo)
+
+ifelse(
+    v_quincena == 1,
+    d_04_pacic <- d_04_pacic %>% 
+        filter(!date_shortcut %% 2 == 0) %>% 
+        glimpse,
+    d_04_pacic %>% 
+        glimpse
+)
+
+eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
+nota <- "*Las desagregaciones del INPC solo tienen valor informativo.\n**La línea punteada representa la implementación del PACIC."
+v_pacic_loop <- unique(d_04_pacic$cat)
+
+for(i in 1:4){
+    
+    d_plot <- d_04_pacic %>% 
+        filter(cat == v_pacic_loop[i]) %>% 
+        arrange(date) %>% 
+        group_by(cat,tipo) %>% 
+        mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+        ungroup() %>% 
+        filter(date >= "2015-01-01")
+    
+    titulo <- paste0("Índice de precios al consumidor de canasta PROFECO\n",
+                     v_pacic_loop[i])
+    g <- 
+        ggplot(data = d_plot,
+               aes(
+                   x = date,
+                   y = values,
+                   group = tipo,
+                   col = tipo,
+                   label = ifelse(
+                       date == max(date),
+                       paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
+                       NA
+                   )
+               ))+
+        geom_vline(xintercept = as.Date("2022-05-01"), col = mcv_semaforo[4], size = 2,
+                   linetype = 2) +
+        geom_line(size = 2.5, lineend = "round", show.legend = F, 
+                  aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo),
+                      linetype = if_else(tipo == "Alimentos", "solid", "dashed"))) + 
+        ggrepel::geom_text_repel(
+            aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo)), 
+            nudge_x = 100, direction = "y", hjust = "left",
+            size = 4,
+            segment.curvature = -0.1,
+            segment.ncp = 3,
+            segment.angle = 20,
+            family = "Ubuntu", fontface = "bold", show.legend = F
+        ) +
+        geom_point(aes(
+            color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo),
+            y = ifelse(date == max(date), values, NA)),
+            size = 4, show.legend = F) +
+        scale_color_manual(
+            "", 
+            values = c(mcv_semaforo[4], mcv_discrete_7, mcv_blacks[2])
+        ) +
+        scale_x_date(
+            date_labels = "%b %y",
+            breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_04_pacic$date))-1)*30)+1), "month"), 
+                              to = floor_date(as.Date(max(d_04_pacic$date)), "month"), 
+                              by = "6 month"),
+            expand = expansion(mult = c(0.02, 0.15))
+        ) +
+        #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
+        scale_y_continuous(labels = scales::number_format(accuracy = 1L)) +
+        theme_minimal() +
+        labs(
+            title = titulo,
+            subtitle = subtitulo, caption = nota,
+            color="", shape="", y = eje_y
+        ) +
+        theme(plot.title = element_text(size = 35, face = "bold", colour = "#6950D8"),
+              plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
+              plot.caption = element_text(size = 25, colour = "#777777"),
+              plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
+              panel.grid.minor  = element_blank(),
+              panel.background = element_rect(fill = "transparent",colour = NA),
+              text = element_text(family = "Ubuntu"),
+              axis.title.x = element_blank(),
+              axis.title.y = element_text(size = 25),
+              axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
+              axis.text.y = element_text(size = 20),
+              legend.text = element_text(size = 30),
+              legend.position = "none")
+    
+    g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+    ggsave(g, filename = paste_info(
+        paste0("01_03_02_13_0", 
+               tolower(str_replace_all(str_remove_all(v_pacic_loop[i], "\\."), " ", "_")),
+               "_canasta_profeco.png")), 
+        # type = "cairo", device = "png", 
+        width = 16, height = 9,  dpi = 200, bg= "transparent")
+    
+}
+
+rm(list=ls(pattern="^v_pacic"))
 
 
 
