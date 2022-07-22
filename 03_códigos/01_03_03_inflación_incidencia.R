@@ -78,7 +78,7 @@ v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -505,7 +505,8 @@ ggplot(
         legend.box.just = "right",
         legend.margin = margin(8, 8, 8, 8)
     )
-ggsave(g, filename = paste_info("01_03_03_02_incidencia_anual_sin_fondo.png"), 
+ggsave(g + theme(plot.title = element_blank(),
+                 plot.subtitle = element_blank()), filename = paste_info("01_03_03_02_incidencia_anual_sin_fondo.png"), 
        width = 16, height = 9, 
        dpi = 200, bg= "transparent")
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
