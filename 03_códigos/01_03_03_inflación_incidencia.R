@@ -237,7 +237,9 @@ if(v_quincena == 1){
                 T ~ ccif
             ),
             var_mensual = (values - lag(values))/lag(values),
-            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador
+            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            var_anual = (values - lag(values, 12))/lag(values, 12),
+            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador
         ) %>% 
         ungroup() %>% 
         glimpse
@@ -249,11 +251,22 @@ if(v_quincena == 1){
         mutate(n = row_number()) %>% 
         glimpse
     
+    d_incidencia_anual_prods_last <- d_incidencia_prods %>% 
+        filter(fecha == last(fecha)) %>% 
+        arrange(-incidencia_anual) %>% 
+        select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
+        mutate(n = row_number()) %>% 
+        glimpse
+    
 }
 
 d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
     filter(n <= 10 | n >= 289)
 
+d_incidencia_anual_prods_last_20 <- d_incidencia_anual_prods_last %>% 
+    filter(n <= 10 | n >= 290)
+
+## 1.1. Incidencia mensual/quincenal ----
 ifelse(
     v_quincena == 1, 
     titulo <- "Genéricos con mayor y\nmenor incidencia quincenal",
@@ -371,13 +384,81 @@ if(v_quincena==1){
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
 ifelse(
     v_quincena == 1,
-    ggsave(g, filename = paste_info("01_03_03_01_incidencia_quincenal.png"), 
+    ggsave(g, filename = paste_info("01_03_03_01_01_incidencia_quincenal.png"), 
            width = 10, height = 15, 
            dpi = 200, bg= "transparent"),
-    ggsave(g, filename = paste_info("01_03_03_01_incidencia_mensual.png"), 
+    ggsave(g, filename = paste_info("01_03_03_01_01_incidencia_mensual.png"), 
            width = 10, height = 15, 
            dpi = 200, bg= "transparent")
 )
+
+## 1.2. Incidencia anual ----
+titulo <- "Genéricos con mayor y\nmenor incidencia anual"
+nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general."
+ifelse(
+    v_quincena == 1, 
+    subtitulo <- 
+        paste0(
+            "1ª quincena de ", as.character(month(d_incidencia_prods_last$fecha[1], label = T, abbr = F)), " ",
+            as.character(year(d_incidencia_prods_last$fecha[1])), 
+            " | Entre corchetes se indica la variación anual."
+        ),
+    subtitulo <- 
+        paste0(
+            str_to_sentence(as.character(month(d_incidencia_prods_last$fecha[1], label = T, abbr = F))), 
+            " ",
+            as.character(year(d_incidencia_prods_last$fecha[1])), 
+            " | Entre corchetes se indica la variación anual."
+        )
+)
+
+g <- 
+    ggplot(
+        d_incidencia_anual_prods_last_20,
+        aes(
+            y = reorder(str_wrap_long(stringr = ccif, width = 20), incidencia_anual),
+            x = incidencia_anual,
+            fill = ifelse(n <= 10, "1", "2"),
+            label = paste0(
+                round(incidencia_anual, 3), "\n[", round(var_anual*100, 2), "%]"
+            )
+        )
+    ) +
+    geom_col() +
+    geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
+    scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
+    scale_x_continuous(
+        labels = scales::number_format(accuracy = 0.1), 
+        limits = c((max(abs(d_incidencia_anual_prods_last_20$incidencia_anual)))*-1, 
+                   max(abs(d_incidencia_anual_prods_last_20$incidencia_anual)))
+    ) +
+    labs(
+        title = titulo,
+        subtitle = str_wrap(subtitulo, 40),
+        caption = str_wrap(nota, 70)
+    ) +
+    theme_minimal() +
+    theme(
+        plot.title = element_text(size = 40, face = "bold", colour = "#6950D8", hjust = 0.5),
+        plot.subtitle = element_text(size = 30, colour = "#777777", hjust = 0.5),
+        plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
+        plot.caption = element_text(size = 15),
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 15),
+        text = element_text(family = "Ubuntu"),
+        legend.position = "none"
+    )
+
+
+
+
+g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
+ggsave(g, filename = paste_info("01_03_03_01_02_incidencia_anual.png"), 
+       width = 10, height = 15, 
+       dpi = 200, bg= "transparent")
 
 # 2. Incidencia anual por divisiones del CCIF ----
 
