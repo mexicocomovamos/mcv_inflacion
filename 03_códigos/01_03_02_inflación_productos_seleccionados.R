@@ -76,7 +76,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 # 1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 1
+v_quincena <- 2
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena == 1){
@@ -434,7 +434,6 @@ if(v_quincena == 1){
     v_carne_pollo <- d_inpc_ccif_ids$id_inegi_m[d_inpc_ccif_ids$ccif=="Pollo"]
     
 }
-
 
 d_02_02_carnes <- inegi_series(
     serie    = v_alimentos,
@@ -797,7 +796,6 @@ d_02_04_frutas <- inegi_series(
             mutate(tipo = "Uva", ord = 8)
     ) %>% 
     filter(date >= "2002-07-01")
-
 ifelse(
     v_quincena == 1,
     d_02_04_frutas <- d_02_04_frutas %>% 
@@ -1006,7 +1004,7 @@ g <-
     ggrepel::geom_text_repel(
         aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo)), 
         nudge_x = 100, direction = "y", hjust = "left",
-        size = 5.5,
+        size = 4.5,
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
@@ -1149,7 +1147,7 @@ g <-
     ggrepel::geom_text_repel(
         aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo)), 
         nudge_x = 100, direction = "y", hjust = "left",
-        size = 5,
+        size = 4,
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
