@@ -102,7 +102,7 @@ source(paste_code("00_token.R"))
 d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
-v_quincena <- 2
+v_quincena <- 1
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
     "01_011_0111_014", 
@@ -399,5 +399,8 @@ googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "incidencia")
 
 DatawRappr::dw_publish_chart(chart_id = "61FSx", api_key = dw_token)
 
-
+# Republicar mapa en DW
+DatawRappr::dw_publish_chart(chart_id = "Yixxr", api_key = dw_token)
+# Republicar gráfica general en DW 5NRUj
+DatawRappr::dw_publish_chart(chart_id = "5NRUj", api_key = dw_token)
 # FIN --------------------------------------------------------------------------
