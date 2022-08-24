@@ -78,7 +78,7 @@ v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -208,7 +208,9 @@ if(v_quincena == 1){
                 T ~ ccif
             ),
             var_quincenal = (values - lag(values))/lag(values),
-            incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador
+            incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador,
+            var_anual = (values - lag(values, 24))/lag(values, 24),
+            incidencia_anual = ((values - lag(values, 24))/lag(inpc, 24))*ponderador
         ) %>% 
         ungroup() %>% 
         glimpse
@@ -217,6 +219,13 @@ if(v_quincena == 1){
         filter(fecha == last(fecha)) %>% 
         arrange(-incidencia_quincenal) %>% 
         select(fecha,id_ccif_0,  ccif, var_quincenal, incidencia_quincenal) %>% 
+        mutate(n = row_number()) %>% 
+        glimpse
+    
+    d_incidencia_anual_prods_last <- d_incidencia_prods %>% 
+        filter(fecha == last(fecha)) %>% 
+        arrange(-incidencia_anual) %>% 
+        select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
         mutate(n = row_number()) %>% 
         glimpse
     
@@ -261,7 +270,7 @@ if(v_quincena == 1){
 }
 
 d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
-    filter(n <= 10 | n >= 289)
+    filter(n <= 10 | n >= 290)
 
 d_incidencia_anual_prods_last_20 <- d_incidencia_anual_prods_last %>% 
     filter(n <= 10 | n >= 290)
@@ -553,7 +562,7 @@ ggplot(
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
+        breaks = seq.Date(from = min(tt$fecha)+31, 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
@@ -820,7 +829,7 @@ g <-
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
+        breaks = seq.Date(from = min(tt$fecha)+31, 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
@@ -916,7 +925,7 @@ g1 <-
         
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
+        breaks = seq.Date(from = min(tt$fecha)+31, 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
@@ -992,7 +1001,7 @@ g2 <-
         
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
+        breaks = seq.Date(from = min(tt$fecha)+31, 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
