@@ -7,7 +7,7 @@
 # Correos:                    katia@mexicocomovamos.mx | regimedina19@gmail.com
 # 
 # Fecha de creación:          02 de junio de 2022
-# Última actualización:       16 de junio de 2022
+# Última actualización:       24 de agosto de 2022
 #------------------------------------------------------------------------------#
 
 Sys.setlocale("LC_TIME", "es_ES")
@@ -655,7 +655,7 @@ g <-
     ggrepel::geom_text_repel(
         aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo)), 
         nudge_x = 100, direction = "y", hjust = "left",
-        size = 5,
+        size = 4,
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,

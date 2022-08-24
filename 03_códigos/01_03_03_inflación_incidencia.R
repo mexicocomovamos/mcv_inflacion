@@ -526,6 +526,14 @@ tt <- d_incidencia_cats                                    %>%
 titulo <- "Incidencia anual por clasificación del\nconsumo individual por finalidades"
 subtitulo <- "La incidencia anual es la contribución en puntos porcentuales que cada división aporta a la inflación general."
 eje_y <- "Puntos aportados a la inflación general"
+if(v_quincena==1){
+    nota <- paste0("A la 1ª quincena de ", 
+                   as.character(month(max(d_inpc$date), abbr = F, label = T)),
+                   " de ", year(max(d_inpc$date)), ".")
+} else{
+    nota <- paste0(str_to_sentence(as.character(month(max(d_inpc$date), abbr = F, label = T))),
+                   " de ", year(max(d_inpc$date)), ".")
+}
 g <- 
 ggplot(
     tt %>% 
@@ -573,13 +581,14 @@ ggplot(
     labs(
         title = titulo,
         subtitle = str_wrap(subtitulo, 70),
-        y = eje_y, x = ""
+        y = eje_y, x = "",
+        caption = nota
     ) +
     theme_minimal() +
     theme(
         plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
         plot.subtitle = element_text(size = 27, colour = "#777777"),
-        plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
+        plot.margin= margin(0.4, 0.4, 1.5, 0.4, "cm"), # margin(top,right, bottom,left)
         plot.caption = element_text(size = 20),
         strip.text.x = element_text(size = 15),
         panel.grid.minor  = element_blank(),
@@ -840,13 +849,14 @@ g <-
     labs(
         title = titulo,
         subtitle = str_wrap(subtitulo, 70),
-        y = eje_y, x = ""
+        y = eje_y, x = "",
+        caption = nota
     ) +
     theme_minimal() +
     theme(
         plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
         plot.subtitle = element_text(size = 27, colour = "#777777"),
-        plot.margin= margin(0.4, 0.4, 2, 0.4, "cm"), # margin(top,right, bottom,left)
+        plot.margin= margin(0.4, 0.4, 1.5, 0.4, "cm"), # margin(top,right, bottom,left)
         plot.caption = element_text(size = 20),
         strip.text.x = element_text(size = 15),
         panel.grid.minor  = element_blank(),
@@ -880,7 +890,17 @@ tt <- d_incidencia_suby_no_suby_tipo                                    %>%
     glimpse
 
 titulo <- "Incidencia anual por componente y\nconcepto del INPC"
-nota <- "La incidencia anual es la contribución en puntos porcentuales que cada división aporta a la inflación general."
+if(v_quincena==1){
+    nota <- paste0("La incidencia anual es la contribución en puntos porcentuales que cada división aporta a la inflación general.",
+                   "\nA la 1ª quincena de ", 
+                   as.character(month(max(d_inpc$date), abbr = F, label = T)),
+                   " de ", year(max(d_inpc$date)), ".")
+} else{
+    nota <- paste0("La incidencia anual es la contribución en puntos porcentuales que cada división aporta a la inflación general.\n",
+                   str_to_sentence(as.character(month(max(d_inpc$date), abbr = F, label = T))),
+                   " de ", year(max(d_inpc$date)), ".")
+}
+
 eje_y <- "Puntos aportados a la inflación general"
 g1 <- 
     ggplot(
@@ -1012,9 +1032,9 @@ g2 <-
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[6:9]) +
     theme_minimal() +
-    labs(caption = str_wrap(nota, 70)) +
+    labs(caption = nota) +
     theme(
-        plot.caption = element_text(size = 15),
+        plot.caption = element_text(size = 12),
         plot.margin= margin(0.4, 0.4, 1.5, 0.4, "cm"), # margin(top,right, bottom,left)
         strip.text.x = element_text(size = 25),
         panel.grid.minor  = element_blank(),
