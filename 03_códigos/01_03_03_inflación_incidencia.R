@@ -794,6 +794,14 @@ tt <- d_incidencia_suby_no_suby                                    %>%
 titulo <- "Incidencia anual por componente del INPC"
 subtitulo <- "La incidencia anual es la contribución en puntos porcentuales que cada componente aporta a la inflación general."
 eje_y <- "Puntos aportados a la inflación general"
+if(v_quincena==1){
+    nota <- paste0("A la 1ª quincena de ", 
+                   as.character(month(max(d_inpc$date), abbr = F, label = T)),
+                   " de ", year(max(d_inpc$date)), ".")
+} else{
+    nota <- paste0(str_to_sentence(as.character(month(max(d_inpc$date), abbr = F, label = T))),
+                   " de ", year(max(d_inpc$date)), ".")
+}
 g <- 
     ggplot(
         tt %>% 
