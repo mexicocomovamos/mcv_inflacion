@@ -78,7 +78,7 @@ v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -959,7 +959,7 @@ g1 <-
         date_labels = "%b-%y"
         
     ) +
-    scale_y_continuous("", limits = c(-2,6), breaks = seq(-2,6,1), 
+    scale_y_continuous("", limits = c(-2,6.1), breaks = seq(-2,6,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[1:5]) +
