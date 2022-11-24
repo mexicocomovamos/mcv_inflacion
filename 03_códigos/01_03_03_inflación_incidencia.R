@@ -78,7 +78,7 @@ v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -570,7 +570,7 @@ ggplot(
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha)+31, 
+        breaks = seq.Date(from = min(tt$fecha), 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
@@ -846,7 +846,7 @@ g <-
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha)+31, 
+        breaks = seq.Date(from = min(tt$fecha), 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
@@ -953,13 +953,13 @@ g1 <-
         
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha)+31, 
+        breaks = seq.Date(from = min(tt$fecha), 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
         
     ) +
-    scale_y_continuous("", limits = c(-2,6.3), breaks = seq(-2,6,1), 
+    scale_y_continuous("", limits = c(-2,6.5), breaks = seq(-2,6,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[1:5]) +
@@ -1029,7 +1029,7 @@ g2 <-
         
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha)+31, 
+        breaks = seq.Date(from = min(tt$fecha), 
                           to = max(tt$fecha), 
                           by = "2 month"),
         date_labels = "%b-%y"
