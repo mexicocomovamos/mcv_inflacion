@@ -76,7 +76,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 # 1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 1
+v_quincena <- 1 
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena == 1){
@@ -155,6 +155,7 @@ d_01_ccif <- inegi_series(
     ) %>% 
     filter(date >= "2002-07-01") %>% 
     glimpse
+
 
 ifelse(
     v_quincena == 1,
@@ -252,6 +253,14 @@ ggsave(g, filename = paste_info("01_03_02_01_ccif.png"),
        width = 16, height = 9, 
        #type = "cairo", device = "png", 
        dpi = 200, bg= "transparent")
+
+# Formato .eps para documento traducido al inglés 
+# ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_02_01_ccif.eps"), 
+#        width = 16, height = 9, 
+#        device = "eps", 
+#        dpi = 200, bg= "transparent")
+
+
 
 # 2. Alimentos ----
 ## 2.1. Pan y cereales ----
