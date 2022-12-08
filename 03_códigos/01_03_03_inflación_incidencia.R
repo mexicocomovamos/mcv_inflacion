@@ -81,7 +81,7 @@ d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>%
 v_quincena <- 2
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
-# Histórico: 
+# Histórico: 
 # d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
 
 if(v_quincena==1){
@@ -401,6 +401,11 @@ ifelse(
            dpi = 200, bg= "transparent")
 )
 
+# ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_03_01_01_incidencia_mensual.eps"), 
+#        device = "eps", 
+#        width = 10, height = 15, 
+#        dpi = 200, bg= "transparent")
+
 ## 1.2. Incidencia anual ----
 titulo <- "Genéricos con mayor y\nmenor incidencia anual"
 nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general."
@@ -468,6 +473,12 @@ g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
 ggsave(g, filename = paste_info("01_03_03_01_02_incidencia_anual.png"), 
        width = 10, height = 15, 
        dpi = 200, bg= "transparent")
+
+# ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_03_01_02_incidencia_anual.eps"),
+#        device = "eps",
+#        width = 10, height = 15,
+#        dpi = 200, bg= "transparent")
+
 
 # 2. Incidencia anual por divisiones del CCIF ----
 
