@@ -1,3 +1,4 @@
+Sys.sleep((60*60*4)+(5))
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
@@ -78,7 +79,7 @@ v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -529,7 +530,7 @@ tt <- d_incidencia_cats                                    %>%
     arrange(fecha, desc(incidencia_anual))                        %>% 
     group_by(fecha)                                              %>% 
     mutate(ranking = 1:12,
-           ranking = str_pad(ranking, 2, "l", "0"))                                       %>% 
+           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
     ungroup() %>% 
     drop_na(incidencia_anual) %>% 
     glimpse
@@ -563,7 +564,7 @@ ggplot(
         fill = etiqueta
     )
 )  +
-    
+    geom_flow(show.legend = T) +
     geom_text(
         aes(
             y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+0.5,
@@ -586,7 +587,6 @@ ggplot(
                           by = "2 month"),
         date_labels = "%b-%y"
     ) +
-    geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12) +
     #scale_y_continuous(labels = scales::comma) +
     labs(
@@ -797,7 +797,7 @@ tt <- d_incidencia_suby_no_suby                                    %>%
     arrange(fecha, desc(incidencia_anual))                        %>% 
     group_by(fecha)                                              %>% 
     mutate(ranking = row_number(),
-           ranking = str_pad(ranking, 2, "l", "0"))                                       %>% 
+           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
     ungroup() %>% 
     drop_na(incidencia_anual) %>% 
     glimpse
@@ -903,7 +903,7 @@ tt <- d_incidencia_suby_no_suby_tipo                                    %>%
     arrange(fecha, desc(incidencia_anual))                        %>% 
     group_by(fecha, inpc_tipo)                                              %>% 
     mutate(ranking = row_number(),
-           ranking = str_pad(ranking, 2, "l", "0"))                                       %>% 
+           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
     ungroup() %>% 
     drop_na(incidencia_anual) %>% 
     glimpse
