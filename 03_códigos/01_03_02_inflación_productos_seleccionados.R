@@ -76,7 +76,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 # 1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 2
+v_quincena <- 1
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena == 1){
@@ -221,7 +221,7 @@ ggplot(data = d_01_ccif %>%
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_01_ccif$date))-1))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_01_ccif$date))-1))), "month"), 
                           to = floor_date(as.Date(max(d_01_ccif$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -391,7 +391,7 @@ ggplot(data = d_02_01_pan_cereales %>%
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_01_pan_cereales$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_01_pan_cereales$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_01_pan_cereales$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -534,7 +534,7 @@ ggplot(data = d_02_02_carnes %>%
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_02_carnes$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_02_carnes$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_02_carnes$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -680,7 +680,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_03_lácteos$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_03_lácteos$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_03_lácteos$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -855,7 +855,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_04_frutas$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_04_frutas$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_04_frutas$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1029,7 +1029,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_05_legum$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_05_legum$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_05_legum$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1172,7 +1172,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_06_aceites$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_06_aceites$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_06_aceites$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1325,7 +1325,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_07_azucares$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_02_07_azucares$date))))), "month"), 
                           to = floor_date(as.Date(max(d_02_07_azucares$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1475,7 +1475,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_03_bebidas$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_03_bebidas$date))))), "month"), 
                           to = floor_date(as.Date(max(d_03_bebidas$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1616,7 +1616,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_06_01_farmaceuticos$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_06_01_farmaceuticos$date))))), "month"), 
                           to = floor_date(as.Date(max(df_06_01_farmaceuticos$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1750,7 +1750,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_06_02_servicios_pacientes$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_06_02_servicios_pacientes$date))))), "month"), 
                           to = floor_date(as.Date(max(df_06_02_servicios_pacientes$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1894,7 +1894,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_06_03_servicios_hospital$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_06_03_servicios_hospital$date))))), "month"), 
                           to = floor_date(as.Date(max(df_06_03_servicios_hospital$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2033,7 +2033,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_fiesta$date))))+151), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(df_fiesta$date))))), "month"), 
                           to = floor_date(as.Date(max(df_fiesta$date)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2329,7 +2329,7 @@ for(i in 1:4){
         ) +
         scale_x_date(
             date_labels = "%b %y",
-            breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_04_pacic$date))))+151), "month"), 
+            breaks = seq.Date(from = floor_date(as.Date("2015-01-01")+(((month(max(d_04_pacic$date))))), "month"), 
                               to = floor_date(as.Date(max(d_04_pacic$date)), "month"), 
                               by = "6 month"),
             expand = expansion(mult = c(0.02, 0.15))
