@@ -1,4 +1,4 @@
-Sys.sleep((60*60*4)+(5))
+#Sys.sleep((60*60*4)+(5))
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
@@ -115,7 +115,7 @@ if(v_quincena==1){
         Sys.sleep(0.3)
         
     }
-    # falta en 385
+    
 } else{
     
     for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
