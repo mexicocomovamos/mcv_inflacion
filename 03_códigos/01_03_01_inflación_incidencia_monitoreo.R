@@ -570,7 +570,7 @@ ggplot(
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+0.5,
+            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1.2,
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
@@ -816,6 +816,7 @@ if(v_quincena==1){
     nota <- paste0(str_to_sentence(as.character(month(max(d_inpc$date), abbr = F, label = T))),
                    " de ", year(max(d_inpc$date)), ".")
 }
+
 g <- 
     ggplot(
         tt %>% 
@@ -842,7 +843,7 @@ g <-
             fill = reorder(etiqueta, as.numeric(ord))
         )
     )  +
-    
+    geom_flow(show.legend = T) +
     geom_text(
         aes(
             y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+0.5,
@@ -866,7 +867,6 @@ g <-
                           by = "2 month"),
         date_labels = "%b-%y"
     ) +
-    geom_flow(show.legend = T) +
     scale_fill_manual("", values = c(mcv_discrete_12[7], mcv_discrete_12[9],
                                      mcv_discrete_12[4], mcv_discrete_12[6])) +
     labs(
@@ -903,9 +903,9 @@ ggsave(g, filename = paste_info("01_04_incidencia_anual_componente.png"),
 
 ## 3.2. Por concepto ----
 
-tt <- d_incidencia_suby_no_suby_tipo                                    %>% 
-    arrange(fecha, desc(incidencia_anual))                        %>% 
-    group_by(fecha, inpc_tipo)                                              %>% 
+tt <- d_incidencia_suby_no_suby_tipo                                %>% 
+    arrange(fecha, desc(incidencia_anual))                          %>% 
+    group_by(fecha, inpc_tipo)                                      %>% 
     mutate(ranking = row_number(),
            ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
     ungroup() %>% 
@@ -974,7 +974,7 @@ g1 <-
         date_labels = "%b-%y"
         
     ) +
-    scale_y_continuous("", limits = c(-2,10), breaks = seq(-2,10,1), 
+    scale_y_continuous("", limits = c(-1,7), breaks = seq(-1,7,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[1:5]) +
@@ -1053,7 +1053,7 @@ g2 <-
         date_labels = "%b-%y"
 
     ) +
-    scale_y_continuous("", limits = c(-2,6), breaks = seq(-2,6,1), 
+    scale_y_continuous("", limits = c(-2,5), breaks = seq(-2,5,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[6:9]) +
