@@ -974,7 +974,7 @@ g1 <-
         date_labels = "%b-%y"
         
     ) +
-    scale_y_continuous("", limits = c(-2,6.5), breaks = seq(-2,6,1), 
+    scale_y_continuous("", limits = c(-2,10), breaks = seq(-2,10,1), 
                        labels = scales::number_format(accuracy = 1L)) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[1:5]) +
@@ -1001,36 +1001,39 @@ g1 <-
         legend.margin = margin(-2, 3, 6, 8)
     )
 
+df_data <- tt %>% 
+    mutate(
+        etiqueta = ifelse(
+            fecha == last(fecha), 
+            paste0(
+                str_wrap_long(tipo,30), 
+                "\n", round(incidencia_anual, 3)
+            ), NA
+        )
+        
+    ) %>% 
+    group_by(tipo) %>% 
+    fill(etiqueta, .direction = "up") %>% 
+    ungroup() %>% 
+    mutate(
+        ord = case_when(
+            tipo == "Alimentos, bebidas y tabaco" ~ "01",
+            tipo == "Mercancías no alimenticias" ~ "02",
+            tipo == "Vivienda" ~ "03",
+            tipo == "Educación (colegiaturas)" ~ "04",
+            tipo == "Otros servicios" ~ "05",
+            tipo == "Frutas y verduras" ~ "06",
+            tipo == "Pecuarios" ~ "07",
+            tipo == "Energéticos" ~ "08",
+            T ~ "09"
+        )
+    ) %>% 
+    filter(!inpc_tipo=="Subyacente")
+
+
 g2 <- 
     ggplot(
-        tt %>% 
-            mutate(
-                etiqueta = ifelse(
-                    fecha == last(fecha), 
-                    paste0(
-                        str_wrap_long(tipo,30), 
-                        "\n", round(incidencia_anual, 3)
-                    ), NA
-                )
-                
-            ) %>% 
-            group_by(tipo) %>% 
-            fill(etiqueta, .direction = "up") %>% 
-            ungroup() %>% 
-            mutate(
-                ord = case_when(
-                    tipo == "Alimentos, bebidas y tabaco" ~ "01",
-                    tipo == "Mercancías no alimenticias" ~ "02",
-                    tipo == "Vivienda" ~ "03",
-                    tipo == "Educación (colegiaturas)" ~ "04",
-                    tipo == "Otros servicios" ~ "05",
-                    tipo == "Frutas y verduras" ~ "06",
-                    tipo == "Pecuarios" ~ "07",
-                    tipo == "Energéticos" ~ "08",
-                    T ~ "09"
-                )
-            ) %>% 
-            filter(!inpc_tipo=="Subyacente"), 
+       df_data, 
         aes(
             y = incidencia_anual, 
             x = fecha,
@@ -1041,14 +1044,14 @@ g2 <-
     )  +
     facet_wrap(~reorder(inpc_tipo, desc(inpc_tipo)), ncol = 1) +
     scale_x_date(
-        
+
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
-                          to = max(tt$fecha), 
+        breaks = seq.Date(from = min(tt$fecha),
+                          to = max(tt$fecha),
                           by = "2 month"),
         date_labels = "%b-%y"
-        
+
     ) +
     scale_y_continuous("", limits = c(-2,6), breaks = seq(-2,6,1), 
                        labels = scales::number_format(accuracy = 1L)) +
