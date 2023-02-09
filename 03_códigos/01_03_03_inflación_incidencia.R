@@ -83,7 +83,7 @@ v_quincena <- 2
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
-# d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
+d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
 
 if(v_quincena==1){
     
@@ -527,6 +527,7 @@ d_incidencia_cats_last <- d_incidencia_cats %>%
     glimpse
 
 tt <- d_incidencia_cats                                    %>% 
+    distinct() %>% 
     arrange(fecha, desc(incidencia_anual))                        %>% 
     group_by(fecha)                                              %>% 
     mutate(ranking = 1:12,
@@ -538,6 +539,7 @@ tt <- d_incidencia_cats                                    %>%
 titulo <- "Incidencia anual por clasificación del\nconsumo individual por finalidades"
 subtitulo <- "La incidencia anual es la contribución en puntos porcentuales que cada división aporta a la inflación general."
 eje_y <- "Puntos aportados a la inflación general"
+
 if(v_quincena==1){
     nota <- paste0("A la 1ª quincena de ", 
                    as.character(month(max(d_inpc$date), abbr = F, label = T)),
@@ -546,6 +548,7 @@ if(v_quincena==1){
     nota <- paste0(str_to_sentence(as.character(month(max(d_inpc$date), abbr = F, label = T))),
                    " de ", year(max(d_inpc$date)), ".")
 }
+
 g <- 
 ggplot(
     tt %>% 
@@ -843,6 +846,7 @@ g <-
     geom_text(
         aes(
             y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+0.5,
+            # y = 12.5,
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
