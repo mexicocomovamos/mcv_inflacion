@@ -118,7 +118,7 @@ if(v_quincena==1){
     
 } else{
     
-    for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
+    for(i in 215:length(unique(d_inpc_complete$id_ccif_0))) {
         
         print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
         tempo <- inegi_series(
