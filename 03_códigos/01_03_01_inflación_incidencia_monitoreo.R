@@ -2,34 +2,49 @@
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
-# Paquetes ----
-if(!require("lubridate")) install.packages("lubridate") & require("lubridate")
-if(!require("hot.deck"))  install.packages("hot.deck")  & require("hot.deck")
-if(!require("zoo"))       install.packages("zoo")       & require("zoo")
-if(!require("stringi"))   install.packages("stringi")   & require("stringi")
-if(!require("gganimate")) install.packages("gganimate") & require("gganimate")
-if(!require("gridExtra")) install.packages("gridExtra") & require("gridExtra")
-if(!require("ggthemes"))  install.packages("ggthemes")  & require("ggthemes")
-if(!require("magick"))    install.packages("magick")    & require("magick")
-if(!require("scales"))    install.packages("scales")    & require("scales")
-if(!require("foreign"))   install.packages("foreign")   & require("foreign")
-if(!require("srvyr"))     install.packages("srvyr")     & require("srvyr")
-if(!require("hrbrthemes")) install.packages("hrbrthemes") & require("hrbrthemes")
-if(!require("RColorBrewer")) install.packages("RColorBrewer") & require("RColorBrewer")
-if(!require("openxlsx")) install.packages("openxlsx") & require("openxlsx")
-if(!require("reticulate")) install.packages("reticulate") & require("reticulate")
-if(!require("ggalt")) install.packages("ggalt") & require("ggalt")
-if(!require("ggpubr")) install.packages("ggpubr") & require("ggpubr")
-if(!require("mxmaps")) install.packages("mxmaps") & require("mxmaps")
-if(!require("inegiR")) install.packages("inegiR") & require("inegiR")
-if(!require("ggalluvial")) install.packages("ggalluvial") & require("ggalluvial")
+# if(!require("lubridate")) install.packages("lubridate") & require("lubridate")
+# if(!require("hot.deck"))  install.packages("hot.deck")  & require("hot.deck")
+# if(!require("zoo"))       install.packages("zoo")       & require("zoo")
+# if(!require("stringi"))   install.packages("stringi")   & require("stringi")
+# if(!require("gganimate")) install.packages("gganimate") & require("gganimate")
+# if(!require("gridExtra")) install.packages("gridExtra") & require("gridExtra")
+# if(!require("ggthemes"))  install.packages("ggthemes")  & require("ggthemes")
+# if(!require("magick"))    install.packages("magick")    & require("magick")
+# if(!require("scales"))    install.packages("scales")    & require("scales")
+# if(!require("foreign"))   install.packages("foreign")   & require("foreign")
+# if(!require("srvyr"))     install.packages("srvyr")     & require("srvyr")
+# if(!require("hrbrthemes")) install.packages("hrbrthemes")     & require("hrbrthemes")
+# if(!require("RColorBrewer")) install.packages("RColorBrewer") & require("RColorBrewer")
+# if(!require("openxlsx")) install.packages("openxlsx")         & require("openxlsx")
+# if(!require("reticulate")) install.packages("reticulate")     & require("reticulate")
+# if(!require("ggalt")) install.packages("ggalt")               & require("ggalt")
+# if(!require("ggpubr")) install.packages("ggpubr")             & require("ggpubr")
+# if(!require("mxmaps")) install.packages("mxmaps")             & require("mxmaps")
+# if(!require("inegiR")) install.packages("inegiR")             & require("inegiR")
+# if(!require("ggalluvial")) install.packages("ggalluvial")     & require("ggalluvial")
+# require(extrafont)
+
+
+# 01.Paquetes ----
+library(tidyverse)
+library(lubridate)
+library(zoo)
+library(gridExtra)
+library(ggthemes)
+library(magick)
+library(scales)
+library(foreign)
+library(hrbrthemes)
+library(openxlsx)
+library(ggalt)
+library(ggpubr)
+library(mxmaps) # Ya no esta en CRAN
+library(inegiR)
+library(ggalluvial)
 require(extrafont)
 
 loadfonts(device="pdf")
 loadfonts(device="postscript")
-
-require(tidyverse)
-
 
 # Funciones con direcciones de las carpetas
 paste_inp               <- function(x){paste0("01_datos_crudos/", x)}
@@ -50,32 +65,27 @@ str_wrap_long <- function(stringr,
 }
 
 
-# Colores MCV -----
+# 02. Colores MCV -----
 mcv_discrete <- c(
     "#6950d8", "#3CEAFA", "#00b783", "#ff6260", "#ffaf84", "#ffbd41"
 )
-
 mcv_discrete_7 <- c(
     "#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D", "#E8B32E", "#0A93C4", "#974DF0"
 )
-
 mcv_semaforo <- c(
     "#00b783", # verde
     "#E8D92E", # amarillo
     "#ffbd41", # naranja
     "#ff6260" # rojo
 )
-
 mcv_blacks <- c("black", "#D2D0CD", "#777777")
-
 mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D", 
                      "#C6B2E3", "#E8B32E", "#0A93C4", "#974DF0", 
                      "#00D2D1", "#FF43FA", mcv_blacks[3], mcv_blacks[2])
 
 
-# Identificadores INEGI ----
+# 03.Identificadores INEGI ----
 source(paste_code("00_token.R"))
-
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
@@ -86,7 +96,6 @@ d_inpc <- data.frame()
 # d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
 
 if(v_quincena==1){
-    
     for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
         
         print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))

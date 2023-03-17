@@ -400,7 +400,6 @@ googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "incidencia")
 ## 2.5. Republicar en DW ----
 
 DatawRappr::dw_publish_chart(chart_id = "61FSx", api_key = dw_token)
-
 # Republicar mapa en DW
 DatawRappr::dw_publish_chart(chart_id = "Yixxr", api_key = dw_token)
 # Republicar gráfica general en DW 5NRUj
