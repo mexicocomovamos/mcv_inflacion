@@ -79,7 +79,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -320,7 +320,8 @@ if(v_quincena==1){
             )
         ) +
         geom_col() +
-        geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
+        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_quincenal)<0.1, "inward", "outward"), 
+                  family = "Ubuntu", size = 4, fontface = "bold") +
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
         scale_x_continuous(
             labels = scales::number_format(accuracy = 0.1), 
@@ -362,7 +363,8 @@ if(v_quincena==1){
             )
         ) +
         geom_col() +
-        geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
+        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_mensual)<0.1, "inward", "outward"), 
+                  family = "Ubuntu", size = 4, fontface = "bold") +
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
         scale_x_continuous(
             labels = scales::number_format(accuracy = 0.1), 
@@ -440,7 +442,8 @@ g <-
         )
     ) +
     geom_col() +
-    geom_text(hjust = "inward", family = "Ubuntu", size = 4, fontface = "bold") +
+    geom_text(hjust = if_else(d_incidencia_anual_prods_last_20$incidencia_anual<0.1, "outward", "inward"), 
+              family = "Ubuntu", size = 4, fontface = "bold") +
     scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
     scale_x_continuous(
         labels = scales::number_format(accuracy = 0.1), 
@@ -846,7 +849,7 @@ g <-
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+0.5,
+            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1.5,
             # y = 12.5,
             x = last(tt$fecha),
             label = paste0(

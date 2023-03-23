@@ -6,7 +6,7 @@
 # Correos:                    katia@mexicocomovamos.mx | regimedina19@gmail.com
 # 
 # Fecha de creación:          15 de junio de 2022
-# Última actualización:       16 de junio de 2022
+# Última actualización:       27 de marzo de 2023
 #------------------------------------------------------------------------------#
 
 # 0. Configuración inicial -----------------------------------------------------
@@ -104,7 +104,7 @@ source(paste_code("00_token.R"))
 d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
-v_quincena <- 2
+v_quincena <- 1
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
     "01_011_0111_014", 
