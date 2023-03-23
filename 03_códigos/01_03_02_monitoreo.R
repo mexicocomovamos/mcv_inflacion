@@ -44,9 +44,9 @@ loadfonts(device="postscript")
 require(tidyverse)
 
 ## Credenciales de google ----
-# v_usuaria <- "regina"
+v_usuaria <- "regina"
 # v_usuaria <- "katia"
-v_usuaria <- "axel"
+# v_usuaria <- "axel"
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
 googlesheets4::gs4_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
@@ -105,6 +105,7 @@ d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>%
     glimpse()
 
 v_quincena <- 1
+
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
     "01_011_0111_014", 
@@ -405,4 +406,5 @@ DatawRappr::dw_publish_chart(chart_id = "61FSx", api_key = dw_token)
 DatawRappr::dw_publish_chart(chart_id = "Yixxr", api_key = dw_token)
 # Republicar gráfica general en DW 5NRUj
 DatawRappr::dw_publish_chart(chart_id = "5NRUj", api_key = dw_token)
+
 # FIN --------------------------------------------------------------------------

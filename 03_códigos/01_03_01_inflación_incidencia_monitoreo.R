@@ -320,7 +320,7 @@ if(v_quincena==1){
             )
         ) +
         geom_col() +
-        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_quincenal)<0.1, "inward", "outward"), 
+        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_quincenal)<0.01, "outward", "inward"), 
                   family = "Ubuntu", size = 4, fontface = "bold") +
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
         scale_x_continuous(
@@ -363,7 +363,7 @@ if(v_quincena==1){
             )
         ) +
         geom_col() +
-        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_mensual)<0.1, "inward", "outward"), 
+        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_mensual)<0.01, "outward", "inward"), 
                   family = "Ubuntu", size = 4, fontface = "bold") +
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
         scale_x_continuous(
@@ -442,7 +442,7 @@ g <-
         )
     ) +
     geom_col() +
-    geom_text(hjust = if_else(d_incidencia_anual_prods_last_20$incidencia_anual<0.1, "outward", "inward"), 
+    geom_text(hjust = if_else(abs(d_incidencia_anual_prods_last_20$incidencia_anual)<0.05, "outward", "inward"), 
               family = "Ubuntu", size = 4, fontface = "bold") +
     scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
     scale_x_continuous(
@@ -849,7 +849,7 @@ g <-
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1.5,
+            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1,
             # y = 12.5,
             x = last(tt$fecha),
             label = paste0(
@@ -1099,7 +1099,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 ## 4.1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 2
+# v_quincena <- 1 
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena==1){
