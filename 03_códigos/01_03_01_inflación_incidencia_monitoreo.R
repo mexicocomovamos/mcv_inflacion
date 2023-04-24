@@ -1,5 +1,5 @@
 #Sys.sleep((60*60*4)+(5))
-Sys.setlocale("LC_TIME", "es_ES")
+Sys.setlocale("LC_TIME"), "es_ES")
 options(scipen=999)
 
 # Paquetes ----
@@ -79,7 +79,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 # 0. Procesamiento en loop ----
 d_inpc <- data.frame()
 # Histórico: 
@@ -577,7 +577,7 @@ ggplot(
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
+                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
                 "%"
             )
         ),
@@ -854,7 +854,7 @@ g <-
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
+                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
                 "%"
             )
         ),
@@ -1244,7 +1244,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -1277,7 +1277,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_01_ccif$fecha))-1))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_01_ccif$fecha))-1))), "month"), 
                           to = floor_date(as.Date(max(d_01_ccif$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1444,7 +1444,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -1478,7 +1478,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_01_pan_cereales$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_01_pan_cereales$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_01_pan_cereales$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1608,7 +1608,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -1642,7 +1642,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_02_carnes$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_02_carnes$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_02_carnes$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1776,7 +1776,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -1810,7 +1810,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_03_lácteos$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_03_lácteos$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_03_lácteos$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -1970,7 +1970,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -2004,7 +2004,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_04_frutas$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_04_frutas$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_04_frutas$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2177,7 +2177,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -2211,7 +2211,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_05_legum$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_05_legum$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_05_legum$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2342,7 +2342,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -2376,7 +2376,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_06_aceites$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_06_aceites$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_06_aceites$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2519,7 +2519,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -2553,7 +2553,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_02_07_azucares$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_02_07_azucares$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_02_07_azucares$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2687,7 +2687,7 @@ g <-
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-               filter(fecha >= "2015-03-01"),
+               filter(fecha >= "2015-04-01"),
            aes(
                x = fecha,
                y = values,
@@ -2721,7 +2721,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_03_bebidas$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_03_bebidas$fecha))))), "month"), 
                           to = floor_date(as.Date(max(d_03_bebidas$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2822,7 +2822,7 @@ g <-
             arrange(fecha) %>% 
             group_by(tipo) %>% 
             mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-            filter(fecha >= "2015-03-01"),
+            filter(fecha >= "2015-04-01"),
         aes(
             x = fecha,
             y = values,
@@ -2856,7 +2856,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(df_06_01_farmaceuticos$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(df_06_01_farmaceuticos$fecha))))), "month"), 
                           to = floor_date(as.Date(max(df_06_01_farmaceuticos$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -2951,7 +2951,7 @@ g <-
             arrange(fecha) %>% 
             group_by(tipo) %>% 
             mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-            filter(fecha >= "2015-03-01"),
+            filter(fecha >= "2015-04-01"),
         aes(
             x = fecha,
             y = values,
@@ -2985,7 +2985,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(df_06_02_servicios_pacientes$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(df_06_02_servicios_pacientes$fecha))))), "month"), 
                           to = floor_date(as.Date(max(df_06_02_servicios_pacientes$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -3090,7 +3090,7 @@ g <-
             arrange(fecha) %>% 
             group_by(tipo) %>% 
             mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-            filter(fecha >= "2015-03-01"),
+            filter(fecha >= "2015-04-01"),
         aes(
             x = fecha,
             y = values,
@@ -3124,7 +3124,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(df_06_03_servicios_hospital$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(df_06_03_servicios_hospital$fecha))))), "month"), 
                           to = floor_date(as.Date(max(df_06_03_servicios_hospital$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -3221,7 +3221,7 @@ g <-
             arrange(fecha) %>% 
             group_by(tipo) %>% 
             mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-            filter(fecha >= "2015-03-01"),
+            filter(fecha >= "2015-04-01"),
         aes(
             x = fecha,
             y = values,
@@ -3258,7 +3258,7 @@ g <-
     ) +
     scale_x_date(
         date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(df_fiesta$fecha))))), "month"), 
+        breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(df_fiesta$fecha))))), "month"), 
                           to = floor_date(as.Date(max(df_fiesta$fecha)), "month"), 
                           by = "6 month"),
         expand = expansion(mult = c(0.02, 0.15))
@@ -3479,7 +3479,7 @@ for(i in 1:4){
         group_by(cat,tipo) %>% 
         mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
         ungroup() %>% 
-        filter(fecha >= "2015-03-01")
+        filter(fecha >= "2015-04-01")
     
     titulo <- paste0("Índice de precios al consumidor de canasta PROFECO\n",
                      v_pacic_loop[i])
@@ -3520,7 +3520,7 @@ for(i in 1:4){
         ) +
         scale_x_date(
             date_labels = "%b %y",
-            breaks = seq.Date(from = floor_date(as.Date("2015-03-01")+(((month(max(d_04_pacic$fecha))))), "month"), 
+            breaks = seq.Date(from = floor_date(as.Date("2015-04-01")+(((month(max(d_04_pacic$fecha))))), "month"), 
                               to = floor_date(as.Date(max(d_04_pacic$fecha)), "month"), 
                               by = "6 month"),
             expand = expansion(mult = c(0.02, 0.15))
