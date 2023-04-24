@@ -1,5 +1,5 @@
 #Sys.sleep((60*60*4)+(5))
-Sys.setlocale("LC_TIME"), "es_ES")
+Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
 # Paquetes ----
@@ -577,7 +577,8 @@ ggplot(
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
+                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
+                # round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric +.01),2),
                 "%"
             )
         ),
@@ -854,7 +855,8 @@ g <-
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
+                # round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
+                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
                 "%"
             )
         ),
