@@ -80,7 +80,8 @@ d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>%
     glimpse
 # Seleccionar quincena 
 v_quincena <- 1
-# 0. Procesamiento en loop ----
+
+# 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
 # Histórico: 
 # d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
@@ -404,10 +405,10 @@ ifelse(
            dpi = 200, bg= "transparent")
 )
 
-# ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_03_01_01_incidencia_mensual.eps"), 
-#        device = "eps", 
-#        width = 10, height = 15, 
-#        dpi = 200, bg= "transparent")
+# Guardar formato para traducción
+ggsave(g, filename = paste_info("99_svg/01_03_03_01_01_incidencia_mensual.svg"),
+       width = 10, height = 15,
+       dpi = 200, bg= "transparent")
 
 ## 1.2. Incidencia anual ----
 titulo <- "Genéricos con mayor y\nmenor incidencia anual"
@@ -1312,11 +1313,10 @@ ggsave(g, filename = paste_info("02_01_ccif.png"),
        #type = "cairo", device = "png", 
        dpi = 200, bg= "transparent")
 
-# Formato .eps para documento traducido al inglés 
-# ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_02_01_ccif.eps"), 
-#        width = 16, height = 9, 
-#        device = "eps", 
-#        dpi = 200, bg= "transparent")
+# Formato .svg para documento traducido al inglés 
+ggsave(g, filename = paste_info("99_svg/01_03_02_01_ccif.svg"),
+       width = 16, height = 9,
+       dpi = 200, bg= "transparent")
 
 
 
