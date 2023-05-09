@@ -11,7 +11,7 @@
 
 # 0. Configuración inicial -----------------------------------------------------
 
-Sys.setlocale("LC_TIME", "es_ES")
+Sys.setlocale("LC_TIME"), "es_ES")
 options(scipen=999)
 
 ## Paquetes ----
@@ -104,7 +104,7 @@ source(paste_code("00_token.R"))
 d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
-v_quincena <- 1
+v_quincena <- 2
 
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
