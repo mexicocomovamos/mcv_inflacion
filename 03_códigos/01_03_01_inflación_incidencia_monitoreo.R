@@ -79,7 +79,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -1964,6 +1964,7 @@ ifelse(
     d_02_04_frutas %>% 
         glimpse
 )
+
 
 titulo <- "Índice de precios al consumidor de frutas \nseleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
