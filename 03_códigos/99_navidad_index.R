@@ -9,6 +9,10 @@
 # Última actualización:       16 de junio de 2022
 #------------------------------------------------------------------------------#
 
+# Catálogo de productos del INPC
+# https://www.inegi.org.mx/app/indicesdeprecios/Estructura.aspx?idEstructura=112001300040&T=%C3%8Dndices%20de%20Precios%20al%20Consumidor&ST=INPC%20Nacional%20
+
+
 # 0. Configuración inicial -----------------------------------------------------
 
 Sys.setlocale("LC_TIME", "es_ES")

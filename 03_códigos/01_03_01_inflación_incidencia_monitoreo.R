@@ -1,3 +1,7 @@
+# Catálogo de productos del INPC
+# https://www.inegi.org.mx/app/indicesdeprecios/Estructura.aspx?idEstructura=112001300040&T=%C3%8Dndices%20de%20Precios%20al%20Consumidor&ST=INPC%20Nacional%20
+
+
 #Sys.sleep((60*60*4)+(5))
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
