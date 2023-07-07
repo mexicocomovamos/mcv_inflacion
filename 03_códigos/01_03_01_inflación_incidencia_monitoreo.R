@@ -80,10 +80,10 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
 # Identificadores INEGI ----
 source(paste_code("00_token.R"))
 
-d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
+d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) |>
     glimpse
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -99,7 +99,7 @@ if(v_quincena==1){
             serie    = d_inpc_complete$id_inegi_q[i],
             token    = v_token_inegi, 
             database = "BIE", 
-            as_tt    = TRUE) %>% 
+            as_tt    = TRUE) |>
             mutate(
                 ccif = d_inpc_complete$ccif[i],
                 id_ccif_0 = d_inpc_complete$id_ccif_0[i],
@@ -130,7 +130,7 @@ if(v_quincena==1){
             serie    = d_inpc_complete$id_inegi_m[i],
             token    = v_token_inegi, 
             database = "BIE", 
-            as_tt    = TRUE) %>% 
+            as_tt    = TRUE) |>
             mutate(
                 ccif = d_inpc_complete$ccif[i],
                 id_ccif_0 = d_inpc_complete$id_ccif_0[i],
@@ -156,22 +156,22 @@ if(v_quincena==1){
 
 if(v_quincena==1){
     
-    d_inpc_total <- d_inpc %>% 
-        filter(id_ccif_0=="00") %>% 
-        filter(date > "2016-01-02") %>% 
+    d_inpc_total <- d_inpc |>
+        filter(id_ccif_0=="00") |>
+        filter(date > "2016-01-02") |>
         mutate(date = ifelse(date_shortcut %% 2 == 0, ymd(date)+days(15),date),
-               date = as.Date.numeric(date)) %>% 
-        select(fecha = date, inpc = values) %>% 
-        arrange(fecha) %>% 
+               date = as.Date.numeric(date)) |>
+        select(fecha = date, inpc = values) |>
+        arrange(fecha) |>
         glimpse
     
 } else{
     
-    d_inpc_total <- d_inpc %>% 
-        filter(id_ccif_0=="00") %>% 
-        filter(date > "2016-01-02") %>% 
-        select(fecha = date, inpc = values) %>% 
-        arrange(fecha) %>% 
+    d_inpc_total <- d_inpc |>
+        filter(id_ccif_0=="00") |>
+        filter(date > "2016-01-02") |>
+        select(fecha = date, inpc = values) |>
+        arrange(fecha) |>
         glimpse
     
 }
@@ -179,32 +179,32 @@ if(v_quincena==1){
 # 1. Incidencia por productos ----
 if(v_quincena==1){
     
-    d_inpc_prods <- d_inpc %>% 
-        drop_na(ponderador_inpc_id_ccif_4) %>% 
-        filter(date > "2016-01-02") %>% 
+    d_inpc_prods <- d_inpc |>
+        drop_na(ponderador_inpc_id_ccif_4) |>
+        filter(date > "2016-01-02") |>
         mutate(date = ifelse(date_shortcut %% 2 == 0, ymd(date)+days(15), date),
-               date = as.Date.numeric(date)) %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
-        arrange(fecha) %>% 
+               date = as.Date.numeric(date)) |>
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) |>
+        arrange(fecha) |>
         glimpse
     
 } else{
     
-    d_inpc_prods <- d_inpc %>% 
-        drop_na(ponderador_inpc_id_ccif_4) %>% 
-        filter(date > "2016-01-02") %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
-        arrange(fecha) %>% 
+    d_inpc_prods <- d_inpc |>
+        drop_na(ponderador_inpc_id_ccif_4) |>
+        filter(date > "2016-01-02") |>
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) |>
+        arrange(fecha) |>
         glimpse
 }
 
 if(v_quincena == 1){
     
-    d_incidencia_prods <- d_inpc_prods %>% 
+    d_incidencia_prods <- d_inpc_prods |>
         left_join(
             d_inpc_total
-        ) %>% 
-        group_by(ccif, id_ccif_0) %>% 
+        ) |>
+        group_by(ccif, id_ccif_0) |>
         mutate(
             ccif = case_when(
                 id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
@@ -217,32 +217,32 @@ if(v_quincena == 1){
             incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador,
             var_anual = (values - lag(values, 24))/lag(values, 24),
             incidencia_anual = ((values - lag(values, 24))/lag(inpc, 24))*ponderador
-        ) %>% 
-        ungroup() %>% 
+        ) |>
+        ungroup() |>
         glimpse
     
-    d_incidencia_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
-        arrange(-incidencia_quincenal) %>% 
-        select(fecha,id_ccif_0,  ccif, var_quincenal, incidencia_quincenal) %>% 
-        mutate(n = row_number()) %>% 
+    d_incidencia_prods_last <- d_incidencia_prods |>
+        filter(fecha == last(fecha)) |>
+        arrange(-incidencia_quincenal) |>
+        select(fecha,id_ccif_0,  ccif, var_quincenal, incidencia_quincenal) |>
+        mutate(n = row_number()) |>
         glimpse
     
-    d_incidencia_anual_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
-        arrange(-incidencia_anual) %>% 
-        select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
-        mutate(n = row_number()) %>% 
+    d_incidencia_anual_prods_last <- d_incidencia_prods |>
+        filter(fecha == last(fecha)) |>
+        arrange(-incidencia_anual) |>
+        select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) |>
+        mutate(n = row_number()) |>
         glimpse
     
     
 } else{
     
-    d_incidencia_prods <- d_inpc_prods %>% 
+    d_incidencia_prods <- d_inpc_prods |>
         left_join(
             d_inpc_total
-        ) %>% 
-        group_by(ccif, id_ccif_0) %>% 
+        ) |>
+        group_by(ccif, id_ccif_0) |>
         mutate(
             ccif = case_when(
                 id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
@@ -255,33 +255,33 @@ if(v_quincena == 1){
             incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
             incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador
-        ) %>% 
-        ungroup() %>% 
+        ) |>
+        ungroup() |>
         glimpse
     
-    d_incidencia_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
-        arrange(-incidencia_mensual) %>% 
-        select(fecha,id_ccif_0,  ccif, var_mensual, incidencia_mensual) %>% 
-        mutate(n = row_number()) %>% 
+    d_incidencia_prods_last <- d_incidencia_prods |>
+        filter(fecha == last(fecha)) |>
+        arrange(-incidencia_mensual) |>
+        select(fecha,id_ccif_0,  ccif, var_mensual, incidencia_mensual) |>
+        mutate(n = row_number()) |>
         glimpse
     
-    d_incidencia_anual_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
-        arrange(-incidencia_anual) %>% 
-        select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
-        mutate(n = row_number()) %>% 
+    d_incidencia_anual_prods_last <- d_incidencia_prods |>
+        filter(fecha == last(fecha)) |>
+        arrange(-incidencia_anual) |>
+        select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) |>
+        mutate(n = row_number()) |>
         glimpse
     
 }
 
-d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
+d_incidencia_prods_last_20 <- d_incidencia_prods_last |>
     filter(n <= 10 | n >= 290)
 
-d_incidencia_anual_prods_last_20 <- d_incidencia_anual_prods_last %>% 
+d_incidencia_anual_prods_last_20 <- d_incidencia_anual_prods_last |>
     filter(n <= 10 | n >= 290)
 
-## 1.1. Incidencia mensual/quincenal ----
+## 1.1. Incidencia mensual/quincenal -------------------------------------------
 ifelse(
     v_quincena == 1, 
     titulo <- "Genéricos con mayor y\nmenor incidencia quincenal",
@@ -414,7 +414,8 @@ ggsave(g, filename = paste_info("99_svg/01_03_03_01_01_incidencia_mensual.svg"),
        width = 10, height = 15,
        dpi = 200, bg= "transparent")
 
-## 1.2. Incidencia anual ----
+## 1.2. Incidencia anual -------------------------------------------------------
+
 titulo <- "Genéricos con mayor y\nmenor incidencia anual"
 nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general."
 ifelse(
@@ -489,31 +490,31 @@ ggsave(g, filename = paste_info("01_02_incidencia_anual.png"),
 #        dpi = 200, bg= "transparent")
 
 
-# 2. Incidencia anual por divisiones del CCIF ----
+# 2. Incidencia anual por divisiones del CCIF ----------------------------------
 
 if(v_quincena==1){
-    d_inpc_cats <- d_inpc %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
-        drop_na(ponderador_inpc_id_ccif_1) %>% 
-        filter(date > "2016-01-02") %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_1, values) %>% 
-        arrange(fecha) %>% 
+    d_inpc_cats <- d_inpc |>
+        filter(!date_shortcut %% 2 == 0) |>
+        drop_na(ponderador_inpc_id_ccif_1) |>
+        filter(date > "2016-01-02") |>
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_1, values) |>
+        arrange(fecha) |>
         glimpse
 } else{
-    d_inpc_cats <- d_inpc %>% 
-        drop_na(ponderador_inpc_id_ccif_1) %>% 
-        filter(date > "2016-01-02") %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_1, values) %>% 
-        arrange(fecha) %>% 
+    d_inpc_cats <- d_inpc |>
+        drop_na(ponderador_inpc_id_ccif_1) |>
+        filter(date > "2016-01-02") |>
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_1, values) |>
+        arrange(fecha) |>
         glimpse
 }
 
 
-d_incidencia_cats <- d_inpc_cats %>% 
+d_incidencia_cats <- d_inpc_cats |>
     left_join(
         d_inpc_total
-    ) %>% 
-    group_by(ccif, id_ccif_0) %>% 
+    ) |>
+    group_by(ccif, id_ccif_0) |>
     mutate(
         ccif = case_when(
             id_ccif_0 == "03" ~ "Ropa y calzado",
@@ -523,25 +524,25 @@ d_incidencia_cats <- d_inpc_cats %>%
         ),
         var_anual = (values - lag(values,12))/lag(values,12),
         incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
-    ) %>% 
-    ungroup() %>% 
+    ) |>
+    ungroup() |>
     glimpse
 
-d_incidencia_cats_last <- d_incidencia_cats %>% 
-    filter(fecha == last(fecha)) %>% 
-    arrange(-incidencia_anual) %>% 
-    select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
-    mutate(n = row_number()) %>% 
+d_incidencia_cats_last <- d_incidencia_cats |>
+    filter(fecha == last(fecha)) |>
+    arrange(-incidencia_anual) |>
+    select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) |>
+    mutate(n = row_number()) |>
     glimpse
 
-tt <- d_incidencia_cats                                    %>% 
-    distinct() %>% 
-    arrange(fecha, desc(incidencia_anual))                        %>% 
-    group_by(fecha)                                              %>% 
+tt <- d_incidencia_cats                                    |>
+    distinct() |>
+    arrange(fecha, desc(incidencia_anual))                        |>
+    group_by(fecha)                                              |>
     mutate(ranking = 1:12,
-           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
-    ungroup() %>% 
-    drop_na(incidencia_anual) %>% 
+           ranking = str_pad(ranking, 2, "left", "0"))                                       |>
+    ungroup() |>
+    drop_na(incidencia_anual) |>
     glimpse
 
 titulo <- "Incidencia anual por clasificación del\nconsumo individual por finalidades"
@@ -559,13 +560,13 @@ if(v_quincena==1){
 
 g <- 
 ggplot(
-    tt %>% 
+    tt |>
         mutate(
             etiqueta = ifelse(fecha == last(fecha), 
                               paste0(str_wrap_long(paste0(ranking, " - ", ccif),30), "\n", round(incidencia_anual, 3)), NA)
-        ) %>% 
-        group_by(ccif, id_ccif_0) %>% 
-        fill(etiqueta, .direction = "up") %>% 
+        ) |>
+        group_by(ccif, id_ccif_0) |>
+        fill(etiqueta, .direction = "up") |>
         ungroup(), 
     aes(
         y = incidencia_anual, 
@@ -578,12 +579,12 @@ ggplot(
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1.2,
+            y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric)+1.2,
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
-                # round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric +.01),2),
+                round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric),2),
+                # round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric +.01),2),
                 "%"
             )
         ),
@@ -637,19 +638,20 @@ ggsave(g, filename = paste_info("01_03_incidencia_anual.png"),
        width = 16, height = 9, 
        dpi = 200, bg= "transparent")
 
-# 3. Incidencia anual por concepto y componente ----
-d_inpc_ponds_comp <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ponds.xlsx")) %>% 
+# 3. Incidencia anual por concepto y componente --------------------------------
+
+d_inpc_ponds_comp <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ponds.xlsx")) |>
     glimpse
 
-d_inpc_ponds_comp_prod <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ccif_ponds.xlsx")) %>% 
+d_inpc_ponds_comp_prod <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ccif_ponds.xlsx")) |>
     glimpse
 
 if(v_quincena==1){
     
-    d_subyacente <- d_inpc %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
-        filter(date > "2016-01-02") %>% 
-        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$subyacente=="X"]) %>% 
+    d_subyacente <- d_inpc |>
+        filter(!date_shortcut %% 2 == 0) |>
+        filter(date > "2016-01-02") |>
+        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$subyacente=="X"]) |>
         mutate(
             subyacente_tipo = case_when(
                 id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$suby_mercancias=="X"] ~ "Mercancías",
@@ -674,10 +676,10 @@ if(v_quincena==1){
         ) %>%
         glimpse
     
-    d_no_subyacente <- d_inpc %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
-        filter(date > "2016-01-02") %>% 
-        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_subyacente=="X"]) %>% 
+    d_no_subyacente <- d_inpc |>
+        filter(!date_shortcut %% 2 == 0) |>
+        filter(date > "2016-01-02") |>
+        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_subyacente=="X"]) |>
         mutate(
             no_subyacente_tipo = case_when(
                 id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_suby_agropecuarios=="X"] ~ "Agropecuarios",
@@ -698,14 +700,14 @@ if(v_quincena==1){
             tipo = ifelse(
                 is.na(energ_tarif_tipo), agropec_tipo, energ_tarif_tipo
             )
-        ) %>% 
+        ) |>
         glimpse
     
     
 } else{
     
-    d_subyacente <- d_inpc %>% 
-        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$subyacente=="X"]) %>% 
+    d_subyacente <- d_inpc |>
+        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$subyacente=="X"]) |>
         mutate(
             subyacente_tipo = case_when(
                 id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$suby_mercancias=="X"] ~ "Mercancías",
@@ -727,11 +729,11 @@ if(v_quincena==1){
             tipo = ifelse(
                 is.na(serv_tipo), merc_tipo, serv_tipo
             )
-        ) %>% 
+        ) |>
         glimpse
     
-    d_no_subyacente <- d_inpc %>% 
-        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_subyacente=="X"]) %>% 
+    d_no_subyacente <- d_inpc |>
+        filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_subyacente=="X"]) |>
         mutate(
             no_subyacente_tipo = case_when(
                 id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_suby_agropecuarios=="X"] ~ "Agropecuarios",
@@ -752,66 +754,66 @@ if(v_quincena==1){
             tipo = ifelse(
                 is.na(energ_tarif_tipo), agropec_tipo, energ_tarif_tipo
             )
-        ) %>% 
+        ) |>
         glimpse
     
     
 }
 
-d_inpc_suby_no_suby_tipo <- d_subyacente %>% 
-    mutate(inpc_tipo = "Subyacente") %>% 
-    rename(suby_no_suby_tipo = subyacente_tipo) %>% 
-    select(fecha = date, ccif, id_ccif_0, inpc_tipo, suby_no_suby_tipo, tipo, values,ponderador = ponderador_inpc_id_ccif_4) %>% 
+d_inpc_suby_no_suby_tipo <- d_subyacente |>
+    mutate(inpc_tipo = "Subyacente") |>
+    rename(suby_no_suby_tipo = subyacente_tipo) |>
+    select(fecha = date, ccif, id_ccif_0, inpc_tipo, suby_no_suby_tipo, tipo, values,ponderador = ponderador_inpc_id_ccif_4) |>
     bind_rows(
-        d_no_subyacente %>% 
-            mutate(inpc_tipo = "No subyacente") %>% 
-            rename(suby_no_suby_tipo = no_subyacente_tipo) %>% 
+        d_no_subyacente |>
+            mutate(inpc_tipo = "No subyacente") |>
+            rename(suby_no_suby_tipo = no_subyacente_tipo) |>
             select(fecha = date, ccif, id_ccif_0, inpc_tipo, suby_no_suby_tipo, tipo, values,ponderador = ponderador_inpc_id_ccif_4)
-    ) %>% 
-    arrange(fecha) %>% 
+    ) |>
+    arrange(fecha) |>
     glimpse
 
 
-d_incidencia_suby_no_suby_tipo <- d_inpc_suby_no_suby_tipo %>% 
+d_incidencia_suby_no_suby_tipo <- d_inpc_suby_no_suby_tipo |>
     group_by(fecha, inpc_tipo, suby_no_suby_tipo, tipo) %>%
     summarise(values = weighted.mean(x = values, w = ponderador, na.rm = T),
-              ponderador = sum(ponderador, na.rm = T)) %>% 
-    ungroup() %>% 
+              ponderador = sum(ponderador, na.rm = T)) |>
+    ungroup() |>
     left_join(
         d_inpc_total
-    ) %>% 
+    ) |>
     group_by(inpc_tipo, suby_no_suby_tipo, tipo) %>%
     mutate(
         var_anual = (values - lag(values,12))/lag(values,12),
         incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
-    ) %>% 
-    ungroup() %>% 
+    ) |>
+    ungroup() |>
     glimpse
 
-d_incidencia_suby_no_suby <- d_inpc_suby_no_suby_tipo %>% 
+d_incidencia_suby_no_suby <- d_inpc_suby_no_suby_tipo |>
     group_by(fecha, inpc_tipo, suby_no_suby_tipo) %>%
     summarise(values = weighted.mean(x = values, w = ponderador, na.rm = T),
-              ponderador = sum(ponderador, na.rm = T)) %>% 
-    ungroup() %>% 
+              ponderador = sum(ponderador, na.rm = T)) |>
+    ungroup() |>
     left_join(
         d_inpc_total
-    ) %>% 
+    ) |>
     group_by(inpc_tipo, suby_no_suby_tipo) %>%
     mutate(
         var_anual = (values - lag(values,12))/lag(values,12),
         incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
-    ) %>% 
-    ungroup() %>% 
+    ) |>
+    ungroup() |>
     glimpse
 
-## 3.1. Por componente ----
-tt <- d_incidencia_suby_no_suby                                    %>% 
-    arrange(fecha, desc(incidencia_anual))                        %>% 
-    group_by(fecha)                                              %>% 
+## 3.1. Por componente ---------------------------------------------------------
+tt <- d_incidencia_suby_no_suby                                    |>
+    arrange(fecha, desc(incidencia_anual))                        |>
+    group_by(fecha)                                              |>
     mutate(ranking = row_number(),
-           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
-    ungroup() %>% 
-    drop_na(incidencia_anual) %>% 
+           ranking = str_pad(ranking, 2, "left", "0"))                                       |>
+    ungroup() |>
+    drop_na(incidencia_anual) |>
     glimpse
 
 titulo <- "Incidencia anual por componente del INPC"
@@ -828,14 +830,14 @@ if(v_quincena==1){
 
 g <- 
     ggplot(
-        tt %>% 
+        tt |>
             mutate(
                 etiqueta = ifelse(fecha == last(fecha), 
                                   paste0(inpc_tipo, "\n", str_wrap_long(paste0(ranking, " - ", suby_no_suby_tipo),30), "\n", round(incidencia_anual, 3)), NA)
-            ) %>% 
-            group_by(suby_no_suby_tipo) %>% 
-            fill(etiqueta, .direction = "up") %>% 
-            ungroup() %>% 
+            ) |>
+            group_by(suby_no_suby_tipo) |>
+            fill(etiqueta, .direction = "up") |>
+            ungroup() |>
             mutate(
                 ord = case_when(
                     suby_no_suby_tipo == "Mercancías" ~ "01",
@@ -855,13 +857,13 @@ g <-
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1,
+            y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric)+1,
             # y = 12.5,
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                # round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
-                round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
+                # round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric+.01),2),
+                round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric),2),
                 "%"
             )
         ),
@@ -911,15 +913,15 @@ ggsave(g, filename = paste_info("01_04_incidencia_anual_componente.png"),
        width = 16, height = 9, 
        dpi = 200, bg= "transparent")
 
-## 3.2. Por concepto ----
+## 3.2. Por concepto -----------------------------------------------------------
 
-tt <- d_incidencia_suby_no_suby_tipo                                %>% 
-    arrange(fecha, desc(incidencia_anual))                          %>% 
-    group_by(fecha, inpc_tipo)                                      %>% 
+tt <- d_incidencia_suby_no_suby_tipo                                |>
+    arrange(fecha, desc(incidencia_anual))                          |>
+    group_by(fecha, inpc_tipo)                                      |>
     mutate(ranking = row_number(),
-           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
-    ungroup() %>% 
-    drop_na(incidencia_anual) %>% 
+           ranking = str_pad(ranking, 2, "left", "0"))                                       |>
+    ungroup() |>
+    drop_na(incidencia_anual) |>
     glimpse
 
 titulo <- "Incidencia anual por componente y\nconcepto del INPC"
@@ -937,7 +939,7 @@ if(v_quincena==1){
 eje_y <- "Puntos aportados a la inflación general"
 g1 <- 
     ggplot(
-        tt %>% 
+        tt |>
             mutate(
                 etiqueta = ifelse(
                     fecha == last(fecha), 
@@ -947,10 +949,10 @@ g1 <-
                     ), NA
                 )
                     
-            ) %>% 
-            group_by(tipo) %>% 
-            fill(etiqueta, .direction = "up") %>% 
-            ungroup() %>% 
+            ) |>
+            group_by(tipo) |>
+            fill(etiqueta, .direction = "up") |>
+            ungroup() |>
             mutate(
                 ord = case_when(
                     tipo == "Alimentos, bebidas y tabaco" ~ "01",
@@ -963,7 +965,7 @@ g1 <-
                     tipo == "Energéticos" ~ "08",
                     T ~ "09"
                 )
-            ) %>% 
+            ) |>
             filter(inpc_tipo=="Subyacente"), 
         aes(
             y = incidencia_anual, 
@@ -1011,7 +1013,7 @@ g1 <-
         legend.margin = margin(-2, 3, 6, 8)
     )
 
-df_data <- tt %>% 
+df_data <- tt |>
     mutate(
         etiqueta = ifelse(
             fecha == last(fecha), 
@@ -1021,10 +1023,10 @@ df_data <- tt %>%
             ), NA
         )
         
-    ) %>% 
-    group_by(tipo) %>% 
-    fill(etiqueta, .direction = "up") %>% 
-    ungroup() %>% 
+    ) |>
+    group_by(tipo) |>
+    fill(etiqueta, .direction = "up") |>
+    ungroup() |>
     mutate(
         ord = case_when(
             tipo == "Alimentos, bebidas y tabaco" ~ "01",
@@ -1037,7 +1039,7 @@ df_data <- tt %>%
             tipo == "Energéticos" ~ "08",
             T ~ "09"
         )
-    ) %>% 
+    ) |>
     filter(!inpc_tipo=="Subyacente")
 
 
@@ -1102,116 +1104,118 @@ saveRDS(
 
 
 # 4. Monitoreo de productos seleccionados --------------------------------------
-d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>% 
+
+d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) |>
     glimpse
 
-## 4.1. Clasificación del consumo individual por finalidades(CCIF) ----
+## 4.1. Clasificación del consumo individual por finalidades(CCIF) -------------
+
 # v_quincena <- 1 
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena==1){
     
     
-    d_01_ccif <- d_inpc %>% 
-        filter(id_ccif_0=="00") %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "General") %>% 
+    d_01_ccif <- d_inpc |>
+        filter(id_ccif_0=="00") |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "General") |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Alimentos")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Vivienda"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Vivienda"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Vivienda")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Salud"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Salud"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Salud")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Servicios de transporte")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Educación")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Restaurantes y hoteles")
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 } else{
     
-    d_01_ccif <- d_inpc %>% 
-        filter(id_ccif_0=="00") %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "General") %>% 
+    d_01_ccif <- d_inpc |>
+        filter(id_ccif_0=="00") |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "General") |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Alimentos")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Vivienda"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Vivienda"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Vivienda")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Salud"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Salud"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Salud")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Servicios de transporte")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Educación")
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Restaurantes y hoteles")
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -1220,10 +1224,10 @@ if(v_quincena==1){
 
 ifelse(
     v_quincena == 1,
-    d_01_ccif <- d_01_ccif %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_01_ccif <- d_01_ccif |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_01_ccif %>% 
+    d_01_ccif |>
         glimpse
 )
 
@@ -1247,10 +1251,10 @@ ifelse(
 
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_01_ccif %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_01_ccif |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -1324,111 +1328,112 @@ ggsave(g, filename = paste_info("99_svg/01_03_02_01_ccif.svg"),
 
 
 
-## 4.2. Alimentos ----
-### 4.2.1. Pan y cereales ----
+## 4.2. Alimentos --------------------------------------------------------------
+### 4.2.1. Pan y cereales ------------------------------------------------------
+
 if(v_quincena == 1){
     
     
-    d_02_01_pan_cereales <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_01_pan_cereales <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan y cereales"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan y cereales"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pan y cereales", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Harinas de trigo"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Harinas de trigo"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Harinas de trigo", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Maíz"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Maíz"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Maíz", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pan de caja", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan dulce"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan dulce"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pan dulce", ord = 6)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Tortilla", ord = 7)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 } else{
     
-    d_02_01_pan_cereales <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_01_pan_cereales <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan y cereales"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan y cereales"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pan y cereales", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Harinas de trigo"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Harinas de trigo"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Harinas de trigo", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Maíz"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Maíz"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Maíz", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pan de caja", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan dulce"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan dulce"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pan dulce", ord = 6)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Tortilla", ord = 7)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -1436,20 +1441,20 @@ if(v_quincena == 1){
 
 ifelse(
     v_quincena == 1,
-    d_02_01_pan_cereales <- d_02_01_pan_cereales %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_01_pan_cereales <- d_02_01_pan_cereales |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_01_pan_cereales %>% 
+    d_02_01_pan_cereales |>
         glimpse
 )
 
 titulo <- "Índice de precios al consumidor de pan y\ncereales seleccionados"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_01_pan_cereales %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_01_pan_cereales |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -1518,81 +1523,82 @@ ggsave(g, filename = paste_info("02_02_01_ali_pan_cer.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
-### 4.2.2. Carnes ----
+### 4.2.2. Carnes --------------------------------------------------------------
+
 if(v_quincena == 1){
     
-    d_02_02_carnes <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_02_carnes <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carnes"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carnes"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Carnes", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Res", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Cerdo", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pollo", ord = 5)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 } else{
     
-    d_02_02_carnes <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_02_carnes <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carnes"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carnes"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Carnes", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Res", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Cerdo", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pollo", ord = 5)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -1600,20 +1606,20 @@ if(v_quincena == 1){
 
 ifelse(
     v_quincena == 1,
-    d_02_02_carnes <- d_02_02_carnes %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_02_carnes <- d_02_02_carnes |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_02_carnes %>% 
+    d_02_02_carnes |>
         glimpse
 )
 
 titulo <- "Índice de precios al consumidor de carnes\nseleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_02_carnes %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_02_carnes |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -1683,83 +1689,84 @@ ggsave(g, filename = paste_info("02_02_02_ali_carnes.png"),
 
 
 
-### 4.2.3. Leche, quesos y huevo ----
+### 4.2.3. Leche, quesos y huevo -----------------------------------------------
+
 if(v_quincena == 1){
     
     
-    d_02_03_lácteos <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_03_lácteos <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Leche, quesos y huevos", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Leche", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Queso oaxaca y asadero", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Huevo", ord = 5)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
     
 } else{
     
-    d_02_03_lácteos <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_03_lácteos <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Leche, quesos y huevos", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Leche", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Queso oaxaca y asadero", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Huevo", ord = 5)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -1768,20 +1775,20 @@ if(v_quincena == 1){
 
 ifelse(
     v_quincena == 1,
-    d_02_03_lácteos <- d_02_03_lácteos %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_03_lácteos <- d_02_03_lácteos |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_03_lácteos %>% 
+    d_02_03_lácteos |>
         glimpse
 )
 
 titulo <- "Índice de precios al consumidor de lácteos y\nhuevo seleccionados"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_03_lácteos %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_03_lácteos |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -1851,110 +1858,111 @@ ggsave(g, filename = paste_info("02_02_03_ali_lácteos.png"),
 
 
 
-### 4.2.4. Frutas ----
+### 4.2.4. Frutas --------------------------------------------------------------
+
 if(v_quincena == 1){
     
-    d_02_04_frutas <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_04_frutas <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Frutas"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Frutas"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Fruta", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aguacate"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aguacate"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Aguacate", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manzana"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manzana"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Manzana", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pera"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pera"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pera", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Plátanos"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Plátanos"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Plátano", ord = 6)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Uva"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Uva"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Uva", ord = 7)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
     
 } else{
     
-    d_02_04_frutas <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_04_frutas <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Frutas"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Frutas"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Fruta", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aguacate"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aguacate"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Aguacate", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manzana"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manzana"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Manzana", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pera"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pera"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Pera", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Plátanos"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Plátanos"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Plátano", ord = 6)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Uva"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Uva"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Uva", ord = 7)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -1962,10 +1970,10 @@ if(v_quincena == 1){
 
 ifelse(
     v_quincena == 1,
-    d_02_04_frutas <- d_02_04_frutas %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_04_frutas <- d_02_04_frutas |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_04_frutas %>% 
+    d_02_04_frutas |>
         glimpse
 )
 
@@ -1973,10 +1981,10 @@ ifelse(
 titulo <- "Índice de precios al consumidor de frutas \nseleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_04_frutas %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_04_frutas |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -2044,124 +2052,125 @@ ggsave(g, filename = paste_info("02_02_04_ali_frutas.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
-### 4.2.5. Legumbres ----
+### 4.2.5. Legumbres -----------------------------------------------------------
+
 if(v_quincena == 1){
     
-    d_02_05_legum <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_05_legum <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Legumbres y hortalizas"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Legumbres y hortalizas"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Legumbres y hortalizas", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Calabacita"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Calabacita"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Calabacita", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chile serrano"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chile serrano"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Chile serrano", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jitomate"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jitomate"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Jitomate", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tomate verde"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tomate verde"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Tomate verde", ord = 6)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Nopales"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Nopales"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Nopales", ord = 7)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Papa", ord = 8)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
     
 } else{
     
-    d_02_05_legum <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_05_legum <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Legumbres y hortalizas"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Legumbres y hortalizas"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Legumbres y hortalizas", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Calabacita"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Calabacita"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Calabacita", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chile serrano"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chile serrano"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Chile serrano", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jitomate"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jitomate"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Jitomate", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tomate verde"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tomate verde"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Tomate verde", ord = 6)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Nopales"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Nopales"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Nopales", ord = 7)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Papa", ord = 8)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -2169,10 +2178,10 @@ if(v_quincena == 1){
 
 ifelse(
     v_quincena == 1,
-    d_02_05_legum <- d_02_05_legum %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_05_legum <- d_02_05_legum |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_05_legum %>% 
+    d_02_05_legum |>
         glimpse
 )
 
@@ -2180,10 +2189,10 @@ ifelse(
 titulo <- "Índice de precios al consumidor de legumbres\nseleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_05_legum %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_05_legum |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -2252,82 +2261,83 @@ ggsave(g, filename = paste_info("02_02_05_ali_legum.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
-### 4.2.6. Aceites y grasas ----
+### 4.2.6. Aceites y grasas ----------------------------------------------------
+
 if(v_quincena == 1){
     
-    d_02_06_aceites <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_06_aceites <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Aceites y grasas", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Aceites y grasas vegetales", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manteca de cerdo"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manteca de cerdo"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Manteca", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Mantequilla"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Mantequilla"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Mantequilla", ord = 5)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
     
 } else{
     
-    d_02_06_aceites <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_06_aceites <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Aceites y grasas", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Aceites y grasas vegetales", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manteca de cerdo"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manteca de cerdo"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Manteca", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Mantequilla"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Mantequilla"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Mantequilla", ord = 5)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
@@ -2335,20 +2345,20 @@ if(v_quincena == 1){
 
 ifelse(
     v_quincena == 1,
-    d_02_06_aceites <- d_02_06_aceites %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_06_aceites <- d_02_06_aceites |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_06_aceites %>% 
+    d_02_06_aceites |>
         glimpse
 )
 
 titulo <- "Índice de precios al consumidor de aceites\ny grasas seleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_06_aceites %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_06_aceites |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -2417,115 +2427,116 @@ ggsave(g, filename = paste_info("02_02_06_ali_aceites.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
-### 4.2.7. Azúcares ----
+### 4.2.7. Azúcares ------------------------------------------------------------
+
 if(v_quincena == 1){
     
-    d_02_07_azucares <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_07_azucares <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar mermeladas miel chocolates y dulces"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar mermeladas miel chocolates y dulces"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Azúcares", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Azúcar", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chocolate y productos de confitería"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chocolate y productos de confitería"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Chocolate", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Gelatina miel y mermeladas"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Gelatina miel y mermeladas"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Gelatina, miel y mermeladas", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Helados nieves y paletas de hielo"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Helados nieves y paletas de hielo"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Helados", ord = 6)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 } else{
     
-    d_02_07_azucares <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Alimentos", ord = 1) %>% 
+    d_02_07_azucares <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Alimentos", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar mermeladas miel chocolates y dulces"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar mermeladas miel chocolates y dulces"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Azúcares", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Azúcar", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chocolate y productos de confitería"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chocolate y productos de confitería"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Chocolate", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Gelatina miel y mermeladas"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Gelatina miel y mermeladas"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Gelatina, miel y mermeladas", ord = 5)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Helados nieves y paletas de hielo"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Helados nieves y paletas de hielo"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Helados", ord = 6)
-        ) %>% 
-        filter(fecha >= "2002-07-01") %>% 
+        ) |>
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
 
 ifelse(
     v_quincena == 1,
-    d_02_07_azucares <- d_02_07_azucares %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_02_07_azucares <- d_02_07_azucares |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_02_07_azucares %>% 
+    d_02_07_azucares |>
         glimpse
 )
 
 titulo <- "Índice de precios al consumidor de\nazúcares seleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_02_07_azucares %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_02_07_azucares |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -2597,103 +2608,103 @@ ggsave(g, filename = paste_info("02_02_07_ali_azucar.png"),
 
 #
 
-# 4.3. Bebidas no alcohólicas ----
+# 4.3. Bebidas no alcohólicas --------------------------------------------------
 
 if(v_quincena == 1){
     
-    d_03_bebidas <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Bebidas no alcohólicas"]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Bebidas no alcohólicas", ord = 1) %>% 
+    d_03_bebidas <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Bebidas no alcohólicas"]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Bebidas no alcohólicas", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Café té y cacao"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Café té y cacao"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Café, té y cacao", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Agua embotellada"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Agua embotellada"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Agua embotellada", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jugos o néctares envasados"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jugos o néctares envasados"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Jugos envasados", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Refrescos envasados"]) %>% 
-                select(date_shortcut, fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Refrescos envasados"]) |>
+                select(date_shortcut, fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Refrescos envasados", ord = 5)
         ) %>%
-        filter(fecha >= "2002-07-01") %>% 
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
     
 } else{
     
-    d_03_bebidas <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Bebidas no alcohólicas"]) %>% 
-        select(fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = "Bebidas no alcohólicas", ord = 1) %>% 
+    d_03_bebidas <- d_inpc |>
+        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Bebidas no alcohólicas"]) |>
+        select(fecha = date, values) |>
+        arrange(fecha) |>
+        mutate(tipo = "Bebidas no alcohólicas", ord = 1) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Café té y cacao"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Café té y cacao"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Café, té y cacao", ord = 2)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Agua embotellada"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Agua embotellada"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Agua embotellada", ord = 3)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jugos o néctares envasados"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jugos o néctares envasados"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Jugos envasados", ord = 4)
-        ) %>% 
+        ) |>
         bind_rows(
-            d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Refrescos envasados"]) %>% 
-                select(fecha = date, values) %>% 
-                arrange(fecha) %>% 
+            d_inpc |>
+                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Refrescos envasados"]) |>
+                select(fecha = date, values) |>
+                arrange(fecha) |>
                 mutate(tipo = "Refrescos envasados", ord = 5)
         ) %>%
-        filter(fecha >= "2002-07-01") %>% 
+        filter(fecha >= "2002-07-01") |>
         glimpse
     
 }
 
 ifelse(
     v_quincena == 1,
-    d_03_bebidas <- d_03_bebidas %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_03_bebidas <- d_03_bebidas |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_03_bebidas %>% 
+    d_03_bebidas |>
         glimpse
 )
 
 titulo <- "Índice de precios al consumidor de bebidas\nno alcohólicas seleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
-    ggplot(data = d_03_bebidas %>% 
-               arrange(fecha) %>% 
-               group_by(tipo) %>% 
-               mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+    ggplot(data = d_03_bebidas |>
+               arrange(fecha) |>
+               group_by(tipo) |>
+               mutate(tasa_anual = (values/lag(values, 12))-1) |>
                filter(fecha >= "2015-06-01"),
            aes(
                x = fecha,
@@ -2774,8 +2785,8 @@ v_productos <- c(
     "Cardiovasculares", "Medicamentos para diabetes")
 
 # ---- Seleccionar productos del catálogo de identificadores 
-df_productos <- d_inpc_ccif_ids     %>% 
-    filter(ccif %in% v_productos)   %>% 
+df_productos <- d_inpc_ccif_ids     |>
+    filter(ccif %in% v_productos)   |>
     glimpse
 
 # ---- Obtener identificadores de productos seleccionados
@@ -2790,29 +2801,29 @@ for(i in 1:length(v_ids)){
     print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
     
     # Importar datos del producto de INEGI
-    df_data <- d_inpc %>% 
-        filter(id_ccif_0==v_ids[i]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
+    df_data <- d_inpc |>
+        filter(id_ccif_0==v_ids[i]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
         mutate(tipo = v_productos[i], ord = i) 
     
-    df_series <- df_series %>% bind_rows(df_data)
+    df_series <- df_series |>bind_rows(df_data)
 }
 
 # ---- Limpiar la info 
 
 # Filtrar fechas 
-df_06_01_farmaceuticos <- df_series                      %>% 
+df_06_01_farmaceuticos <- df_series                      |>
     filter(fecha >= "2002-07-01")
 
 # Dejar datos mensuales o quincenales
 ifelse(v_quincena == 1, 
        # Para la serie quincenal, dejar solo datos de la primera quincena
-       df_06_01_farmaceuticos <- df_06_01_farmaceuticos %>% 
-           filter(!date_shortcut %% 2 == 0)             %>% 
+       df_06_01_farmaceuticos <- df_06_01_farmaceuticos |>
+           filter(!date_shortcut %% 2 == 0)             |>
            glimpse, 
        # Serie mensual 
-       df_06_01_farmaceuticos %>% select(-date_shortcut) %>% 
+       df_06_01_farmaceuticos |>select(-date_shortcut) |>
            glimpse
 )
 
@@ -2825,10 +2836,10 @@ eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
     ggplot(
-        df_06_01_farmaceuticos %>% 
-            arrange(fecha) %>% 
-            group_by(tipo) %>% 
-            mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+        df_06_01_farmaceuticos |>
+            arrange(fecha) |>
+            group_by(tipo) |>
+            mutate(tasa_anual = (values/lag(values, 12))-1) |>
             filter(fecha >= "2015-06-01"),
         aes(
             x = fecha,
@@ -2910,7 +2921,7 @@ v_productos <- c("Servicios para pacientes externos", "Servicios médicos",
                  "Servicios dentales", "Servicios paramédicos")
 
 # ---- Seleccionar productos del catálogo de identificadores 
-df_productos <- d_inpc_ccif_ids %>% 
+df_productos <- d_inpc_ccif_ids |>
     filter(ccif %in% v_productos)
 
 # ---- Obtener identificadores de productos seleccionados
@@ -2923,29 +2934,29 @@ for(i in 1:length(v_ids)){
     print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
     
     df_data <- 
-        d_inpc %>% 
-        filter(id_ccif_0==v_ids[i]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
+        d_inpc |>
+        filter(id_ccif_0==v_ids[i]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
         mutate(tipo = v_productos[i], ord = i) 
     
-    df_series <- df_series %>% bind_rows(df_data)
+    df_series <- df_series |>bind_rows(df_data)
 }
 
 # ---- Limpiar la info 
 
 # Filtrar fechas 
-df_06_02_servicios_pacientes <- df_series                      %>% 
+df_06_02_servicios_pacientes <- df_series                      |>
     filter(fecha >= "2002-07-01")
 
 # Dejar datos mensuales o quincenales
 ifelse(v_quincena == 1, 
        # Para la serie quincenal, dejar solo datos de la primera quincena
-       df_06_02_servicios_pacientes <- df_06_02_servicios_pacientes %>% 
-           filter(!date_shortcut %% 2 == 0)             %>% 
+       df_06_02_servicios_pacientes <- df_06_02_servicios_pacientes |>
+           filter(!date_shortcut %% 2 == 0)             |>
            glimpse, 
        # Serie mensual 
-       df_06_02_servicios_pacientes %>% select(-date_shortcut) %>% glimpse
+       df_06_02_servicios_pacientes |>select(-date_shortcut) |>glimpse
 )
 
 # ---- Gráfica 
@@ -2954,10 +2965,10 @@ eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
     ggplot(
-        df_06_02_servicios_pacientes %>% 
-            arrange(fecha) %>% 
-            group_by(tipo) %>% 
-            mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+        df_06_02_servicios_pacientes |>
+            arrange(fecha) |>
+            group_by(tipo) |>
+            mutate(tasa_anual = (values/lag(values, 12))-1) |>
             filter(fecha >= "2015-06-01"),
         aes(
             x = fecha,
@@ -3041,10 +3052,10 @@ v_productos <- c(
     "Operación quirúrgica")
 
 # ---- Seleccionar productos del catálogo de identificadores 
-df_productos <- d_inpc_ccif_ids %>% 
+df_productos <- d_inpc_ccif_ids |>
     # Cambiar el nombre de la categoría general (homónima de categoría específica)
     mutate(ccif = if_else(
-        id_ccif_0 == "06_063", "Servicios de hospital (categoría)", ccif)) %>% 
+        id_ccif_0 == "06_063", "Servicios de hospital (categoría)", ccif)) |>
     filter(ccif %in% v_productos)
 
 # ---- Obtener identificadores de productos seleccionados
@@ -3057,32 +3068,32 @@ for(i in 1:length(v_ids)){
     print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
     
     df_data <- 
-        d_inpc %>% 
-        filter(id_ccif_0==v_ids[i]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
+        d_inpc |>
+        filter(id_ccif_0==v_ids[i]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
         mutate(tipo = v_productos[i], ord = i) 
     
-    df_series <- df_series %>% bind_rows(df_data)
+    df_series <- df_series |>bind_rows(df_data)
 }
 
 # ---- Limpiar la info 
 
 # Filtrar fechas 
-df_06_03_servicios_hospital <- df_series                        %>% 
-    filter(fecha >= "2002-07-01")                                %>% 
+df_06_03_servicios_hospital <- df_series                        |>
+    filter(fecha >= "2002-07-01")                                |>
     # Ordenar factores 
-    # mutate(tipo = factor(tipo, levels = v_productos)) %>% 
+    # mutate(tipo = factor(tipo, levels = v_productos)) |>
     glimpse()
 
 # Dejar datos mensuales o quincenales
 ifelse(v_quincena == 1, 
        # Para la serie quincenal, dejar solo datos de la primera quincena
-       df_06_03_servicios_hospital <- df_06_03_servicios_hospital %>% 
-           filter(!date_shortcut %% 2 == 0)             %>% 
+       df_06_03_servicios_hospital <- df_06_03_servicios_hospital |>
+           filter(!date_shortcut %% 2 == 0)             |>
            glimpse, 
        # Serie mensual 
-       df_06_03_servicios_hospital %>% 
+       df_06_03_servicios_hospital |>
            glimpse
 )
 
@@ -3093,10 +3104,10 @@ eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
     ggplot(
-        df_06_03_servicios_hospital %>% 
-            arrange(fecha) %>% 
-            group_by(tipo) %>% 
-            mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+        df_06_03_servicios_hospital |>
+            arrange(fecha) |>
+            group_by(tipo) |>
+            mutate(tasa_anual = (values/lag(values, 12))-1) |>
             filter(fecha >= "2015-06-01"),
         aes(
             x = fecha,
@@ -3164,7 +3175,7 @@ ggsave(g, filename = paste_info("02_07_hospitales.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
-# 4.8. Productos de la peda ------------------------------------------------------
+# 4.8. Productos de la peda ----------------------------------------------------
 
 # ---- Ruta dentro del catálogo 
 # CCIF > 06 Salud > 06.3. Servicios de hospital > 06.3.0 Servicios de hospital 
@@ -3174,10 +3185,10 @@ v_productos <- c(
     "Tequila", "Cerveza", "Cigarrillos", "Papas fritas", "Analgésicos")
 
 # ---- Seleccionar productos del catálogo de identificadores 
-df_productos <- d_inpc_ccif_ids %>% 
+df_productos <- d_inpc_ccif_ids |>
     # Cambiar el nombre de la categoría general (homónima de categoría específica)
     mutate(ccif = if_else(
-        id_ccif_0 == "02_021_0213", "Cerveza (categoría)", ccif)) %>% 
+        id_ccif_0 == "02_021_0213", "Cerveza (categoría)", ccif)) |>
     filter(ccif %in% v_productos)
 
 # ---- Obtener identificadores de productos seleccionados
@@ -3190,31 +3201,31 @@ for(i in 1:length(v_ids)){
     print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
     
     df_data <- 
-        d_inpc %>% 
-        filter(id_ccif_0==v_ids[i]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
+        d_inpc |>
+        filter(id_ccif_0==v_ids[i]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
         mutate(tipo = v_productos[i], ord = i) 
     
-    df_series <- df_series %>% bind_rows(df_data)
+    df_series <- df_series |>bind_rows(df_data)
 }
 
 # ---- Limpiar la info 
 # Filtrar fechas 
-df_fiesta <- df_series                      %>% 
-    filter(fecha >= "2002-07-01")            %>% 
+df_fiesta <- df_series                      |>
+    filter(fecha >= "2002-07-01")            |>
     # Ordenar factores 
-    # mutate(tipo = factor(tipo, levels = v_productos)) %>% 
+    # mutate(tipo = factor(tipo, levels = v_productos)) |>
     glimpse()
 
 # Dejar datos mensuales o quincenales
 ifelse(v_quincena == 1, 
        # Para la serie quincenal, dejar solo datos de la primera quincena
-       df_fiesta <- df_fiesta %>% 
-           filter(!date_shortcut %% 2 == 0)             %>% 
+       df_fiesta <- df_fiesta |>
+           filter(!date_shortcut %% 2 == 0)             |>
            glimpse, 
        # Serie mensual 
-       df_fiesta %>% 
+       df_fiesta |>
            glimpse
 )
 
@@ -3224,10 +3235,10 @@ eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
     ggplot(
-        df_fiesta %>% 
-            arrange(fecha) %>% 
-            group_by(tipo) %>% 
-            mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+        df_fiesta |>
+            arrange(fecha) |>
+            group_by(tipo) |>
+            mutate(tasa_anual = (values/lag(values, 12))-1) |>
             filter(fecha >= "2015-06-01"),
         aes(
             x = fecha,
@@ -3300,31 +3311,31 @@ ggsave(g, filename = paste_info("02_08_peda.png"),
 
 # 4.13. Productos canasta básica PROFECO ----
 
-v_total <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Total"]
+v_total                 <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Total"]
 
-v_pacic_leche <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
-v_pacic_atún_sardina <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Atún y sardina en lata"]
-v_pacic_res <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]
-v_pacic_cerdo <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
-v_pacic_pollo <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]
-v_pacic_huevo <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]
+v_pacic_leche           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
+v_pacic_atún_sardina    <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Atún y sardina en lata"]
+v_pacic_res             <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]
+v_pacic_cerdo           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
+v_pacic_pollo           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]
+v_pacic_huevo           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]
 
-v_pacic_frijol <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Frijol"]
-v_pacic_arroz <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Arroz"]
-v_pacic_pan_caja <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]
-v_pacic_pasta_sopa <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pasta para sopa"]
-v_pacic_tortilla <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
-v_pacic_aceite <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]
-v_pacic_azúcar <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar"]
+v_pacic_frijol          <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Frijol"]
+v_pacic_arroz           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Arroz"]
+v_pacic_pan_caja        <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]
+v_pacic_pasta_sopa      <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pasta para sopa"]
+v_pacic_tortilla        <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
+v_pacic_aceite          <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Aceites y grasas vegetales comestibles"]
+v_pacic_azúcar          <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar"]
 
-v_pacic_cebolla <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Cebolla"]
-v_pacic_chile <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chiles envasados"]
-v_pacic_jitomate <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jitomate"]
-v_pacic_limón <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Limón"]
-v_pacic_manzana <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manzana"]
-v_pacic_plátano <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Plátanos"]
-v_pacic_zanahoria <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Zanahoria"]
-v_pacic_papa <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]
+v_pacic_cebolla         <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Cebolla"]
+v_pacic_chile           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Chiles envasados"]
+v_pacic_jitomate        <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jitomate"]
+v_pacic_limón           <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Limón"]
+v_pacic_manzana         <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Manzana"]
+v_pacic_plátano         <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Plátanos"]
+v_pacic_zanahoria       <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Zanahoria"]
+v_pacic_papa            <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papa y otros tubérculos"]
 
 v_pacic_jabón <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Jabón de tocador"]
 v_pacic_papel_higie <- d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Papel higiénico y pañuelos desechables"]
@@ -3392,21 +3403,21 @@ for(i in 1:length(v_pacic_list)){
     print(paste0(str_pad(i,2,"left","0"), " - ", v_pacic_list_labs[i]))
     # Sys.sleep(0.5)
     
-    tempo <- d_inpc %>% 
-        filter(id_ccif_0==v_pacic_list[i]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
+    tempo <- d_inpc |>
+        filter(id_ccif_0==v_pacic_list[i]) |>
+        select(date_shortcut, fecha = date, values) |>
+        arrange(fecha) |>
         mutate(tipo = v_pacic_list_labs[i])
     
     d_04_pacic <- bind_rows(d_04_pacic, tempo)
     
 }
 
-d_04_pacic %>% glimpse
+d_04_pacic |>glimpse
 
 unique(d_04_pacic$tipo)
 
-d_04_pacic <- d_04_pacic %>% 
+d_04_pacic <- d_04_pacic |>
     mutate(
         cat = case_when(
             tipo == "Leche" ~ "1. Productos de origen animal",
@@ -3434,43 +3445,43 @@ d_04_pacic <- d_04_pacic %>%
             tipo == "Papel higiénico y pañuelos desechables" ~ "4. Aseo personal",
             T ~ NA_character_
         )
-    ) %>% 
+    ) |>
     bind_rows(
-        d_inpc %>% 
-            filter(id_ccif_0=="00") %>% 
-            select(date_shortcut, fecha = date, values) %>% 
-            arrange(fecha) %>% 
+        d_inpc |>
+            filter(id_ccif_0=="00") |>
+            select(date_shortcut, fecha = date, values) |>
+            arrange(fecha) |>
             mutate(tipo = " General", cat = "1. Productos de origen animal") 
-    ) %>% 
+    ) |>
     bind_rows(
-        d_inpc %>% 
-            filter(id_ccif_0=="00") %>% 
-            select(date_shortcut, fecha = date, values) %>% 
-            arrange(fecha) %>% 
+        d_inpc |>
+            filter(id_ccif_0=="00") |>
+            select(date_shortcut, fecha = date, values) |>
+            arrange(fecha) |>
             mutate(tipo = " General", cat = "2. Despensa") 
-    ) %>% 
+    ) |>
     bind_rows(
-        d_inpc %>% 
-            filter(id_ccif_0=="00") %>% 
-            select(date_shortcut, fecha = date, values) %>% 
-            arrange(fecha) %>% 
+        d_inpc |>
+            filter(id_ccif_0=="00") |>
+            select(date_shortcut, fecha = date, values) |>
+            arrange(fecha) |>
             mutate(tipo = " General", cat = "3. Frutas y verduras") 
-    ) %>% 
+    ) |>
     bind_rows(
-        d_inpc %>% 
-            filter(id_ccif_0=="00") %>% 
-            select(date_shortcut, fecha = date, values) %>% 
-            arrange(fecha) %>% 
+        d_inpc |>
+            filter(id_ccif_0=="00") |>
+            select(date_shortcut, fecha = date, values) |>
+            arrange(fecha) |>
             mutate(tipo = " General", cat = "4. Aseo personal") 
-    ) %>% 
+    ) |>
     arrange(cat, tipo)
 
 ifelse(
     v_quincena == 1,
-    d_04_pacic <- d_04_pacic %>% 
-        filter(!date_shortcut %% 2 == 0) %>% 
+    d_04_pacic <- d_04_pacic |>
+        filter(!date_shortcut %% 2 == 0) |>
         glimpse,
-    d_04_pacic %>% 
+    d_04_pacic |>
         glimpse
 )
 
@@ -3480,12 +3491,12 @@ v_pacic_loop <- unique(d_04_pacic$cat)
 
 for(i in 1:4){
     
-    d_plot <- d_04_pacic %>% 
-        filter(cat == v_pacic_loop[i]) %>% 
-        arrange(fecha) %>% 
-        group_by(cat,tipo) %>% 
-        mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-        ungroup() %>% 
+    d_plot <- d_04_pacic |>
+        filter(cat == v_pacic_loop[i]) |>
+        arrange(fecha) |>
+        group_by(cat,tipo) |>
+        mutate(tasa_anual = (values/lag(values, 12))-1) |>
+        ungroup() |>
         filter(fecha >= "2015-06-01")
     
     titulo <- paste0("Índice de precios al consumidor de canasta PROFECO\n",

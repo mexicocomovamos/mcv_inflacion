@@ -48,10 +48,10 @@ loadfonts(device="postscript")
 require(tidyverse)
 
 ## Credenciales de google ----
-#v_usuaria <- "regina"
+v_usuaria <- "regina"
 # v_usuaria <- "katia"
 # v_usuaria <- "juvenal"
-v_usuaria <- "axel"
+# v_usuaria <- "axel"
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
 googlesheets4::gs4_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
@@ -104,12 +104,12 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
 # Token para API del INEGI
 source(paste_code("00_token.R"))
 
-# 1. Procesamiento para tabla de variación --------------------------------------------------
+# 1. Procesamiento para tabla de variación -------------------------------------
 ## 1.0. Abrir INPC complete ----
 d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>% 
     glimpse()
 
-v_quincena <- 1
+v_quincena <- 2
 
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
