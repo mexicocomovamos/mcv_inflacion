@@ -81,9 +81,9 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
 source(paste_code("00_token.R"))
 
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) |>
-    glimpse
-# Seleccionar quincena 
-v_quincena <- 2
+    glimpse()
+# Seleccionar quincena: 
+v_quincena <- 1
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -163,7 +163,7 @@ if(v_quincena==1){
                date = as.Date.numeric(date)) |>
         select(fecha = date, inpc = values) |>
         arrange(fecha) |>
-        glimpse
+        glimpse()
     
 } else{
     
@@ -172,7 +172,7 @@ if(v_quincena==1){
         filter(date > "2016-01-02") |>
         select(fecha = date, inpc = values) |>
         arrange(fecha) |>
-        glimpse
+        glimpse()
     
 }
 
@@ -186,7 +186,7 @@ if(v_quincena==1){
                date = as.Date.numeric(date)) |>
         select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) |>
         arrange(fecha) |>
-        glimpse
+        glimpse()
     
 } else{
     
@@ -195,7 +195,7 @@ if(v_quincena==1){
         filter(date > "2016-01-02") |>
         select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) |>
         arrange(fecha) |>
-        glimpse
+        glimpse()
 }
 
 if(v_quincena == 1){
@@ -219,21 +219,21 @@ if(v_quincena == 1){
             incidencia_anual = ((values - lag(values, 24))/lag(inpc, 24))*ponderador
         ) |>
         ungroup() |>
-        glimpse
+        glimpse()
     
     d_incidencia_prods_last <- d_incidencia_prods |>
         filter(fecha == last(fecha)) |>
         arrange(-incidencia_quincenal) |>
         select(fecha,id_ccif_0,  ccif, var_quincenal, incidencia_quincenal) |>
         mutate(n = row_number()) |>
-        glimpse
+        glimpse()
     
     d_incidencia_anual_prods_last <- d_incidencia_prods |>
         filter(fecha == last(fecha)) |>
         arrange(-incidencia_anual) |>
         select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) |>
         mutate(n = row_number()) |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -257,21 +257,21 @@ if(v_quincena == 1){
             incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador
         ) |>
         ungroup() |>
-        glimpse
+        glimpse()
     
     d_incidencia_prods_last <- d_incidencia_prods |>
         filter(fecha == last(fecha)) |>
         arrange(-incidencia_mensual) |>
         select(fecha,id_ccif_0,  ccif, var_mensual, incidencia_mensual) |>
         mutate(n = row_number()) |>
-        glimpse
+        glimpse()
     
     d_incidencia_anual_prods_last <- d_incidencia_prods |>
         filter(fecha == last(fecha)) |>
         arrange(-incidencia_anual) |>
         select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) |>
         mutate(n = row_number()) |>
-        glimpse
+        glimpse()
     
 }
 
@@ -499,14 +499,14 @@ if(v_quincena==1){
         filter(date > "2016-01-02") |>
         select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_1, values) |>
         arrange(fecha) |>
-        glimpse
+        glimpse()
 } else{
     d_inpc_cats <- d_inpc |>
         drop_na(ponderador_inpc_id_ccif_1) |>
         filter(date > "2016-01-02") |>
         select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_1, values) |>
         arrange(fecha) |>
-        glimpse
+        glimpse()
 }
 
 
@@ -526,14 +526,14 @@ d_incidencia_cats <- d_inpc_cats |>
         incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
     ) |>
     ungroup() |>
-    glimpse
+    glimpse()
 
 d_incidencia_cats_last <- d_incidencia_cats |>
     filter(fecha == last(fecha)) |>
     arrange(-incidencia_anual) |>
     select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) |>
     mutate(n = row_number()) |>
-    glimpse
+    glimpse()
 
 tt <- d_incidencia_cats                                    |>
     distinct() |>
@@ -543,7 +543,7 @@ tt <- d_incidencia_cats                                    |>
            ranking = str_pad(ranking, 2, "left", "0"))                                       |>
     ungroup() |>
     drop_na(incidencia_anual) |>
-    glimpse
+    glimpse()
 
 titulo <- "Incidencia anual por clasificación del\nconsumo individual por finalidades"
 subtitulo <- "La incidencia anual es la contribución en puntos porcentuales que cada división aporta a la inflación general."
@@ -579,11 +579,11 @@ ggplot(
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric)+1.2,
+            y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |> as.numeric())+1.2,
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
-                round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric),2),
+                round((d_incidencia_cats_last |> summarise(inflacion = sum(incidencia_anual)) |>as.numeric()),2),
                 # round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric +.01),2),
                 "%"
             )
@@ -641,10 +641,10 @@ ggsave(g, filename = paste_info("01_03_incidencia_anual.png"),
 # 3. Incidencia anual por concepto y componente --------------------------------
 
 d_inpc_ponds_comp <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ponds.xlsx")) |>
-    glimpse
+    glimpse()
 
 d_inpc_ponds_comp_prod <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ccif_ponds.xlsx")) |>
-    glimpse
+    glimpse()
 
 if(v_quincena==1){
     
@@ -674,7 +674,7 @@ if(v_quincena==1){
                 is.na(serv_tipo), merc_tipo, serv_tipo
             )
         ) %>%
-        glimpse
+        glimpse()
     
     d_no_subyacente <- d_inpc |>
         filter(!date_shortcut %% 2 == 0) |>
@@ -701,7 +701,7 @@ if(v_quincena==1){
                 is.na(energ_tarif_tipo), agropec_tipo, energ_tarif_tipo
             )
         ) |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -730,7 +730,7 @@ if(v_quincena==1){
                 is.na(serv_tipo), merc_tipo, serv_tipo
             )
         ) |>
-        glimpse
+        glimpse()
     
     d_no_subyacente <- d_inpc |>
         filter(id_ccif_0 %in% d_inpc_ponds_comp_prod$id_ccif_0[d_inpc_ponds_comp_prod$no_subyacente=="X"]) |>
@@ -755,7 +755,7 @@ if(v_quincena==1){
                 is.na(energ_tarif_tipo), agropec_tipo, energ_tarif_tipo
             )
         ) |>
-        glimpse
+        glimpse()
     
     
 }
@@ -771,7 +771,7 @@ d_inpc_suby_no_suby_tipo <- d_subyacente |>
             select(fecha = date, ccif, id_ccif_0, inpc_tipo, suby_no_suby_tipo, tipo, values,ponderador = ponderador_inpc_id_ccif_4)
     ) |>
     arrange(fecha) |>
-    glimpse
+    glimpse()
 
 
 d_incidencia_suby_no_suby_tipo <- d_inpc_suby_no_suby_tipo |>
@@ -788,7 +788,7 @@ d_incidencia_suby_no_suby_tipo <- d_inpc_suby_no_suby_tipo |>
         incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
     ) |>
     ungroup() |>
-    glimpse
+    glimpse()
 
 d_incidencia_suby_no_suby <- d_inpc_suby_no_suby_tipo |>
     group_by(fecha, inpc_tipo, suby_no_suby_tipo) %>%
@@ -804,7 +804,7 @@ d_incidencia_suby_no_suby <- d_inpc_suby_no_suby_tipo |>
         incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
     ) |>
     ungroup() |>
-    glimpse
+    glimpse()
 
 ## 3.1. Por componente ---------------------------------------------------------
 tt <- d_incidencia_suby_no_suby                                    |>
@@ -814,7 +814,7 @@ tt <- d_incidencia_suby_no_suby                                    |>
            ranking = str_pad(ranking, 2, "left", "0"))                                       |>
     ungroup() |>
     drop_na(incidencia_anual) |>
-    glimpse
+    glimpse()
 
 titulo <- "Incidencia anual por componente del INPC"
 subtitulo <- "La incidencia anual es la contribución en puntos porcentuales que cada componente aporta a la inflación general."
@@ -857,13 +857,13 @@ g <-
     geom_flow(show.legend = T) +
     geom_text(
         aes(
-            y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric)+1,
+            y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric())+1,
             # y = 12.5,
             x = last(tt$fecha),
             label = paste0(
                 "Inflación: ",
                 # round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric+.01),2),
-                round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric),2),
+                round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric()),2),
                 "%"
             )
         ),
@@ -922,7 +922,7 @@ tt <- d_incidencia_suby_no_suby_tipo                                |>
            ranking = str_pad(ranking, 2, "left", "0"))                                       |>
     ungroup() |>
     drop_na(incidencia_anual) |>
-    glimpse
+    glimpse()
 
 titulo <- "Incidencia anual por componente y\nconcepto del INPC"
 if(v_quincena==1){
@@ -1106,7 +1106,7 @@ saveRDS(
 # 4. Monitoreo de productos seleccionados --------------------------------------
 
 d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) |>
-    glimpse
+    glimpse()
 
 ## 4.1. Clasificación del consumo individual por finalidades(CCIF) -------------
 
@@ -1164,7 +1164,7 @@ if(v_quincena==1){
                 mutate(tipo = "Restaurantes y hoteles")
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 } else{
     
@@ -1216,7 +1216,7 @@ if(v_quincena==1){
                 mutate(tipo = "Restaurantes y hoteles")
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -1226,9 +1226,9 @@ ifelse(
     v_quincena == 1,
     d_01_ccif <- d_01_ccif |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_01_ccif |>
-        glimpse
+        glimpse()
 )
 
 
@@ -1382,7 +1382,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Tortilla", ord = 7)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 } else{
     
@@ -1434,7 +1434,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Tortilla", ord = 7)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -1443,9 +1443,9 @@ ifelse(
     v_quincena == 1,
     d_02_01_pan_cereales <- d_02_01_pan_cereales |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_01_pan_cereales |>
-        glimpse
+        glimpse()
 )
 
 titulo <- "Índice de precios al consumidor de pan y\ncereales seleccionados"
@@ -1561,7 +1561,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Pollo", ord = 5)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 } else{
     
@@ -1599,7 +1599,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Pollo", ord = 5)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -1608,9 +1608,9 @@ ifelse(
     v_quincena == 1,
     d_02_02_carnes <- d_02_02_carnes |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_02_carnes |>
-        glimpse
+        glimpse()
 )
 
 titulo <- "Índice de precios al consumidor de carnes\nseleccionadas"
@@ -1728,7 +1728,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Huevo", ord = 5)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -1767,7 +1767,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Huevo", ord = 5)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -1777,9 +1777,9 @@ ifelse(
     v_quincena == 1,
     d_02_03_lácteos <- d_02_03_lácteos |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_03_lácteos |>
-        glimpse
+        glimpse()
 )
 
 titulo <- "Índice de precios al consumidor de lácteos y\nhuevo seleccionados"
@@ -1910,7 +1910,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Uva", ord = 7)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -1963,7 +1963,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Uva", ord = 7)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -1972,9 +1972,9 @@ ifelse(
     v_quincena == 1,
     d_02_04_frutas <- d_02_04_frutas |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_04_frutas |>
-        glimpse
+        glimpse()
 )
 
 
@@ -2111,7 +2111,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Papa", ord = 8)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -2171,7 +2171,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Papa", ord = 8)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -2180,9 +2180,9 @@ ifelse(
     v_quincena == 1,
     d_02_05_legum <- d_02_05_legum |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_05_legum |>
-        glimpse
+        glimpse()
 )
 
 
@@ -2299,7 +2299,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Mantequilla", ord = 5)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -2338,7 +2338,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Mantequilla", ord = 5)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -2347,9 +2347,9 @@ ifelse(
     v_quincena == 1,
     d_02_06_aceites <- d_02_06_aceites |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_06_aceites |>
-        glimpse
+        glimpse()
 )
 
 titulo <- "Índice de precios al consumidor de aceites\ny grasas seleccionadas"
@@ -2472,7 +2472,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Helados", ord = 6)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 } else{
     
@@ -2517,7 +2517,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Helados", ord = 6)
         ) |>
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -2525,9 +2525,9 @@ ifelse(
     v_quincena == 1,
     d_02_07_azucares <- d_02_07_azucares |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_02_07_azucares |>
-        glimpse
+        glimpse()
 )
 
 titulo <- "Índice de precios al consumidor de\nazúcares seleccionadas"
@@ -2646,7 +2646,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Refrescos envasados", ord = 5)
         ) %>%
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
     
 } else{
@@ -2685,7 +2685,7 @@ if(v_quincena == 1){
                 mutate(tipo = "Refrescos envasados", ord = 5)
         ) %>%
         filter(fecha >= "2002-07-01") |>
-        glimpse
+        glimpse()
     
 }
 
@@ -2693,9 +2693,9 @@ ifelse(
     v_quincena == 1,
     d_03_bebidas <- d_03_bebidas |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_03_bebidas |>
-        glimpse
+        glimpse()
 )
 
 titulo <- "Índice de precios al consumidor de bebidas\nno alcohólicas seleccionadas"
@@ -2787,7 +2787,7 @@ v_productos <- c(
 # ---- Seleccionar productos del catálogo de identificadores 
 df_productos <- d_inpc_ccif_ids     |>
     filter(ccif %in% v_productos)   |>
-    glimpse
+    glimpse()
 
 # ---- Obtener identificadores de productos seleccionados
 v_ids <- unique(df_productos$id_ccif_0) # Identificadores 
@@ -2821,10 +2821,10 @@ ifelse(v_quincena == 1,
        # Para la serie quincenal, dejar solo datos de la primera quincena
        df_06_01_farmaceuticos <- df_06_01_farmaceuticos |>
            filter(!date_shortcut %% 2 == 0)             |>
-           glimpse, 
+           glimpse(), 
        # Serie mensual 
        df_06_01_farmaceuticos |>select(-date_shortcut) |>
-           glimpse
+           glimpse()
 )
 
 # ---- Gráfica 
@@ -2954,9 +2954,9 @@ ifelse(v_quincena == 1,
        # Para la serie quincenal, dejar solo datos de la primera quincena
        df_06_02_servicios_pacientes <- df_06_02_servicios_pacientes |>
            filter(!date_shortcut %% 2 == 0)             |>
-           glimpse, 
+           glimpse(), 
        # Serie mensual 
-       df_06_02_servicios_pacientes |>select(-date_shortcut) |>glimpse
+       df_06_02_servicios_pacientes |>select(-date_shortcut) |>glimpse()
 )
 
 # ---- Gráfica 
@@ -3091,10 +3091,10 @@ ifelse(v_quincena == 1,
        # Para la serie quincenal, dejar solo datos de la primera quincena
        df_06_03_servicios_hospital <- df_06_03_servicios_hospital |>
            filter(!date_shortcut %% 2 == 0)             |>
-           glimpse, 
+           glimpse(), 
        # Serie mensual 
        df_06_03_servicios_hospital |>
-           glimpse
+           glimpse()
 )
 
 
@@ -3223,10 +3223,10 @@ ifelse(v_quincena == 1,
        # Para la serie quincenal, dejar solo datos de la primera quincena
        df_fiesta <- df_fiesta |>
            filter(!date_shortcut %% 2 == 0)             |>
-           glimpse, 
+           glimpse(), 
        # Serie mensual 
        df_fiesta |>
-           glimpse
+           glimpse()
 )
 
 # ---- Gráfica 
@@ -3413,7 +3413,7 @@ for(i in 1:length(v_pacic_list)){
     
 }
 
-d_04_pacic |>glimpse
+d_04_pacic |>glimpse()
 
 unique(d_04_pacic$tipo)
 
@@ -3480,9 +3480,9 @@ ifelse(
     v_quincena == 1,
     d_04_pacic <- d_04_pacic |>
         filter(!date_shortcut %% 2 == 0) |>
-        glimpse,
+        glimpse(),
     d_04_pacic |>
-        glimpse
+        glimpse()
 )
 
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
