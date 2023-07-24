@@ -82,8 +82,32 @@ source(paste_code("00_token.R"))
 
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) |>
     glimpse()
+
+# Token para API del INEGI
+v_token_inegi           <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
+v_inflacion             <- "628222"  # Inflacion quincenal
+df_indice_crudo         <- inegi_series(
+    serie    = v_inflacion,
+    token    = v_token_inegi, 
+    database = "BIE", 
+    as_tt    = TRUE) %>% 
+    arrange(desc(date_shortcut))  |> 
+    mutate(
+        year      = year(date),
+        mes       = month(date),
+        quincena  = rep_len(1:2, length.out = nrow(df_indice_crudo)), 
+        day       = if_else(quincena == 1, 1, 16),                        
+        year_m_q  = as.Date(paste(year, mes, day, sep = "-"), "%Y-%m-%d") 
+    )       
+v_quincena  <- df_indice_crudo %>% 
+    filter(year(date) == max(year(date))) %>% 
+    filter(month(date) == max(month(date))) %>% 
+    filter(quincena == max(quincena)) %>% 
+    pull(quincena)
+v_quincena
+# Actualizacion julio 2023: la quincena se calculó sola en el paso antrior.
 # Seleccionar quincena: 
-v_quincena <- 1
+# v_quincena <- 1
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -860,6 +884,7 @@ g <-
             y = (d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric())+1,
             # y = 12.5,
             x = last(tt$fecha),
+            hjust =1,
             label = paste0(
                 "Inflación: ",
                 # round((d_incidencia_cats_last |>summarise(inflacion = sum(incidencia_anual)) |>as.numeric+.01),2),
