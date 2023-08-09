@@ -48,9 +48,9 @@ loadfonts(device="postscript")
 require(tidyverse)
 
 ## Credenciales de google ----
-# v_usuaria <- "regina"
+v_usuaria <- "regina"
 # v_usuaria <- "katia"
-v_usuaria <- "juvenal"
+# v_usuaria <- "juvenal"
 # v_usuaria <- "axel"
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
