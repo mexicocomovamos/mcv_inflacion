@@ -83,7 +83,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -587,8 +587,11 @@ ggplot(
             )
         ),
         col = mcv_semaforo[4],
+        hjust = 1,
+        # "#ff6260"
         family = "Ubuntu",
-        size = 5, fontface = "bold"
+        size = 5, 
+        fontface = "bold"
     ) +
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
@@ -626,6 +629,7 @@ ggplot(
         legend.box.just = "right",
         legend.margin = margin(8, 8, 8, 8)
     )
+g
 ggsave(g + theme(plot.title = element_blank(),
                  plot.subtitle = element_blank(),
                  plot.margin= margin(0.4, 0.4, 0.4, 0.4, "cm")), filename = paste_info("01_03_incidencia_anual_sin_fondo.png"), 
@@ -866,6 +870,7 @@ g <-
         ),
         col = mcv_semaforo[4],
         family = "Ubuntu",
+        hjust = 1,
         size = 5, fontface = "bold"
     ) +
     scale_x_date(
