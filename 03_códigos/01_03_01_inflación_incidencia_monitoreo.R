@@ -83,7 +83,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -580,7 +580,7 @@ ggplot(
             y = (d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric)+1.2,
             x = last(tt$fecha),
             label = paste0(
-                "Inflación: ",
+                "Inflación:\n",
                 round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
                 # round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric +.01),2),
                 "%"
@@ -596,9 +596,9 @@ ggplot(
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
-                          to = max(tt$fecha), 
-                          by = "2 month"),
+        breaks = seq.Date(to = min(tt$fecha), 
+                          from = max(tt$fecha), 
+                          by = "-2 month") %>% rev(),
         date_labels = "%b-%y"
     ) +
     scale_fill_manual("", values = mcv_discrete_12) +
@@ -629,6 +629,7 @@ ggplot(
         legend.box.just = "right",
         legend.margin = margin(8, 8, 8, 8)
     )
+
 g
 ggsave(g + theme(plot.title = element_blank(),
                  plot.subtitle = element_blank(),
@@ -862,7 +863,7 @@ g <-
             # y = 12.5,
             x = last(tt$fecha),
             label = paste0(
-                "Inflación: ",
+                "Inflación:\n",
                 # round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric+.01),2),
                 round((d_incidencia_cats_last %>% summarise(inflacion = sum(incidencia_anual)) %>% as.numeric),2),
                 "%"
@@ -876,9 +877,9 @@ g <-
     scale_x_date(
         expand = expansion(mult = c(0.01, 0.25)),
         minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(from = min(tt$fecha), 
-                          to = max(tt$fecha), 
-                          by = "2 month"),
+        breaks = seq.Date(to = min(tt$fecha), 
+                          from = max(tt$fecha), 
+                          by = "-2 month") %>% rev(),
         date_labels = "%b-%y"
     ) +
     scale_fill_manual("", values = c(mcv_discrete_12[7], mcv_discrete_12[9],
@@ -989,13 +990,15 @@ g1 <-
         
     ) +
     scale_y_continuous("", limits = c(-1,7), breaks = seq(-1,7,1), 
-                       labels = scales::number_format(accuracy = 1L)) +
+                       labels = scales::number_format(accuracy = 1L, suffix = ".0")) +
+    # geom_hline(yintercept = 0, color = "black", linewidth = 0.9) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[1:5]) +
     theme_minimal()  +
     labs(
         title = titulo,
-        y = eje_y, x = ""
+        y = eje_y, 
+        x = NULL
     ) +
     theme(
         plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
@@ -1004,7 +1007,7 @@ g1 <-
         panel.grid.minor  = element_blank(),
         panel.background = element_rect(fill = "transparent",colour = NA),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 25),
+        axis.title.y = element_text(size = 25, color = "red"),
         axis.text.x = element_blank(),
         axis.text.y = element_text(size = 15),
         text = element_text(family = "Ubuntu"),
@@ -1068,11 +1071,14 @@ g2 <-
 
     ) +
     scale_y_continuous("", limits = c(-2,5), breaks = seq(-2,5,1), 
-                       labels = scales::number_format(accuracy = 1L)) +
+                       labels = scales::number_format(accuracy = 1L, suffix = ".0")) +
+    # geom_hline(yintercept = 0, color = "black", linewidth = 0.9) +
     geom_flow(show.legend = T) +
     scale_fill_manual("", values = mcv_discrete_12[6:9]) +
     theme_minimal() +
-    labs(caption = nota) +
+    labs(caption = nota, 
+         y = eje_y, 
+         x = NULL) +
     theme(
         plot.caption = element_text(size = 12),
         plot.margin= margin(0.4, 0.4, 1.5, 0.4, "cm"), # margin(top,right, bottom,left)
@@ -1080,7 +1086,7 @@ g2 <-
         panel.grid.minor  = element_blank(),
         panel.background = element_rect(fill = "transparent",colour = NA),
         axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 25),
+        axis.title.y = element_text(size = 25, color = "red"),
         axis.text.x = element_text(size = 15, angle = 90, vjust = 0.5),
         axis.text.y = element_text(size = 15),
         text = element_text(family = "Ubuntu"),
@@ -2571,7 +2577,9 @@ g <-
     ) +
     #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
     scale_y_continuous(labels = scales::number_format(accuracy = 1L),
-                       limits = c(50,150)) +
+                       expand = expansion(c(0.3, 0.3))
+                       # limits = c(50,150)
+                       ) +
     theme_minimal() +
     labs(
         title = titulo,
@@ -2953,7 +2961,7 @@ ifelse(v_quincena == 1,
 )
 
 # ---- Gráfica 
-titulo  <- "Índice de precios al consumidor de servicios\n para pacientes"
+titulo  <- "Índice de precios al consumidor de servicios\npara pacientes"
 eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
 
 g <- 
@@ -3003,7 +3011,9 @@ g <-
     ) +
     #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
     scale_y_continuous(labels = scales::number_format(accuracy = 1L),
-                       limits = c(75, 125)) +
+                       expand = expansion(c(0.3, 0.3))
+                       # limits = c(75, 125)
+                       ) +
     theme_minimal() +
     labs(
         title = titulo,
