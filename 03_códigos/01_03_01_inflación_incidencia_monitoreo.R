@@ -83,7 +83,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -312,6 +312,8 @@ ifelse(
 )
 
 if(v_quincena==1){
+    
+    
     g <- 
         ggplot(
             d_incidencia_prods_last_20,
@@ -325,13 +327,20 @@ if(v_quincena==1){
             )
         ) +
         geom_col() +
-        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_quincenal)<0.01, "outward", "inward"), 
-                  family = "Ubuntu", size = 4, fontface = "bold") +
+        geom_text(hjust = case_when(between(d_incidencia_prods_last_20$incidencia_quincenal, 0, 0.05)   ~ -0.1, 
+                                    between(d_incidencia_prods_last_20$incidencia_quincenal, -0.05, 0)  ~ 1.1, 
+                                    d_incidencia_prods_last_20$incidencia_quincenal < -0.05 ~ -0.1, 
+                                    d_incidencia_prods_last_20$incidencia_quincenal >  0.05 ~ 1.1 
+                                    ), 
+                      # if_else(abs(d_incidencia_prods_last_20$incidencia_quincenal)<0.1, "outward", "inward"), 
+                  family = "Ubuntu", size = 4, fontface = "bold") + 
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
         scale_x_continuous(
             labels = scales::number_format(accuracy = 0.1), 
-            limits = c((max(abs(d_incidencia_prods_last_20$incidencia_quincenal)))*-1, 
-                       max(abs(d_incidencia_prods_last_20$incidencia_quincenal)))
+            expand = expansion(c(0.15, 0.15))
+            # limits = 
+            #     c((max(abs(d_incidencia_prods_last_20$incidencia_quincenal)))*-1, 
+            #            max(abs(d_incidencia_prods_last_20$incidencia_quincenal)))
         ) +
         labs(
             title = titulo,
@@ -368,7 +377,13 @@ if(v_quincena==1){
             )
         ) +
         geom_col() +
-        geom_text(hjust = if_else(abs(d_incidencia_prods_last_20$incidencia_mensual)<0.01, "outward", "inward"), 
+        geom_text(
+                      # if_else(abs(d_incidencia_prods_last_20$incidencia_mensual)<0.01, "outward", "inward")
+        hjust = case_when(between(d_incidencia_prods_last_20$incidencia_quincenal, 0, 0.05)   ~ -0.1, 
+                          between(d_incidencia_prods_last_20$incidencia_quincenal, -0.05, 0)  ~ 1.1, 
+                          d_incidencia_prods_last_20$incidencia_quincenal < -0.05 ~ -0.1, 
+                          d_incidencia_prods_last_20$incidencia_quincenal >  0.05 ~ 1.1 
+        ), 
                   family = "Ubuntu", size = 4, fontface = "bold") +
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
         scale_x_continuous(
@@ -395,7 +410,6 @@ if(v_quincena==1){
             text = element_text(family = "Ubuntu"),
             legend.position = "none"
         )
-    
 }
 
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
@@ -447,13 +461,20 @@ g <-
         )
     ) +
     geom_col() +
-    geom_text(hjust = if_else(abs(d_incidencia_anual_prods_last_20$incidencia_anual)<0.05, "outward", "inward"), 
+    geom_text(hjust = case_when(between(d_incidencia_anual_prods_last_20$incidencia_anual, 0, 0.1)   ~ -0.1, 
+                                    between(d_incidencia_anual_prods_last_20$incidencia_anual, -0.1, 0)  ~ 1.1, 
+                                    d_incidencia_anual_prods_last_20$incidencia_anual < -0.1 ~ -0.1, 
+                                    d_incidencia_anual_prods_last_20$incidencia_anual >  0.1 ~ 1.1 
+                  )
+                  # if_else(abs(d_incidencia_anual_prods_last_20$incidencia_anual)<0.05, "outward", "inward")
+              , 
               family = "Ubuntu", size = 4, fontface = "bold") +
     scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
     scale_x_continuous(
         labels = scales::number_format(accuracy = 0.1), 
-        limits = c((max(abs(d_incidencia_anual_prods_last_20$incidencia_anual)))*-1, 
-                   max(abs(d_incidencia_anual_prods_last_20$incidencia_anual)))
+        expand = expansion(c(0.15, 0.15))
+        # limits = c((max(abs(d_incidencia_anual_prods_last_20$incidencia_anual)))*-1, 
+        #            max(abs(d_incidencia_anual_prods_last_20$incidencia_anual)))
     ) +
     labs(
         title = titulo,
