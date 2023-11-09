@@ -82,8 +82,11 @@ source(paste_code("00_token.R"))
 
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
+
+####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
+####################################################
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -378,11 +381,10 @@ if(v_quincena==1){
         ) +
         geom_col() +
         geom_text(
-                      # if_else(abs(d_incidencia_prods_last_20$incidencia_mensual)<0.01, "outward", "inward")
-        hjust = case_when(between(d_incidencia_prods_last_20$incidencia_quincenal, 0, 0.05)   ~ -0.1, 
-                          between(d_incidencia_prods_last_20$incidencia_quincenal, -0.05, 0)  ~ 1.1, 
-                          d_incidencia_prods_last_20$incidencia_quincenal < -0.05 ~ -0.1, 
-                          d_incidencia_prods_last_20$incidencia_quincenal >  0.05 ~ 1.1 
+        hjust = case_when(between(d_incidencia_prods_last_20$incidencia_mensual, 0, 0.05)   ~ -0.1, 
+                          between(d_incidencia_prods_last_20$incidencia_mensual, -0.05, 0)  ~ 1.1, 
+                          d_incidencia_prods_last_20$incidencia_mensual < -0.05 ~ -0.1, 
+                          d_incidencia_prods_last_20$incidencia_mensual >  0.05 ~ 1.1 
         ), 
                   family = "Ubuntu", size = 4, fontface = "bold") +
         scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
