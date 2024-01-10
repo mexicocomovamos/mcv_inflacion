@@ -110,7 +110,7 @@ d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>%
     glimpse()
 
 ####################################
-v_quincena <- 1
+v_quincena <- 2
 ####################################
 
 ## 1.1. Identificadores de productos para seguimiento ----
