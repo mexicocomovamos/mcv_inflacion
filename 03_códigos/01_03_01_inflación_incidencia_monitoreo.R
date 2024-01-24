@@ -85,13 +85,15 @@ d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>%
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
 # Histórico: 
 # d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
+
+source("../mcv_infobites/02_códigos/24_inegi_series_juve.R")
 
 if(v_quincena==1){
     
