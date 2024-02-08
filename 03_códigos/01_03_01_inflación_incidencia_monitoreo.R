@@ -85,7 +85,7 @@ d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>%
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # 0. Procesamiento en loop -----------------------------------------------------
