@@ -85,7 +85,7 @@ d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>%
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # 0. Procesamiento en loop -----------------------------------------------------
@@ -1141,7 +1141,7 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 ## 4.1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 1
+v_quincena <- 2
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
 if(v_quincena==1){
