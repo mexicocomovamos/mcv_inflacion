@@ -93,7 +93,7 @@ d_inpc <- data.frame()
 # Histórico: 
 # d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
 
-source("../mcv_infobites/02_códigos/24_inegi_series_juve.R")
+# source("../mcv_infobites/02_códigos/24_inegi_series_juve.R")
 
 if(v_quincena==1){
     
@@ -1308,6 +1308,7 @@ g <-
         size = 5, segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -1508,6 +1509,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -1672,6 +1674,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -1840,6 +1843,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -2035,6 +2039,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -2242,6 +2247,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -2407,6 +2413,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -2584,6 +2591,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -2754,6 +2762,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -2889,6 +2898,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -3018,6 +3028,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -3159,6 +3170,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -3293,6 +3305,7 @@ g <-
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
+        segment.color = NA,
         family = "Ubuntu", fontface = "bold", show.legend = F
     ) +
     geom_point(aes(
@@ -3555,6 +3568,7 @@ for(i in 1:4){
             segment.curvature = -0.1,
             segment.ncp = 3,
             segment.angle = 20,
+            segment.color = NA,
             family = "Ubuntu", fontface = "bold", show.legend = F
         ) +
         geom_point(aes(
