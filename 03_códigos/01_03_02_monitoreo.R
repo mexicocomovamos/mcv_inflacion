@@ -313,9 +313,11 @@ df_web <- df_formato                %>%
 ## 1.4. Guardar en Drive -------------------------------------------------------------------
 
 # Obtener identificador del archivo en drive
-v_id <- as.character(
-    googledrive::drive_get(
-        "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
+# v_id <- as.character(
+#     googledrive::drive_get(
+#         "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
+
+v_id = "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
 
 # Escribir datos en drive 
 googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "tasas")
@@ -398,9 +400,10 @@ df_web <- df_formato                %>%
 ## 2.4. Guardar en Drive -------------------------------------------------------------------
 
 # Obtener identificador del archivo en drive
-v_id <- as.character(
-    googledrive::drive_get(
-        "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
+# v_id <- as.character(
+#     googledrive::drive_get(
+#         "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
+v_id <- "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
 
 # Escribir datos en drive 
 googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "incidencia")
