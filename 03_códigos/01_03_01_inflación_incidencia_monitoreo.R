@@ -6,6 +6,11 @@
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
+####################################################
+# Seleccionar quincena 
+v_quincena <- 1
+####################################################
+
 # Paquetes ----
 if(!require("lubridate")) install.packages("lubridate") & require("lubridate")
 if(!require("hot.deck"))  install.packages("hot.deck")  & require("hot.deck")
@@ -83,10 +88,7 @@ source(paste_code("00_token.R"))
 d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
     glimpse
 
-####################################################
-# Seleccionar quincena 
-v_quincena <- 1
-####################################################
+d_inpc_complete
 
 # 0. Procesamiento en loop -----------------------------------------------------
 d_inpc <- data.frame()
@@ -1141,7 +1143,6 @@ d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>%
     glimpse
 
 ## 4.1. Clasificación del consumo individual por finalidades(CCIF) ----
-v_quincena <- 2
 
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 
