@@ -183,6 +183,9 @@ if(v_quincena==1){
     
 }
 
+# d_inpc %>% 
+#     openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion.xlsx")
+
 # 1. Incidencia por productos ----
 if(v_quincena==1){
     
@@ -2642,7 +2645,206 @@ ggsave(g, filename = paste_info("02_02_07_ali_azucar.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
-#
+### 4.2.8 Frutas y verduras seleccionadas ----
+eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
+nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
+# \n**La línea punteada representa la implementación del PACIC.
+
+fyvs <- d_inpc %>% 
+    as_tibble() %>% 
+    filter(ccif %in% c("Limón",#
+                       "Plátanos",
+                       "Jitomate", #
+                       "Chile serrano",
+                       "Zanahoria", #
+                       "Total", 
+                       "Manzana",#
+                       "Papa y otros tubérculos")) %>% 
+    mutate(ccif = ifelse(ccif == "Papa y otros tubérculos", yes = "Papa", no = ccif)) %>% 
+    select(date_shortcut, ccif, fecha = date, values) %>% 
+    filter(fecha >= "2015-06-01") %>% 
+    {if(v_quincena == 1){
+        filter(., !date_shortcut %% 2 == 0)
+    } else {
+        filter(., !date_shortcut %% 2 == 1)
+    }} %>% 
+    mutate(grosor = ifelse(ccif == "Total", yes = "Total", no = "Genéricos")) %>% 
+    arrange(fecha) %>% 
+    group_by(ccif) %>%
+    mutate(tasa = (values/lag(values, 12))-1) %>% 
+    # mutate(tasa = (values/lag(values, 12))-1) %>% 
+    mutate(cat = str_c(ccif, "\n", 
+                       format(round(values, 1), nsmall = 1) %>% str_squish(), 
+                       " [", format(round(tasa*100, 1), nsmall = 1) %>% str_squish(), "%]"))
+
+g <- fyvs %>% 
+    ggplot(aes(x = fecha, 
+               y = values, 
+               group = ccif, 
+               color = ccif)) +
+    geom_line(aes(linewidth = grosor),
+              lineend = "round",
+              show.legend = F) +
+    geom_point(data = fyvs %>% filter(fecha == max(fecha)),
+               size = 2.5,
+               show.legend = F) +
+    ggrepel::geom_text_repel(data = fyvs %>% filter(fecha == max(fecha)),
+                             aes(label = cat, 
+                                 fontface = grosor), 
+                             direction = "y",
+                             family = "Ubuntu", 
+                             nudge_x = 100, 
+                             hjust = "left",
+                             size = 5.5,
+                             segment.curvature = -0.1,
+                             segment.ncp = 3,
+                             segment.angle = 20,
+                             segment.color = NA,
+    ) + 
+    scale_discrete_manual(aesthetics = "linewidth", values = c(1,2)) + 
+    scale_discrete_manual(aesthetics = "fontface", values = c("italic","bold")) + 
+    scale_color_manual(values = c("Total" = "#4D5BF0",
+                                  "Limón" = "#0ACF5F",
+                                  "Manzana" = "#E84D9A",
+                                  "Plátanos" = "#E8B32E",
+                                  "Chile serrano" = "#974DF0",
+                                  "Jitomate" = "#ff6260",
+                                  "Papa" = "#0A93C4",
+                                  "Zanahoria" = "#E8866D")) + 
+    scale_x_date(
+        date_labels = "%b %y",
+        breaks = seq.Date(from = floor_date(as.Date(max(d_02_01_pan_cereales$fecha)), "month"),
+                          to = floor_date(as.Date("2015-09-01")+(((month(max(d_02_01_pan_cereales$fecha))))), "month"),
+                          by = "-6 month"),
+        expand = expansion(mult = c(0.02, 0.15))
+    ) + 
+    scale_y_continuous(expand = expansion(c(0.1, 0.1))) + 
+    theme_minimal() +
+    labs(
+        title = "Índice de precios al consumidor de\nfrutas y verduras seleccionadas",
+        subtitle = subtitulo, 
+        caption = nota,
+        color="", shape="", y = eje_y
+    ) +
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
+          plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
+          plot.caption = element_text(size = 25, colour = "#777777"),
+          plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
+          panel.grid.minor  = element_blank(),
+          panel.background = element_rect(fill = "transparent",colour = NA),
+          text = element_text(family = "Ubuntu"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size = 25),
+          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5, face = "bold"),
+          axis.text.y = element_text(size = 20),
+          legend.text = element_text(size = 30),
+          legend.position = "none")
+
+g
+
+g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+ggsave(g, filename = paste_info("02_13_05_indice_de_precios_frutas_y_verduras_seleccionadas.png"),
+       width = 16, height = 9, dpi = 200, bg= "transparent")
+
+### 4.2.9 Frutas y legumbres ----
+
+eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
+nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
+# \n**La línea punteada representa la implementación del PACIC.
+
+unique(d_inpc$ccif) %>% sort()
+
+iafl <- d_inpc %>% 
+    as_tibble() %>% 
+    filter(ccif %in% c(
+        "Total", 
+        "Alimentos", 
+        "Frutas", 
+        "Legumbres y hortalizas" 
+    )) %>% 
+    # mutate(ccif = ifelse(ccif == "Papa y otros tubérculos", yes = "Papa", no = ccif)) %>% 
+    select(date_shortcut, ccif, fecha = date, values) %>% 
+    filter(fecha >= "2015-06-01") %>% 
+    {if(v_quincena == 1){
+        filter(., !date_shortcut %% 2 == 0)
+    } else {
+        filter(., !date_shortcut %% 2 == 1)
+    }} %>% 
+    mutate(grosor = ifelse(ccif == "Total", yes = "Total", no = "Genéricos")) %>% 
+    arrange(fecha) %>% 
+    group_by(ccif) %>%
+    mutate(tasa = (values/lag(values, 12))-1) %>%
+    mutate(cat = str_c(ccif, "\n", 
+                       format(round(values, 1), nsmall = 1) %>% str_squish(), 
+                       " [", format(round(tasa*100, 1), nsmall = 1) %>% str_squish(), "%]"))
+
+unique(iafl$ccif)
+
+g <- iafl %>% 
+    ggplot(aes(x = fecha, 
+               y = values, 
+               group = ccif, 
+               color = ccif)) +
+    geom_line(aes(linewidth = grosor, alpha = grosor),
+              lineend = "round",
+              show.legend = F) +
+    geom_point(data = iafl %>% filter(fecha == max(fecha)),
+               size = 2.5,
+               show.legend = F) +
+    ggrepel::geom_text_repel(data = iafl %>% filter(fecha == max(fecha)),
+                             aes(label = cat, 
+                                 fontface = grosor), 
+                             direction = "y",
+                             family = "Ubuntu", 
+                             nudge_x = 100, 
+                             hjust = "left",
+                             size = 5.5,
+                             segment.curvature = -0.1,
+                             segment.ncp = 3,
+                             segment.angle = 20,
+                             segment.color = NA,
+    ) + 
+    scale_discrete_manual(aesthetics = "linewidth", values = c(2,3)) + 
+    scale_discrete_manual(aesthetics = "alpha", values = c(0.8,0.95)) + 
+    scale_discrete_manual(aesthetics = "fontface", values = c("italic","bold")) + 
+    scale_color_manual(values = c("Total" = "#4D5BF0",
+                                  "Frutas" = "#0ACF5F",
+                                  "Legumbres y hortalizas" = "#E84D9A",
+                                  "Alimentos" = "#E8866D")) + 
+    scale_x_date(
+        date_labels = "%b %y",
+        breaks = seq.Date(from = floor_date(as.Date(max(d_02_01_pan_cereales$fecha)), "month"),
+                          to = floor_date(as.Date("2015-09-01")+(((month(max(d_02_01_pan_cereales$fecha))))), "month"),
+                          by = "-6 month"),
+        expand = expansion(mult = c(0.02, 0.15))
+    ) + 
+    scale_y_continuous(expand = expansion(c(0.1, 0.1))) + 
+    theme_minimal() +
+    labs(title = "Índice de precios al consumidor de frutas y\nlegumbres",
+         subtitle = subtitulo, 
+         caption = nota,
+         color="", shape="", y = eje_y
+    ) +
+    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
+          plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,30,0)),
+          plot.caption = element_text(size = 25, colour = "#777777"),
+          plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
+          panel.grid.minor  = element_blank(),
+          panel.background = element_rect(fill = "transparent",colour = NA),
+          text = element_text(family = "Ubuntu"),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size = 25),
+          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5, face = "bold"),
+          axis.text.y = element_text(size = 20),
+          legend.text = element_text(size = 30),
+          legend.position = "none")
+
+g
+
+g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+ggsave(g, filename = paste_info("02_13_06_indice_de_precios_frutas_y_legumbres.png"),
+       width = 16, height = 9, dpi = 200, bg= "transparent")
+
 
 # 4.3. Bebidas no alcohólicas ----
 
@@ -3530,6 +3732,8 @@ ifelse(
 
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo.\n**La línea punteada representa la implementación del PACIC."
+# 
+
 v_pacic_loop <- unique(d_04_pacic$cat)
 
 for(i in 1:4){
