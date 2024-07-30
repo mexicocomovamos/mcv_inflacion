@@ -2650,9 +2650,12 @@ eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
 # \n**La línea punteada representa la implementación del PACIC.
 
+# unique(d_inpc$ccif) %>% sort()
+
 fyvs <- d_inpc %>% 
     as_tibble() %>% 
     filter(ccif %in% c("Limón",#
+                       "Cebolla",
                        "Plátanos",
                        "Jitomate", #
                        "Chile serrano",
@@ -2660,7 +2663,8 @@ fyvs <- d_inpc %>%
                        "Total", 
                        "Manzana",#
                        "Papa y otros tubérculos")) %>% 
-    mutate(ccif = ifelse(ccif == "Papa y otros tubérculos", yes = "Papa", no = ccif)) %>% 
+    mutate(ccif = ifelse(ccif == "Papa y otros tubérculos", yes = "Papa", no = ccif), 
+           ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
     {if(v_quincena == 1){
@@ -2668,7 +2672,7 @@ fyvs <- d_inpc %>%
     } else {
         filter(., !date_shortcut %% 2 == 1)
     }} %>% 
-    mutate(grosor = ifelse(ccif == "Total", yes = "Total", no = "Genéricos")) %>% 
+    mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%
     mutate(tasa = (values/lag(values, 12))-1) %>% 
@@ -2695,19 +2699,20 @@ g <- fyvs %>%
                              family = "Ubuntu", 
                              nudge_x = 100, 
                              hjust = "left",
-                             size = 5.5,
+                             size = 5,
                              segment.curvature = -0.1,
                              segment.ncp = 3,
                              segment.angle = 20,
                              segment.color = NA,
     ) + 
     scale_discrete_manual(aesthetics = "linewidth", values = c(1,2)) + 
-    scale_discrete_manual(aesthetics = "fontface", values = c("italic","bold")) + 
-    scale_color_manual(values = c("Total" = "#4D5BF0",
+    scale_discrete_manual(aesthetics = "fontface", values = c("bold","bold")) + 
+    scale_color_manual(values = c("General" = "#4D5BF0",
                                   "Limón" = "#0ACF5F",
                                   "Manzana" = "#E84D9A",
                                   "Plátanos" = "#E8B32E",
                                   "Chile serrano" = "#974DF0",
+                                  "Cebolla" = "gray30",
                                   "Jitomate" = "#ff6260",
                                   "Papa" = "#0A93C4",
                                   "Zanahoria" = "#E8866D")) + 
@@ -2735,7 +2740,7 @@ g <- fyvs %>%
           text = element_text(family = "Ubuntu"),
           axis.title.x = element_blank(),
           axis.title.y = element_text(size = 25),
-          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5, face = "bold"),
+          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
           axis.text.y = element_text(size = 20),
           legend.text = element_text(size = 30),
           legend.position = "none")
@@ -2743,7 +2748,7 @@ g <- fyvs %>%
 g
 
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-ggsave(g, filename = paste_info("02_13_05_indice_de_precios_frutas_y_verduras_seleccionadas.png"),
+ggsave(g, filename = paste_info("02_09_01_indice_de_precios_frutas_y_verduras_seleccionadas.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 ### 4.2.9 Frutas y legumbres ----
@@ -2762,7 +2767,7 @@ iafl <- d_inpc %>%
         "Frutas", 
         "Legumbres y hortalizas" 
     )) %>% 
-    # mutate(ccif = ifelse(ccif == "Papa y otros tubérculos", yes = "Papa", no = ccif)) %>% 
+    mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>%
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
     {if(v_quincena == 1){
@@ -2806,8 +2811,8 @@ g <- iafl %>%
     ) + 
     scale_discrete_manual(aesthetics = "linewidth", values = c(2,3)) + 
     scale_discrete_manual(aesthetics = "alpha", values = c(0.8,0.95)) + 
-    scale_discrete_manual(aesthetics = "fontface", values = c("italic","bold")) + 
-    scale_color_manual(values = c("Total" = "#4D5BF0",
+    scale_discrete_manual(aesthetics = "fontface", values = c("bold","bold")) + 
+    scale_color_manual(values = c("General" = "#4D5BF0",
                                   "Frutas" = "#0ACF5F",
                                   "Legumbres y hortalizas" = "#E84D9A",
                                   "Alimentos" = "#E8866D")) + 
@@ -2834,7 +2839,7 @@ g <- iafl %>%
           text = element_text(family = "Ubuntu"),
           axis.title.x = element_blank(),
           axis.title.y = element_text(size = 25),
-          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5, face = "bold"),
+          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
           axis.text.y = element_text(size = 20),
           legend.text = element_text(size = 30),
           legend.position = "none")
@@ -2842,7 +2847,7 @@ g <- iafl %>%
 g
 
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-ggsave(g, filename = paste_info("02_13_06_indice_de_precios_frutas_y_legumbres.png"),
+ggsave(g, filename = paste_info("02_10_01_indice_de_precios_frutas_y_legumbres.png"),
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 
