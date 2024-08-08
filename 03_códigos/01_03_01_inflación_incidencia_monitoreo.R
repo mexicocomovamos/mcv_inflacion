@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # Paquetes ----
@@ -2667,11 +2667,11 @@ fyvs <- d_inpc %>%
            ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
-    {if(v_quincena == 1){
-        filter(., !date_shortcut %% 2 == 0)
-    } else {
-        filter(., !date_shortcut %% 2 == 1)
-    }} %>% 
+    #{if(v_quincena == 1){
+     #   filter(., !date_shortcut %% 2 == 0)
+    #} else {
+     #   filter(., !date_shortcut %% 2 == 1)
+    #}} %>% 
     mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%
@@ -2679,7 +2679,7 @@ fyvs <- d_inpc %>%
     # mutate(tasa = (values/lag(values, 12))-1) %>% 
     mutate(cat = str_c(ccif, "\n", 
                        format(round(values, 1), nsmall = 1) %>% str_squish(), 
-                       " [", format(round(tasa*100, 1), nsmall = 1) %>% str_squish(), "%]"))
+                       " [", format(round(tasa*100, 2), nsmall = 1) %>% str_squish(), "%]"))
 
 g <- fyvs %>% 
     ggplot(aes(x = fecha, 
@@ -2770,18 +2770,18 @@ iafl <- d_inpc %>%
     mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>%
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
-    {if(v_quincena == 1){
-        filter(., !date_shortcut %% 2 == 0)
-    } else {
-        filter(., !date_shortcut %% 2 == 1)
-    }} %>% 
+    #{if(v_quincena == 1){
+     #   filter(., !date_shortcut %% 2 == 0)
+    #} else {
+     #   filter(., !date_shortcut %% 2 == 1)
+    #}} %>% 
     mutate(grosor = ifelse(ccif == "Total", yes = "Total", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%
     mutate(tasa = (values/lag(values, 12))-1) %>%
     mutate(cat = str_c(ccif, "\n", 
                        format(round(values, 1), nsmall = 1) %>% str_squish(), 
-                       " [", format(round(tasa*100, 1), nsmall = 1) %>% str_squish(), "%]"))
+                       " [", format(round(tasa*100, 2), nsmall = 1) %>% str_squish(), "%]"))
 
 unique(iafl$ccif)
 

@@ -48,14 +48,14 @@ loadfonts(device="postscript")
 require(tidyverse)
 
 ## Credenciales de google ----
-#v_usuaria <- "regina"
+# v_usuaria <- "regina"
 # v_usuaria <- "katia"
-v_usuaria <- "juvenal"
-# v_usuaria <- "axel"
+# v_usuaria <- "juvenal"
+v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 1
+v_quincena <- 2
 ####################################
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
