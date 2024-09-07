@@ -55,7 +55,7 @@ v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 2
+v_quincena <- 1
 ####################################
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))

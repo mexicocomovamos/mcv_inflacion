@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -85,8 +85,12 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
 # Identificadores INEGI ----
 source(paste_code("00_token.R"))
 
-d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
+# # Vieja versión: 
+# d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete.xlsx")) %>% 
+#     glimpse
+d_inpc_complete <- readxl::read_excel(paste_inp("01_03_inpc_complete_NewVersion.xlsx")) %>% 
     glimpse
+
 
 d_inpc_complete
 
@@ -96,6 +100,10 @@ d_inpc <- data.frame()
 # d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS"))
 
 # source("../mcv_infobites/02_códigos/24_inegi_series_juve.R")
+
+tiempo_espera <- 0.65
+
+# i = 22
 
 if(v_quincena==1){
     
@@ -124,7 +132,7 @@ if(v_quincena==1){
         d_inpc <- bind_rows(d_inpc, tempo)
         rm(tempo)
         
-        Sys.sleep(0.3)
+        Sys.sleep(tiempo_espera)
         
     }
     
@@ -155,16 +163,19 @@ if(v_quincena==1){
         d_inpc <- bind_rows(d_inpc, tempo)
         rm(tempo)
         
-        Sys.sleep(0.3)
+        Sys.sleep(tiempo_espera)
         
     }
     
 }
 
+d_inpc <- as_tibble(d_inpc)
+
 if(v_quincena==1){
     
     d_inpc_total <- d_inpc %>% 
         filter(id_ccif_0=="00") %>% 
+        unique() %>% 
         filter(date > "2016-01-02") %>% 
         mutate(date = ifelse(date_shortcut %% 2 == 0, ymd(date)+days(15),date),
                date = as.Date.numeric(date)) %>% 
@@ -176,6 +187,7 @@ if(v_quincena==1){
     
     d_inpc_total <- d_inpc %>% 
         filter(id_ccif_0=="00") %>% 
+        unique() %>% 
         filter(date > "2016-01-02") %>% 
         select(fecha = date, inpc = values) %>% 
         arrange(fecha) %>% 
@@ -183,8 +195,9 @@ if(v_quincena==1){
     
 }
 
-# d_inpc %>% 
-#     openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion.xlsx")
+d_inpc %>%
+    as_tibble() %>% 
+    openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion.xlsx")
 
 # 1. Incidencia por productos ----
 if(v_quincena==1){
@@ -196,6 +209,7 @@ if(v_quincena==1){
                date = as.Date.numeric(date)) %>% 
         select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
         arrange(fecha) %>% 
+        unique() %>% 
         glimpse
     
 } else{
@@ -205,43 +219,36 @@ if(v_quincena==1){
         filter(date > "2016-01-02") %>% 
         select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
         arrange(fecha) %>% 
+        unique() %>% 
         glimpse
 }
 
 if(v_quincena == 1){
     
     d_incidencia_prods <- d_inpc_prods %>% 
-        left_join(
-            d_inpc_total
-        ) %>% 
+        left_join(d_inpc_total, by = "fecha") %>% 
+        unique() %>%
         group_by(ccif, id_ccif_0) %>% 
-        mutate(
-            ccif = case_when(
-                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-                id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
-                id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
-                T ~ ccif
-            ),
-            var_quincenal = (values - lag(values))/lag(values),
-            incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador,
-            var_anual = (values - lag(values, 24))/lag(values, 24),
-            incidencia_anual = ((values - lag(values, 24))/lag(inpc, 24))*ponderador
-        ) %>% 
-        ungroup() %>% 
-        glimpse
-    
+        # filter(ccif == "Jitomate") %>% 
+        mutate(var_quincenal = ((values - lag(values))/(lag(values)))) %>% 
+        mutate(var_anual = c(((values - lag(values, 24))/lag(values, 24)))) %>% 
+        mutate(incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador) %>% 
+        mutate(incidencia_anual = ((values - lag(values, 24))/lag(inpc, 24))*ponderador) %>% 
+        arrange(ccif, rev(fecha)) %>% 
+        ungroup()
+
     d_incidencia_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
+        filter(fecha == max(fecha)) %>% 
         arrange(-incidencia_quincenal) %>% 
         select(fecha,id_ccif_0,  ccif, var_quincenal, incidencia_quincenal) %>% 
         mutate(n = row_number()) %>% 
         glimpse
     
     d_incidencia_anual_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
+        filter(fecha == max(fecha)) %>% 
         arrange(-incidencia_anual) %>% 
         select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
+        filter(!is.na(incidencia_anual)) %>% 
         mutate(n = row_number()) %>% 
         glimpse
     
@@ -249,47 +256,48 @@ if(v_quincena == 1){
 } else{
     
     d_incidencia_prods <- d_inpc_prods %>% 
-        left_join(
-            d_inpc_total
-        ) %>% 
+        left_join(d_inpc_total, by = "fecha") %>% 
+        unique() %>% 
         group_by(ccif, id_ccif_0) %>% 
         mutate(
-            ccif = case_when(
-                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-                id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
-                id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
-                T ~ ccif
-            ),
+            # ccif = case_when(
+            #     id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+            #     id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+            #     id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
+            #     id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
+            #     T ~ ccif
+            # ),
             var_mensual = (values - lag(values))/lag(values),
             incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
             incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador
         ) %>% 
+        arrange(ccif, rev(fecha)) %>% 
         ungroup() %>% 
         glimpse
     
     d_incidencia_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
+        filter(fecha == max(fecha)) %>% 
         arrange(-incidencia_mensual) %>% 
         select(fecha,id_ccif_0,  ccif, var_mensual, incidencia_mensual) %>% 
         mutate(n = row_number()) %>% 
         glimpse
     
     d_incidencia_anual_prods_last <- d_incidencia_prods %>% 
-        filter(fecha == last(fecha)) %>% 
+        filter(fecha == max(fecha)) %>% 
         arrange(-incidencia_anual) %>% 
         select(fecha,id_ccif_0,  ccif, var_anual, incidencia_anual) %>% 
+        filter(!is.na(incidencia_anual)) %>% 
         mutate(n = row_number()) %>% 
         glimpse
     
 }
 
 d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
-    filter(n <= 10 | n >= 290)
+    filter(n <= 10 | between(n, nrow(.)-10, nrow(.)))
 
 d_incidencia_anual_prods_last_20 <- d_incidencia_anual_prods_last %>% 
-    filter(n <= 10 | n >= 290)
+    filter(n <= 10 | between(n, nrow(.)-10, nrow(.)))
 
 ## 1.1. Incidencia mensual/quincenal ----
 ifelse(
@@ -422,6 +430,7 @@ if(v_quincena==1){
 }
 
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
+
 ifelse(
     v_quincena == 1,
     ggsave(g, filename = paste_info("01_01_incidencia_quincenal.png"), 
@@ -433,6 +442,7 @@ ifelse(
 )
 
 # Guardar formato para traducción
+g
 ggsave(g, filename = paste_info("99_svg/01_03_03_01_01_incidencia_mensual.svg"),
        width = 10, height = 15,
        dpi = 200, bg= "transparent")
@@ -461,7 +471,7 @@ g <-
     ggplot(
         d_incidencia_anual_prods_last_20,
         aes(
-            y = reorder(str_wrap_long(stringr = ccif, width = 20), incidencia_anual),
+            y = reorder(str_wrap_long(stringr = ccif, width = 25), incidencia_anual),
             x = incidencia_anual,
             fill = ifelse(n <= 10, "1", "2"),
             label = paste0(
@@ -520,6 +530,7 @@ ggsave(g, filename = paste_info("01_02_incidencia_anual.png"),
 
 # 2. Incidencia anual por divisiones del CCIF ----
 
+# names(d_inpc)
 if(v_quincena==1){
     d_inpc_cats <- d_inpc %>% 
         filter(!date_shortcut %% 2 == 0) %>% 
@@ -537,23 +548,20 @@ if(v_quincena==1){
         glimpse
 }
 
-
-d_incidencia_cats <- d_inpc_cats %>% 
-    left_join(
-        d_inpc_total
-    ) %>% 
+d_incidencia_cats <-
+    d_inpc_cats %>% 
+    left_join(d_inpc_total) %>% 
     group_by(ccif, id_ccif_0) %>% 
     mutate(
         ccif = case_when(
             id_ccif_0 == "03" ~ "Ropa y calzado",
             id_ccif_0 == "04" ~ "Vivienda, electricidad, gas y otros combustibles",
             id_ccif_0 == "05" ~ "Mobiliario y mantenimiento del hogar",
-            T ~ ccif
-        ),
-        var_anual = (values - lag(values,12))/lag(values,12),
-        incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador
-    ) %>% 
-    ungroup() %>% 
+            T ~ ccif)) %>% 
+        arrange(fecha, ccif) %>%
+    mutate(var_anual = (values - lag(values,12))/lag(values,12)) %>%
+    mutate(incidencia_anual = ((values - lag(values,12))/lag(inpc,12))*ponderador) %>%
+    ungroup() %>%
     glimpse
 
 d_incidencia_cats_last <- d_incidencia_cats %>% 
@@ -563,12 +571,12 @@ d_incidencia_cats_last <- d_incidencia_cats %>%
     mutate(n = row_number()) %>% 
     glimpse
 
-tt <- d_incidencia_cats                                    %>% 
+tt <- d_incidencia_cats %>% 
     distinct() %>% 
-    arrange(fecha, desc(incidencia_anual))                        %>% 
-    group_by(fecha)                                              %>% 
-    mutate(ranking = 1:12,
-           ranking = str_pad(ranking, 2, "left", "0"))                                       %>% 
+    arrange(fecha, desc(incidencia_anual))  %>% 
+    group_by(fecha) %>% 
+    mutate(ranking = 1:13,
+           ranking = str_pad(ranking, 2, "left", "0")) %>% 
     ungroup() %>% 
     drop_na(incidencia_anual) %>% 
     glimpse
@@ -623,14 +631,14 @@ ggplot(
         size = 5, 
         fontface = "bold"
     ) +
-    scale_x_date(
-        expand = expansion(mult = c(0.01, 0.25)),
-        minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(to = min(tt$fecha), 
-                          from = max(tt$fecha), 
-                          by = "-2 month") %>% rev(),
-        date_labels = "%b-%y"
-    ) +
+    # scale_x_date(
+    #     expand = expansion(mult = c(0.01, 0.25)),
+    #     minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
+    #     breaks = seq.Date(to = min(tt$fecha), 
+    #                       from = max(tt$fecha), 
+    #                       by = "-2 month") %>% rev(),
+    #     date_labels = "%b-%y"
+    # ) +
     scale_fill_manual("", values = mcv_discrete_12) +
     #scale_y_continuous(labels = scales::comma) +
     labs(
@@ -668,15 +676,20 @@ ggsave(g + theme(plot.title = element_blank(),
        dpi = 200, bg= "transparent")
 g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
 ggsave(g, filename = paste_info("01_03_incidencia_anual.png"), 
-       width = 16, height = 9, 
+       width = 9, height = 16, 
        dpi = 200, bg= "transparent")
 
 # 3. Incidencia anual por concepto y componente ----
 d_inpc_ponds_comp <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ponds.xlsx")) %>% 
     glimpse
 
-d_inpc_ponds_comp_prod <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ccif_ponds.xlsx")) %>% 
+# d_inpc_ponds_comp_prod <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ccif_ponds.xlsx")) %>% 
+#     glimpse
+d_inpc_ponds_comp_prod <- readxl::read_excel("01_datos_crudos/01_03_inpc_concepto_ccif_ponds_NEW.xlsx") %>% 
     glimpse
+
+
+names(d_inpc_ponds_comp_prod) %>% writeLines()
 
 if(v_quincena==1){
     
@@ -1100,7 +1113,10 @@ g2 <-
         date_labels = "%b-%y"
 
     ) +
-    scale_y_continuous("", limits = c(-2,5), breaks = seq(-2,5,1), 
+    scale_y_continuous("", 
+                       expand = expansion(c(0.1, 0.2)),
+                       # limits = c(-2,5),
+                       # breaks = seq(-2,5,1), 
                        labels = scales::number_format(accuracy = 1L, suffix = ".0")) +
     # geom_hline(yintercept = 0, color = "black", linewidth = 0.9) +
     geom_flow(show.legend = T) +
@@ -1142,8 +1158,10 @@ saveRDS(
 
 
 # 4. Monitoreo de productos seleccionados --------------------------------------
-d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>% 
-    glimpse
+# Anterior version: 
+# d_inpc_ccif_ids <- readxl::read_excel(paste_inp("01_03_inpc_ccif_ids.xlsx")) %>% 
+#     glimpse
+d_inpc_ccif_ids <- d_inpc_complete %>% select(ccif, id_ccif_0, id_ccif, id_inegi_m, id_inegi_q)
 
 ## 4.1. Clasificación del consumo individual por finalidades(CCIF) ----
 
@@ -1371,48 +1389,62 @@ if(v_quincena == 1){
     
     
     d_02_01_pan_cereales <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
+        filter(ccif == "Alimentos"
+            # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]
+            ) %>% 
         select(date_shortcut, fecha = date, values) %>% 
         arrange(fecha) %>% 
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan y cereales"]) %>% 
+                filter(ccif == "Pan y cereales"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan y cereales"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Pan y cereales", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Harinas de trigo"]) %>% 
+                filter(ccif == "Harinas de trigo"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Harinas de trigo"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Harinas de trigo", ord = 3)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Maíz"]) %>% 
+                filter(ccif == "Maíz"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Maíz"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Maíz", ord = 4)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]) %>% 
+                filter(ccif == "Pan de caja"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan de caja"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Pan de caja", ord = 5)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan dulce"]) %>% 
+                filter(ccif == "Pan dulce"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pan dulce"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Pan dulce", ord = 6)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]) %>% 
+                filter(ccif == "Tortilla de maíz"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Tortilla de maíz"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Tortilla", ord = 7)
@@ -1564,34 +1596,44 @@ ggsave(g, filename = paste_info("02_02_01_ali_pan_cer.png"),
 if(v_quincena == 1){
     
     d_02_02_carnes <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
+        filter(ccif == "Alimentos"
+            # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]
+            ) %>% 
         select(date_shortcut, fecha = date, values) %>% 
         arrange(fecha) %>% 
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carnes"]) %>% 
+                filter(ccif == "Carnes"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carnes"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Carnes", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]) %>% 
+                filter(ccif == "Carne de res"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de res"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Res", ord = 3)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]) %>% 
+                filter(ccif == "Carne de cerdo"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Carne de cerdo"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Cerdo", ord = 4)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]) %>% 
+                filter(ccif == "Pollo"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Pollo"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Pollo", ord = 5)
@@ -1731,34 +1773,44 @@ if(v_quincena == 1){
     
     
     d_02_03_lácteos <- d_inpc %>% 
-        filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
+        filter(ccif == "Alimentos"
+            # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]
+            ) %>% 
         select(date_shortcut, fecha = date, values) %>% 
         arrange(fecha) %>% 
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]) %>% 
+                filter(ccif == "Leche quesos y huevos"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Leche, quesos y huevos", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]) %>% 
+                filter(ccif == "Leche pasteurizada y fresca"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche pasteurizada y fresca"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Leche", ord = 3)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]) %>% 
+                filter(ccif == "Queso Oaxaca y asadero"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Queso oaxaca y asadero", ord = 4)
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]) %>% 
+                filter(ccif == "Huevo"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Huevo"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Huevo", ord = 5)
@@ -3025,10 +3077,15 @@ ggsave(g, filename = paste_info("02_03_bebidas.png"),
 
 # ---- Enlistar productos del catálogo
 v_productos <- c(
-    "Productos farmacéuticos", "Analgésicos", "Antibióticos", "Antigripales", 
-    "Cardiovasculares", "Medicamentos para diabetes")
+    "Productos farmacéuticos",
+    "Analgésicos",
+    "Antibióticos", "Antigripales"
+    ,
+    "Cardiovasculares", "Medicamentos para diabetes"
+    )
 
 # ---- Seleccionar productos del catálogo de identificadores 
+# which(d_inpc_ccif_ids$ccif == "Analgésicos")
 df_productos <- d_inpc_ccif_ids     %>% 
     filter(ccif %in% v_productos)   %>% 
     glimpse
@@ -3038,7 +3095,7 @@ v_ids <- unique(df_productos$id_ccif_0) # Identificadores
 
 # ---- Importar las series de los productos 
 df_series <- data.frame()
-
+# i = 1
 for(i in 1:length(v_ids)){
     
     # Imprimir vuelta y producto
@@ -3155,136 +3212,135 @@ ggsave(g, filename = paste_info("02_05_farma.png"),
        # type = "cairo", device = "png",
        width = 16, height = 9, dpi = 200, bg= "transparent")
 
-
-
 # 4.6. Servicios de salud para pacientes externos --------------------------------
 # ---- Ruta dentro del catálogo 
 # CCIF > 06 Salud > 06.2. Servicios para pacientes externos 
 
 # ---- Enlistar productos del catálogo
-v_productos <- c("Servicios para pacientes externos", "Servicios médicos", 
-                 "Servicios dentales", "Servicios paramédicos")
-
-# ---- Seleccionar productos del catálogo de identificadores 
-df_productos <- d_inpc_ccif_ids %>% 
-    filter(ccif %in% v_productos)
-
-# ---- Obtener identificadores de productos seleccionados
-v_ids <- unique(df_productos$id_ccif_0) # Identificadores 
-
-# ---- Importar las series de los productos 
-df_series <- data.frame()
-
-for(i in 1:length(v_ids)){
-    print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
-    
-    df_data <- 
-        d_inpc %>% 
-        filter(id_ccif_0==v_ids[i]) %>% 
-        select(date_shortcut, fecha = date, values) %>% 
-        arrange(fecha) %>% 
-        mutate(tipo = v_productos[i], ord = i) 
-    
-    df_series <- df_series %>% bind_rows(df_data)
-}
-
-# ---- Limpiar la info 
-
-# Filtrar fechas 
-df_06_02_servicios_pacientes <- df_series                      %>% 
-    filter(fecha >= "2002-07-01")
-
-# Dejar datos mensuales o quincenales
-ifelse(v_quincena == 1, 
-       # Para la serie quincenal, dejar solo datos de la primera quincena
-       df_06_02_servicios_pacientes <- df_06_02_servicios_pacientes %>% 
-           filter(!date_shortcut %% 2 == 0)             %>% 
-           glimpse, 
-       # Serie mensual 
-       df_06_02_servicios_pacientes %>% select(-date_shortcut) %>% glimpse
-)
-
-# ---- Gráfica 
-titulo  <- "Índice de precios al consumidor de servicios\npara pacientes"
-eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
-
-g <- 
-    ggplot(
-        df_06_02_servicios_pacientes %>% 
-            arrange(fecha) %>% 
-            group_by(tipo) %>% 
-            mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
-            filter(fecha >= "2015-06-01"),
-        aes(
-            x = fecha,
-            y = values,
-            group = reorder(tipo, desc(ord)),
-            col = reorder(tipo, desc(ord)),
-            label = ifelse(
-                fecha == max(fecha),
-                paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
-                NA
-            )
-        ))+
-    geom_line(size = 2.5, lineend = "round", show.legend = F, 
-              aes(color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo),
-                  linetype = if_else(tipo == v_productos[1], "solid", "dashed"))) + 
-    ggrepel::geom_text_repel(
-        aes(color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo)), 
-        nudge_x = 100, direction = "y", hjust = "left",
-        size = 5,
-        segment.curvature = -0.1,
-        segment.ncp = 3,
-        segment.angle = 20,
-        segment.color = NA,
-        family = "Ubuntu", fontface = "bold", show.legend = F
-    ) +
-    geom_point(aes(
-        color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo),
-        y = ifelse(fecha == max(fecha), values, NA)),
-        size = 4, show.legend = F) +
-    scale_color_manual(
-        "", 
-        values = c(mcv_semaforo[4], mcv_discrete_7)
-    ) +
-    scale_x_date(
-        date_labels = "%b %y",
-        breaks = seq.Date(from = floor_date(as.Date(max(df_06_02_servicios_pacientes$fecha)), "month"), 
-                          to = floor_date(as.Date("2015-09-01")+(((month(max(df_06_02_servicios_pacientes$fecha))))), "month"), 
-                          by = "-6 month"),
-        expand = expansion(mult = c(0.02, 0.15))
-    ) +
-    #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
-    scale_y_continuous(labels = scales::number_format(accuracy = 1L),
-                       expand = expansion(c(0.3, 0.3))
-                       # limits = c(75, 125)
-                       ) +
-    theme_minimal() +
-    labs(
-        title = titulo,
-        subtitle = subtitulo, caption = nota,
-        color="", shape="", y = eje_y
-    ) +
-    theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
-          plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
-          plot.caption = element_text(size = 25, colour = "#777777"),
-          plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
-          panel.grid.minor  = element_blank(),
-          panel.background = element_rect(fill = "transparent",colour = NA),
-          text = element_text(family = "Ubuntu"),
-          axis.title.x = element_blank(),
-          axis.title.y = element_text(size = 25),
-          axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
-          axis.text.y = element_text(size = 20),
-          legend.text = element_text(size = 30),
-          legend.position = "none")
-
-
-g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-
-ggsave(g, filename = paste_info("02_06_pacientes.png"),
-       # type = "cairo", device = "png",
-       width = 16, height = 9, dpi = 200, bg= "transparent")
+# v_productos <- c("Servicios para pacientes externos", "Servicios médicos", "Servicios dentales","Servicios paramédicos")
+# 
+# # ---- Seleccionar productos del catálogo de identificadores 
+# df_productos <- d_inpc_ccif_ids %>% 
+#     filter(ccif %in% v_productos)
+# 
+# df_productos
+# 
+# # ---- Obtener identificadores de productos seleccionados
+# v_ids <- unique(df_productos$id_ccif_0) # Identificadores 
+# 
+# # ---- Importar las series de los productos 
+# df_series <- data.frame()
+# 
+# for(i in 1:length(v_ids)){
+#     print(paste("Vuelta", i, "de", length(v_ids), ":", v_productos[i]))
+#     
+#     df_data <- 
+#         d_inpc %>% 
+#         filter(id_ccif_0==v_ids[i]) %>% 
+#         select(date_shortcut, fecha = date, values) %>% 
+#         arrange(fecha) %>% 
+#         mutate(tipo = v_productos[i], ord = i) 
+#     
+#     df_series <- df_series %>% bind_rows(df_data)
+# }
+# 
+# # ---- Limpiar la info 
+# 
+# # Filtrar fechas 
+# df_06_02_servicios_pacientes <- df_series                      %>% 
+#     filter(fecha >= "2002-07-01")
+# 
+# # Dejar datos mensuales o quincenales
+# ifelse(v_quincena == 1, 
+#        # Para la serie quincenal, dejar solo datos de la primera quincena
+#        df_06_02_servicios_pacientes <- df_06_02_servicios_pacientes %>% 
+#            filter(!date_shortcut %% 2 == 0)             %>% 
+#            glimpse, 
+#        # Serie mensual 
+#        df_06_02_servicios_pacientes %>% select(-date_shortcut) %>% glimpse
+# )
+# 
+# # ---- Gráfica 
+# titulo  <- "Índice de precios al consumidor de servicios\npara pacientes"
+# eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
+# 
+# g <- 
+#     ggplot(
+#         df_06_02_servicios_pacientes %>% 
+#             arrange(fecha) %>% 
+#             group_by(tipo) %>% 
+#             mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
+#             filter(fecha >= "2015-06-01"),
+#         aes(
+#             x = fecha,
+#             y = values,
+#             group = reorder(tipo, desc(ord)),
+#             col = reorder(tipo, desc(ord)),
+#             label = ifelse(
+#                 fecha == max(fecha),
+#                 paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
+#                 NA
+#             )
+#         ))+
+#     geom_line(size = 2.5, lineend = "round", show.legend = F, 
+#               aes(color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo),
+#                   linetype = if_else(tipo == v_productos[1], "solid", "dashed"))) + 
+#     ggrepel::geom_text_repel(
+#         aes(color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo)), 
+#         nudge_x = 100, direction = "y", hjust = "left",
+#         size = 5,
+#         segment.curvature = -0.1,
+#         segment.ncp = 3,
+#         segment.angle = 20,
+#         segment.color = NA,
+#         family = "Ubuntu", fontface = "bold", show.legend = F
+#     ) +
+#     geom_point(aes(
+#         color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo),
+#         y = ifelse(fecha == max(fecha), values, NA)),
+#         size = 4, show.legend = F) +
+#     scale_color_manual(
+#         "", 
+#         values = c(mcv_semaforo[4], mcv_discrete_7)
+#     ) +
+#     scale_x_date(
+#         date_labels = "%b %y",
+#         breaks = seq.Date(from = floor_date(as.Date(max(df_06_02_servicios_pacientes$fecha)), "month"), 
+#                           to = floor_date(as.Date("2015-09-01")+(((month(max(df_06_02_servicios_pacientes$fecha))))), "month"), 
+#                           by = "-6 month"),
+#         expand = expansion(mult = c(0.02, 0.15))
+#     ) +
+#     #scale_y_continuous(labels = scales::percent_format(accuracy = 1L)) +
+#     scale_y_continuous(labels = scales::number_format(accuracy = 1L),
+#                        expand = expansion(c(0.3, 0.3))
+#                        # limits = c(75, 125)
+#                        ) +
+#     theme_minimal() +
+#     labs(
+#         title = titulo,
+#         subtitle = subtitulo, caption = nota,
+#         color="", shape="", y = eje_y
+#     ) +
+#     theme(plot.title = element_text(size = 40, face = "bold", colour = "#6950D8"),
+#           plot.subtitle = element_text(size = 30, colour = "#777777", margin=margin(0,0,5,0)),
+#           plot.caption = element_text(size = 25, colour = "#777777"),
+#           plot.margin= margin(0.3, 0.4, 1.5, 0.3, "cm"), # margin(top,right, bottom,left)
+#           panel.grid.minor  = element_blank(),
+#           panel.background = element_rect(fill = "transparent",colour = NA),
+#           text = element_text(family = "Ubuntu"),
+#           axis.title.x = element_blank(),
+#           axis.title.y = element_text(size = 25),
+#           axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
+#           axis.text.y = element_text(size = 20),
+#           legend.text = element_text(size = 30),
+#           legend.position = "none")
+# 
+# 
+# g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+# 
+# ggsave(g, filename = paste_info("02_06_pacientes.png"),
+#        # type = "cairo", device = "png",
+#        width = 16, height = 9, dpi = 200, bg= "transparent")
 
 # 4.7. Servicios de hospital -----------------------------------------------------
 
