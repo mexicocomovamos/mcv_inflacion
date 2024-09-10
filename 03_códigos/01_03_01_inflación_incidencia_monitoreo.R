@@ -102,7 +102,7 @@ d_inpc <- data.frame()
 
 # source("../mcv_infobites/02_códigos/24_inegi_series_juve.R")
 
-tiempo_espera <- 0.65
+tiempo_espera <- 0.7
 
 # i = 449
 
@@ -1191,42 +1191,54 @@ if(v_quincena==1){
         mutate(tipo = "General") %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]) %>% 
+                filter(ccif == "Alimentos"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Alimentos"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Alimentos")
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Vivienda"]) %>% 
+                filter(ccif == "Vivienda"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Vivienda"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Vivienda")
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Salud"]) %>% 
+                filter(ccif == "Salud"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Salud"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Salud")
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]) %>% 
+                filter(ccif == "Servicios de transporte de pasajeros"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Servicios de transporte")
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]) %>% 
+                filter(ccif == "Servicios educativos"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Educación")
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]) %>% 
+                filter(ccif == "Restaurantes y servicios de alojamiento"
+                    # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]
+                    ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
                 mutate(tipo = "Restaurantes y hoteles")
@@ -1235,6 +1247,9 @@ if(v_quincena==1){
         glimpse
     
 } else{
+    # unique(d_01_ccif$tipo)
+    # d_inpc %>%
+    #     filter(ccif == "Servicios de transporte de pasajeros")
     
     d_01_ccif <- d_inpc %>% 
         filter(id_ccif_0=="00") %>% 
@@ -1270,7 +1285,7 @@ if(v_quincena==1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Servicios de transporte"
+                filter(ccif == "Servicios de transporte de pasajeros"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Servicios de transporte"]
                     ) %>% 
                 select(fecha = date, values) %>% 
@@ -1279,7 +1294,7 @@ if(v_quincena==1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Educación"
+                filter(ccif == "Servicios educativos"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Educación"]
                     ) %>% 
                 select(fecha = date, values) %>% 
@@ -1288,7 +1303,7 @@ if(v_quincena==1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Restaurantes y hoteles"
+                filter(ccif == "Restaurantes y servicios de alojamiento"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Restaurantes y hoteles"]
                     ) %>% 
                 select(fecha = date, values) %>% 
@@ -1300,8 +1315,6 @@ if(v_quincena==1){
     
 }
 
-
-
 ifelse(
     v_quincena == 1,
     d_01_ccif <- d_01_ccif %>% 
@@ -1310,8 +1323,6 @@ ifelse(
     d_01_ccif %>% 
         glimpse
 )
-
-
 
 titulo <- "Índice de precios al consumidor por clasificación del \nconsumo individual por finalidades seleccionadas"
 ifelse(
@@ -1827,12 +1838,12 @@ if(v_quincena == 1){
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Leche quesos y huevos"
+                filter(ccif == "Leche, otros productos lácteos y huevos"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]
                     ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
-                mutate(tipo = "Leche, quesos y huevos", ord = 2)
+                mutate(tipo = "Leche, otros productos lácteos y huevos", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
@@ -1850,7 +1861,7 @@ if(v_quincena == 1){
                     ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
-                mutate(tipo = "Queso oaxaca y asadero", ord = 4)
+                mutate(tipo = "Queso Oaxaca y asadero", ord = 4)
         ) %>% 
         bind_rows(
             d_inpc %>% 
@@ -1876,12 +1887,12 @@ if(v_quincena == 1){
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Leche quesos y huevos"
+                filter(ccif == "Leche, otros productos lácteos y huevos"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Leche quesos y huevos"]
                     ) %>% 
                 select(fecha = date, values) %>% 
                 arrange(fecha) %>% 
-                mutate(tipo = "Leche, quesos y huevos", ord = 2)
+                mutate(tipo = "Leche, otros productos lácteos y huevos", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
@@ -1892,12 +1903,12 @@ if(v_quincena == 1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Queso oaxaca y asadero"
+                filter(ccif == "Queso Oaxaca y asadero"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Queso oaxaca y asadero"]
                     ) %>% 
                 select(fecha = date, values) %>% 
                 arrange(fecha) %>% 
-                mutate(tipo = "Queso oaxaca y asadero", ord = 4)
+                mutate(tipo = "Queso Oaxaca y asadero", ord = 4)
         ) %>% 
         bind_rows(
             d_inpc %>% 
@@ -1938,7 +1949,7 @@ g <-
                col = reorder(tipo, ord),
                label = ifelse(
                    fecha == max(fecha),
-                   paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
+                   paste0(str_wrap(tipo,20), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
                    NA
                )
            ))+
@@ -2657,7 +2668,7 @@ if(v_quincena == 1){
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Azúcar mermeladas miel chocolates y dulces" 
+                filter(ccif == "Azúcar, productos para confitería y postres" 
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar mermeladas miel chocolates y dulces"]
                     ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
@@ -2684,7 +2695,7 @@ if(v_quincena == 1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Gelatina miel y mermeladas"
+                filter(ccif == "Gelatina, miel y mermeladas"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Gelatina miel y mermeladas"]
                     ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
@@ -2693,7 +2704,7 @@ if(v_quincena == 1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Helados nieves y paletas de hielo"
+                filter(ccif == "Helados, nieves y paletas de hielo"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Helados nieves y paletas de hielo"]
                     ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
@@ -2714,7 +2725,7 @@ if(v_quincena == 1){
         mutate(tipo = "Alimentos", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Azúcar mermeladas miel chocolates y dulces"
+                filter(ccif == "Azúcar, productos para confitería y postres"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Azúcar mermeladas miel chocolates y dulces"]
                     ) %>% 
                 select(fecha = date, values) %>% 
@@ -2741,7 +2752,7 @@ if(v_quincena == 1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Gelatina miel y mermeladas"
+                filter(ccif == "Gelatina, miel y mermeladas"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Gelatina miel y mermeladas"]
                     ) %>% 
                 select(fecha = date, values) %>% 
@@ -2750,7 +2761,7 @@ if(v_quincena == 1){
         ) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Helados nieves y paletas de hielo"
+                filter(ccif == "Helados, nieves y paletas de hielo"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Helados nieves y paletas de hielo"]
                     ) %>% 
                 select(fecha = date, values) %>% 
@@ -2775,6 +2786,7 @@ titulo <- "Índice de precios al consumidor de\nazúcares seleccionadas"
 eje_y <- "Índice base 2ª quincena de julio 2018 = 100"
 g <- 
     ggplot(data = d_02_07_azucares %>% 
+               unique() %>% 
                arrange(fecha) %>% 
                group_by(tipo) %>% 
                mutate(tasa_anual = (values/lag(values, 12))-1) %>% 
@@ -2786,7 +2798,7 @@ g <-
                col = reorder(tipo, ord),
                label = ifelse(
                    fecha == max(fecha),
-                   paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
+                   paste0(str_wrap(tipo,20), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
                    NA
                )
            ))+
@@ -2796,7 +2808,7 @@ g <-
     ggrepel::geom_text_repel(
         aes(color = if_else(tipo == "Alimentos", mcv_semaforo[4], tipo)), 
         nudge_x = 100, direction = "y", hjust = "left",
-        size = 5,
+        size = 4,
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
@@ -2969,8 +2981,8 @@ iafl <- d_inpc %>%
     filter(ccif %in% c(
         "Total", 
         "Alimentos", 
-        "Frutas", 
-        "Legumbres y hortalizas" 
+        "Frutas y frutos secos", 
+        "Hortalizas, tubérculos, plátanos de cocción y legumbres" 
     )) %>% 
     mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>%
     select(date_shortcut, ccif, fecha = date, values) %>% 
@@ -3002,13 +3014,13 @@ g <- iafl %>%
                size = 2.5,
                show.legend = F) +
     ggrepel::geom_text_repel(data = iafl %>% filter(fecha == max(fecha)),
-                             aes(label = cat, 
+                             aes(label = cat %>% str_wrap(20), 
                                  fontface = grosor), 
                              direction = "y",
                              family = "Ubuntu", 
                              nudge_x = 100, 
                              hjust = "left",
-                             size = 5.5,
+                             size = 4.5,
                              segment.curvature = -0.1,
                              segment.ncp = 3,
                              segment.angle = 20,
@@ -3018,8 +3030,8 @@ g <- iafl %>%
     scale_discrete_manual(aesthetics = "alpha", values = c(0.8,0.95)) + 
     scale_discrete_manual(aesthetics = "fontface", values = c("bold","bold")) + 
     scale_color_manual(values = c("General" = "#4D5BF0",
-                                  "Frutas" = "#0ACF5F",
-                                  "Legumbres y hortalizas" = "#E84D9A",
+                                  "Frutas y frutos secos" = "#0ACF5F",
+                                  "Hortalizas, tubérculos, plátanos de cocción y legumbres" = "#E84D9A",
                                   "Alimentos" = "#E8866D")) + 
     scale_x_date(
         date_labels = "%b %y",
@@ -3069,12 +3081,12 @@ if(v_quincena == 1){
         mutate(tipo = "Bebidas no alcohólicas", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Café té y cacao"
+                filter(ccif == "Café y sustitutos de cafe"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Café té y cacao"]
                     ) %>% 
                 select(date_shortcut, fecha = date, values) %>% 
                 arrange(fecha) %>% 
-                mutate(tipo = "Café, té y cacao", ord = 2)
+                mutate(tipo = "Café y sustitutos de cafe", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
@@ -3118,12 +3130,12 @@ if(v_quincena == 1){
         mutate(tipo = "Bebidas no alcohólicas", ord = 1) %>% 
         bind_rows(
             d_inpc %>% 
-                filter(ccif == "Café té y cacao"
+                filter(ccif == "Café y sustitutos de cafe"
                     # id_ccif_0==d_inpc_ccif_ids$id_ccif_0[d_inpc_ccif_ids$ccif=="Café té y cacao"]
                     ) %>% 
                 select(fecha = date, values) %>% 
                 arrange(fecha) %>% 
-                mutate(tipo = "Café, té y cacao", ord = 2)
+                mutate(tipo = "Café y sustitutos de cafe", ord = 2)
         ) %>% 
         bind_rows(
             d_inpc %>% 
@@ -3250,7 +3262,7 @@ ggsave(g, filename = paste_info("02_03_bebidas.png"),
 
 # ---- Enlistar productos del catálogo
 v_productos <- c(
-    "Productos farmacéuticos",
+    "Medicamentos",
     "Analgésicos",
     "Antibióticos", "Antigripales"
     ,
@@ -3322,7 +3334,7 @@ g <-
             col = reorder(tipo, desc(ord)),
             label = ifelse(
                 fecha == max(fecha),
-                paste0(str_wrap(tipo,14), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
+                paste0(str_wrap(tipo,20), "\n", round(values,1), " [", percent(tasa_anual, accuracy = 0.01), "]"), #),
                 NA
             )
         ))+
@@ -3332,7 +3344,7 @@ g <-
     ggrepel::geom_text_repel(
         aes(color = if_else(tipo == v_productos[1], mcv_semaforo[4], tipo)), 
         nudge_x = 100, direction = "y", hjust = "left",
-        size = 5,
+        size = 4,
         segment.curvature = -0.1,
         segment.ncp = 3,
         segment.angle = 20,
@@ -3523,9 +3535,10 @@ ggsave(g, filename = paste_info("02_05_farma.png"),
 # ---- Enlistar productos del catálogo
 v_productos <- c(
     # "Servicios de hospital (categoría)", 
-    "Servicios de hospital",
+    "Servicios curativos y de rehabilitación para pacientes hospitalizados",
     "Atención médica durante el parto", 
-    "Hospitalización general", "Hospitalización parto", 
+    "Hospitalización general",
+    "Hospitalización parto", 
     "Operación quirúrgica")
 
 # ---- Seleccionar productos del catálogo de identificadores 
@@ -3554,6 +3567,9 @@ for(i in 1:length(v_ids)){
     df_series <- df_series %>% bind_rows(df_data)
 }
 
+# unique(df_series$tipo)
+# unique(df_data)
+
 # ---- Limpiar la info 
 
 # Filtrar fechas 
@@ -3574,10 +3590,16 @@ ifelse(v_quincena == 1,
            glimpse
 )
 
+df_06_03_servicios_hospital <- df_06_03_servicios_hospital %>% 
+    mutate(tipo = ifelse(tipo == "Servicios curativos y de rehabilitación para pacientes hospitalizados", 
+                         yes = "Servicios de hospitalización", 
+                         no = tipo))
 
 # ---- Gráfica 
 titulo  <- "Índice de precios al consumidor de servicios\nde hospital"
 eje_y   <- "Índice base 2ª quincena de julio 2018 = 100"
+
+unique(df_06_03_servicios_hospital$tipo)
 
 g <- 
     ggplot(
@@ -4058,7 +4080,5 @@ for(i in 1:4){
 }
 
 rm(list=ls(pattern="^v_pacic"))
-
-
 
 # FIN. -------------------------------------------------------------------------
