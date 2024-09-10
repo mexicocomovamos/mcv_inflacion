@@ -50,12 +50,12 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-# v_usuaria <- "juvenal"
-v_usuaria <- "axel"
+v_usuaria <- "juvenal"
+# v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 1
+v_quincena <- 2
 ####################################
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
@@ -116,31 +116,31 @@ d_inpc <- readRDS(paste_out("01_03_inpc_complete_prods_ccif.RDS")) %>%
 
 ## 1.1. Identificadores de productos para seguimiento ----
 v_prods_suby <- c(
-    "01_011_0111_014", 
-    "01_011_0114_036", 
-    "01_011_0115_043",
-    "01_011_0111_009",
-    "11_111_1111_272",
-    "01_012_0122_100",
-    "07_073_0733_232",
-    "11_111_1111_276",
-    "09_096_0960_261",
-    "07_071_0711_211",
-    "04_042_0421_139"
+    "01_011_0111_009", # Pan de caja
+    "01_011_0111_014", # Tortilla de maíz
+    "01_011_0114_034", # Leche pasteurizada y fresca
+    "01_011_0115_042", # Aceites y grasas vegetales comestibles
+    "01_012_0121_095", # Jugos o néctares envasados
+    "04_042_0421_139", # Vivienda propia
+    "07_071_0711_206",     # Automóviles
+    "07_073_0733_227", # Transporte aéreo
+    "09_098_0980_255", # Servicios turísticos en paquete
+    "11_111_1111_265", # Loncherías, fondasm torterías y taquerías
+    "11_111_1111_268" # Restaurantes y similares 
 )
 
 v_prods_nosuby <- c(
-    "07_072_0722_219",
-    "04_045_0452_144",
-    "04_045_0451_143",
-    "01_011_0112_018",
-    "01_011_0112_022",
-    "01_011_0117_062",
-    "01_011_0116_046",
-    "01_011_0117_071",
-    "01_011_0116_049",
-    "01_011_0114_032",
-    "01_011_0117_066"
+    "01_011_0112_018", # Carne de res
+    "01_011_0112_022", # Pollo
+    "01_011_0114_031", # Huevo
+    "01_011_0116_045", # Aguacate
+    "01_011_0116_048", # Limón
+    "01_011_0117_061", # Cebolla
+    "01_011_0117_065", # Chile Serrano
+    "01_011_0117_070", # Jitomate
+    "04_045_0451_144", # Electricidad
+    "04_045_0452_145", # Gas LP
+    "07_072_0722_214" # Gasolina de bajo octanaje (Magna)
 )
 
 ## 1.2. Limpieza de datos ----
@@ -171,11 +171,11 @@ if(v_quincena == 1){
         ) %>% 
         group_by(ccif, id_ccif_0) %>% 
         mutate(
-            ccif = case_when(
-                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-                T ~ ccif
-            ),
+            # ccif = case_when(
+            #     id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+            #     id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+            #     T ~ ccif
+            # ),
             var_mensual = (values - lag(values))/lag(values),
             incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
@@ -184,7 +184,7 @@ if(v_quincena == 1){
         ungroup() %>% 
         glimpse()
     
-} else{
+} else {
     
     d_monitoreo <- 
         d_inpc %>% 
@@ -207,12 +207,13 @@ if(v_quincena == 1){
                 arrange(fecha)
         ) %>% 
         group_by(ccif, id_ccif_0) %>% 
+        # filter(ccif == "Limón") %>% 
         mutate(
-            ccif = case_when(
-                id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-                id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-                T ~ ccif
-            ),
+            # ccif = case_when(
+            #     id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
+            #     id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
+            #     T ~ ccif
+            # ),
             var_mensual = (values - lag(values))/lag(values),
             incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
@@ -235,13 +236,19 @@ pegar_logo <- function(x){
 
 # Guardar nombres productos en orden alfabético 
 v_productos <- sort(unique(d_monitoreo$ccif))
-
 # Clasificación según tipo de inflación 
-v_subyacente <- c(
-    v_productos[20], v_productos[13], v_productos[1], v_productos[16], 
-    v_productos[15], v_productos[12], v_productos[21], v_productos[18], 
-    v_productos[19], v_productos[3], v_productos[22])
-
+v_subyacente <- c("Pan de caja"                              ,
+                  "Tortilla de maíz"                         ,
+                  "Leche pasteurizada y fresca"              ,
+                  "Aceites y grasas vegetales comestibles"   ,
+                  "Jugos o néctares envasados"               ,
+                  "Vivienda propia"                          ,
+                  "Automóviles",
+                  "Transporte aéreo"                         ,
+                  "Servicios turísticos en paquete"          ,
+                  "Loncherías, fondas, torterías y taquerías",
+                   "Restaurantes y similares")
+# writeLines(v_subyacente)
 v_nosubyacente <- v_productos[!(v_productos %in% v_subyacente)]
 
 # Procesamiento (formato largo)
@@ -341,7 +348,7 @@ df_formato <- d_monitoreo %>%
         cambio = case_when(
             incidencia_anual >  0 ~ "▲",
             incidencia_anual <  0 ~ "▼",
-            incidencia_anual == 0 ~ "~" ),
+            incidencia_anual == 0 ~ "~" )) %>% 
         # HTML
         # var_anual >  0 ~ "<font color = \"#00b783\"> ▲ </font>",
         # var_anual <  0 ~ "<font color = \"#ff6260\"> ▼ </font>",
@@ -351,14 +358,14 @@ df_formato <- d_monitoreo %>%
         # var_anual <  0 ~ "<p style = \"color:#ff6260\"> ▼ </p>",
         # var_anual == 0 ~ "<p style = \"color:#777777\"> ~ </p>"),
         # Texto para la tabla
-        texto = paste0(
+        mutate(texto = paste0(
             # Nombre del producto en negritas 
             "**", ccif,"**", "<br>", 
             "Anual: "  , scales::number(incidencia_anual  , accuracy = 0.001), "<br>", 
             "Mensual: ", scales::number(incidencia_mensual, accuracy = 0.001)
-        ), 
+        )) %>% 
         # Logotipo para la tabla
-        logo = case_when(
+        mutate(logo = case_when(
             ccif == v_productos[1] ~ pegar_logo("01_Aceite"),
             ccif == v_productos[2] ~ pegar_logo("02_Aguacate"),
             ccif == v_productos[3] ~ pegar_logo("03_Automovil"),

@@ -3,7 +3,6 @@ Sys.setlocale("LC_TIME", "es_ES")
 # Sys.setlocale("LC_TIME", "es_ES.UTF-8")
 Sys.setlocale("LC_TIME", "español")
 
-
 options(scipen=999)
 
 # Librerias ----
