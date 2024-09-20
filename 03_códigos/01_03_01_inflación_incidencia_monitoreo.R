@@ -102,71 +102,108 @@ d_inpc <- data.frame()
 
 # source("../mcv_infobites/02_códigos/24_inegi_series_juve.R")
 
-tiempo_espera <- 0.7
-
+tiempo_espera <- 0.1
+# ?Sys.sleep()
 # i = 449
 
 if(v_quincena==1){
     
     for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
         
-        print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
-        tempo <- inegi_series(
-            serie    = d_inpc_complete$id_inegi_q[i],
-            token    = v_token_inegi, 
-            database = "BIE", 
-            as_tt    = TRUE) %>% 
-            mutate(
-                ccif = d_inpc_complete$ccif[i],
-                id_ccif_0 = d_inpc_complete$id_ccif_0[i],
-                id_ccif = d_inpc_complete$id_ccif[i],
-                id_ccif_1 = d_inpc_complete$id_ccif_1[i],
-                ponderador_inpc_id_ccif_1 = d_inpc_complete$ponderador_inpc_id_ccif_1[i],
-                id_ccif_2 = d_inpc_complete$id_ccif_2[i],
-                ponderador_inpc_id_ccif_2 = d_inpc_complete$ponderador_inpc_id_ccif_2[i],
-                id_ccif_3 = d_inpc_complete$id_ccif_3[i],
-                ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
-                id_ccif_4 = d_inpc_complete$id_ccif_4[i],
-                ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
-            )
-        
-        d_inpc <- bind_rows(d_inpc, tempo)
-        rm(tempo)
-        
-        Sys.sleep(tiempo_espera)
-        
+        repeat {
+            tryCatch({
+                tiempo_espera_og <- tiempo_espera
+                print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
+                tempo <- inegi_series(
+                    serie    = d_inpc_complete$id_inegi_q[i],
+                    token    = v_token_inegi, 
+                    database = "BIE", 
+                    as_tt    = TRUE) %>% 
+                    mutate(
+                        ccif = d_inpc_complete$ccif[i],
+                        id_ccif_0 = d_inpc_complete$id_ccif_0[i],
+                        id_ccif = d_inpc_complete$id_ccif[i],
+                        id_ccif_1 = d_inpc_complete$id_ccif_1[i],
+                        ponderador_inpc_id_ccif_1 = d_inpc_complete$ponderador_inpc_id_ccif_1[i],
+                        id_ccif_2 = d_inpc_complete$id_ccif_2[i],
+                        ponderador_inpc_id_ccif_2 = d_inpc_complete$ponderador_inpc_id_ccif_2[i],
+                        id_ccif_3 = d_inpc_complete$id_ccif_3[i],
+                        ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
+                        id_ccif_4 = d_inpc_complete$id_ccif_4[i],
+                        ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
+                    )
+                d_inpc <- bind_rows(d_inpc, tempo)
+                rm(tempo)
+                Sys.sleep(tiempo_espera_og)
+                break
+            }, error = function(e){
+                message(str_c("Error en ", paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i], ". ", "Reintentando!")))
+                tiempo_espera_og <- tiempo_espera_og*2
+                Sys.sleep(tiempo_espera_og)
+            })    
+        }
     }
     
 } else{
     
     for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
         
-        print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
-        tempo <- inegi_series(
-            serie    = 
-                # "909069",
-                d_inpc_complete$id_inegi_m[i],
-            token    = v_token_inegi, 
-            database = "BIE", 
-            as_tt    = TRUE) %>% 
-            mutate(
-                ccif = d_inpc_complete$ccif[i],
-                id_ccif_0 = d_inpc_complete$id_ccif_0[i],
-                id_ccif = d_inpc_complete$id_ccif[i],
-                id_ccif_1 = d_inpc_complete$id_ccif_1[i],
-                ponderador_inpc_id_ccif_1 = d_inpc_complete$ponderador_inpc_id_ccif_1[i],
-                id_ccif_2 = d_inpc_complete$id_ccif_2[i],
-                ponderador_inpc_id_ccif_2 = d_inpc_complete$ponderador_inpc_id_ccif_2[i],
-                id_ccif_3 = d_inpc_complete$id_ccif_3[i],
-                ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
-                id_ccif_4 = d_inpc_complete$id_ccif_4[i],
-                ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
-            )
-        
-        d_inpc <- bind_rows(d_inpc, tempo)
-        rm(tempo)
-        
-        Sys.sleep(tiempo_espera)
+        repeat {
+            tryCatch({
+                tiempo_espera_og <- tiempo_espera
+                print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
+                tempo <- inegi_series(
+                    serie    = d_inpc_complete$id_inegi_m[i],
+                    token    = v_token_inegi, 
+                    database = "BIE", 
+                    as_tt    = TRUE) %>% 
+                    mutate(
+                        ccif = d_inpc_complete$ccif[i],
+                        id_ccif_0 = d_inpc_complete$id_ccif_0[i],
+                        id_ccif = d_inpc_complete$id_ccif[i],
+                        id_ccif_1 = d_inpc_complete$id_ccif_1[i],
+                        ponderador_inpc_id_ccif_1 = d_inpc_complete$ponderador_inpc_id_ccif_1[i],
+                        id_ccif_2 = d_inpc_complete$id_ccif_2[i],
+                        ponderador_inpc_id_ccif_2 = d_inpc_complete$ponderador_inpc_id_ccif_2[i],
+                        id_ccif_3 = d_inpc_complete$id_ccif_3[i],
+                        ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
+                        id_ccif_4 = d_inpc_complete$id_ccif_4[i],
+                        ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
+                    )
+                d_inpc <- bind_rows(d_inpc, tempo)
+                rm(tempo)
+                Sys.sleep(tiempo_espera_og)
+                break
+            }, error = function(e){
+                message(str_c("Error en ", paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i], ". ", "Reintentando!")))
+                tiempo_espera_og <- tiempo_espera_og*2
+                Sys.sleep(tiempo_espera_og)
+            })    
+        }
+        # print(paste0(d_inpc_complete$id_ccif_0[i], " - ", d_inpc_complete$ccif[i]))
+        # tempo <- inegi_series(
+        #     serie    = d_inpc_complete$id_inegi_m[i],
+        #     token    = v_token_inegi, 
+        #     database = "BIE", 
+        #     as_tt    = TRUE) %>% 
+        #     mutate(
+        #         ccif = d_inpc_complete$ccif[i],
+        #         id_ccif_0 = d_inpc_complete$id_ccif_0[i],
+        #         id_ccif = d_inpc_complete$id_ccif[i],
+        #         id_ccif_1 = d_inpc_complete$id_ccif_1[i],
+        #         ponderador_inpc_id_ccif_1 = d_inpc_complete$ponderador_inpc_id_ccif_1[i],
+        #         id_ccif_2 = d_inpc_complete$id_ccif_2[i],
+        #         ponderador_inpc_id_ccif_2 = d_inpc_complete$ponderador_inpc_id_ccif_2[i],
+        #         id_ccif_3 = d_inpc_complete$id_ccif_3[i],
+        #         ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
+        #         id_ccif_4 = d_inpc_complete$id_ccif_4[i],
+        #         ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
+        #     )
+        # 
+        # d_inpc <- bind_rows(d_inpc, tempo)
+        # rm(tempo)
+        # 
+        # Sys.sleep(tiempo_espera)
     }
 }
 
@@ -196,9 +233,17 @@ if(v_quincena==1){
     
 }
 
-d_inpc %>%
-    as_tibble() %>% 
-    openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion.xlsx")
+# Guardamos datos ----
+
+if(v_quincena == 1){
+    d_inpc %>%
+        as_tibble() %>% 
+        openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion_quincenas.xlsx")    
+} else {
+    d_inpc %>%
+        as_tibble() %>% 
+        openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion_mes.xlsx")    
+}
 
 # 1. Incidencia por productos ----
 if(v_quincena==1){
