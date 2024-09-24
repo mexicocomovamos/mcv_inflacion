@@ -2935,11 +2935,11 @@ fyvs <- d_inpc %>%
            ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
-    #{if(v_quincena == 1){
-     #   filter(., !date_shortcut %% 2 == 0)
-    #} else {
-     #   filter(., !date_shortcut %% 2 == 1)
-    #}} %>% 
+    {if(v_quincena == 1){
+      filter(., !date_shortcut %% 2 == 0)
+    } else {
+      filter(., !date_shortcut %% 2 == 1)
+    }} %>%
     mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%
@@ -3038,11 +3038,11 @@ iafl <- d_inpc %>%
     mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>%
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
-    #{if(v_quincena == 1){
-     #   filter(., !date_shortcut %% 2 == 0)
-    #} else {
-     #   filter(., !date_shortcut %% 2 == 1)
-    #}} %>% 
+    {if(v_quincena == 1){
+      filter(., !date_shortcut %% 2 == 0)
+    } else {
+      filter(., !date_shortcut %% 2 == 1)
+    }} %>%
     mutate(grosor = ifelse(ccif == "Total", yes = "Total", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%
