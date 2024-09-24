@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -275,7 +275,7 @@ if(v_quincena == 1){
         left_join(d_inpc_total, by = "fecha") %>% 
         unique() %>%
         group_by(ccif, id_ccif_0) %>% 
-        # filter(ccif == "Jitomate") %>% 
+        filter(ccif == "Jitomate") %>%
         mutate(var_quincenal = ((values - lag(values))/(lag(values)))) %>% 
         mutate(var_anual = c(((values - lag(values, 24))/lag(values, 24)))) %>% 
         mutate(incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador) %>% 
@@ -339,9 +339,15 @@ if(v_quincena == 1){
     
 }
 
-d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
-    filter(!is.na(var_mensual)) %>% 
-    filter(n <= 10 | between(n, nrow(.)-10, nrow(.)))
+if(v_quincena == 1){
+    d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
+        filter(!is.na(var_quincenal)) %>% 
+        filter(n <= 10 | between(n, nrow(.)-10, nrow(.)))    
+} else {
+    d_incidencia_prods_last_20 <- d_incidencia_prods_last %>% 
+        filter(!is.na(var_mensual)) %>% 
+        filter(n <= 10 | between(n, nrow(.)-10, nrow(.)))
+}
 
 d_incidencia_anual_prods_last_20 <- d_incidencia_anual_prods_last %>% 
     filter(!is.na(var_anual)) %>% 

@@ -30,6 +30,14 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
                      "#C6B2E3", "#E8B32E", "#0A93C4", "#974DF0", 
                      "#00D2D1", "#FF43FA", mcv_blacks[4],
                      mcv_blacks[3], mcv_blacks[2])
+
+# Ponderadores y claves: 
+d_inpc_complete <- readxl::read_excel("01_datos_crudos/01_03_inpc_complete_NewVersion.xlsx") %>% 
+        mutate(ponderador = ponderador_inpc_id_ccif_1) %>%
+        mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_2, no = ponderador)) %>%
+        mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_3, no = ponderador)) %>%
+        mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_4, no = ponderador))
+
 # Datos mensuales 
 datos_m <- readxl::read_xlsx("02_datos_limpios/total_datos_inflacion_mes.xlsx") %>% 
     as_tibble() %>% 
@@ -55,8 +63,8 @@ sel_genericos <- unique(datos_m$ccif) %>% sort() # Obtenemos el vector de genér
 
 # Argumentos de prueba
 # genericos = c("Total", "Renta de vivienda", "Ron")
-fecha_inicio = "2015-06-01"
-gen_grafica <- function(genericos, fecha_inicio = "2015-06-01", tipo_datos = "Datos quincenales"){
+fecha_inicio = "2018-12-01"
+gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Datos quincenales"){
     eje_y <- "Índice base\n2ª quincena de julio 2018 = 100"
     nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
     
@@ -189,7 +197,7 @@ gen_grafica <- function(genericos, fecha_inicio = "2015-06-01", tipo_datos = "Da
 }
 
 # genericos = c("Aceites y grasas")
-gen_barras_cambio_anual <- function(genericos, fecha_inicio = "2015-06-01", tipo_datos = "Datos mensuales"){
+gen_barras_cambio_anual <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Datos mensuales"){
     
     nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
     
