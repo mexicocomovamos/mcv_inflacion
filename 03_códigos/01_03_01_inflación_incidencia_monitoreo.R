@@ -275,7 +275,6 @@ if(v_quincena == 1){
         left_join(d_inpc_total, by = "fecha") %>% 
         unique() %>%
         group_by(ccif, id_ccif_0) %>% 
-        filter(ccif == "Jitomate") %>%
         mutate(var_quincenal = ((values - lag(values))/(lag(values)))) %>% 
         mutate(var_anual = c(((values - lag(values, 24))/lag(values, 24)))) %>% 
         mutate(incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador) %>% 
