@@ -50,8 +50,8 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-v_usuaria <- "juvenal"
-# v_usuaria <- "axel"
+# v_usuaria <- "juvenal"
+v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
