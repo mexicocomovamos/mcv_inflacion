@@ -39,7 +39,7 @@ if(!require("ggpubr")) install.packages("ggpubr") & require("ggpubr")
 if(!require("mxmaps")) install.packages("mxmaps") & require("mxmaps")
 if(!require("inegiR")) install.packages("inegiR") & require("inegiR")
 if(!require("ggalluvial")) install.packages("ggalluvial") & require("ggalluvial")
-if(!require("DatawRappr")) install.packages("DatawRappr") & require("DatawRappr")
+if(!require("DatawRappr")) install.packages("DatawRappr") & require("DatawRappr") # devtools::install_github("munichrocker/DatawRappr")
 require(extrafont)
 
 loadfonts(device="pdf")
@@ -50,8 +50,8 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-# v_usuaria <- "juvenal"
-v_usuaria <- "axel"
+v_usuaria <- "juvenal"
+# v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
@@ -159,7 +159,7 @@ if(v_quincena == 1){
                 filter(id_ccif_0 %in% v_prods_nosuby) %>% 
                 mutate(tipo = "No subyacente")
         ) %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values, encadenamiento) %>% 
         arrange(fecha) %>% 
         left_join(
             d_inpc %>% 
@@ -169,17 +169,14 @@ if(v_quincena == 1){
                 select(fecha = date, inpc = values) %>% 
                 arrange(fecha)
         ) %>% 
+        mutate(inpc_a = inpc/1.3609522607803, 
+               values_a = values/encadenamiento) %>%  # Factor de encadenamiento del INPC
         group_by(ccif, id_ccif_0) %>% 
         mutate(
-            # ccif = case_when(
-            #     id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-            #     id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-            #     T ~ ccif
-            # ),
             var_mensual = (values - lag(values))/lag(values),
-            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            incidencia_mensual = ((values_a - lag(values_a))/lag(inpc_a))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
-            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
+            incidencia_anual = ((values_a - lag(values_a, 12))/lag(inpc_a, 12))*ponderador,
         ) %>% 
         ungroup() %>% 
         glimpse()
@@ -197,7 +194,7 @@ if(v_quincena == 1){
                 filter(id_ccif_0 %in% v_prods_nosuby) %>% 
                 mutate(tipo = "No subyacente")
         ) %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values, encadenamiento) %>% 
         arrange(fecha) %>% 
         left_join(
             d_inpc %>% 
@@ -206,18 +203,14 @@ if(v_quincena == 1){
                 select(fecha = date, inpc = values) %>% 
                 arrange(fecha)
         ) %>% 
+        mutate(inpc_a = inpc/1.3609522607803, 
+               values_a = values/encadenamiento) %>%  # Factor de encadenamiento del INPC
         group_by(ccif, id_ccif_0) %>% 
-        # filter(ccif == "Limón") %>% 
         mutate(
-            # ccif = case_when(
-            #     id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-            #     id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-            #     T ~ ccif
-            # ),
             var_mensual = (values - lag(values))/lag(values),
-            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            incidencia_mensual = ((values_a - lag(values_a))/lag(inpc_a))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
-            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador,
+            incidencia_anual = ((values_a - lag(values_a, 12))/lag(inpc_a, 12))*ponderador,
         ) %>% 
         ungroup() %>% 
         glimpse()
@@ -361,7 +354,7 @@ df_formato <- d_monitoreo %>%
         mutate(texto = paste0(
             # Nombre del producto en negritas 
             "**", ccif,"**", "<br>", 
-            "Anual: "  , scales::number(incidencia_anual  , accuracy = 0.001), "<br>", 
+            # "Anual: "  , scales::number(incidencia_anual  , accuracy = 0.001), "<br>", 
             "Mensual: ", scales::number(incidencia_mensual, accuracy = 0.001)
         )) %>% 
         # Logotipo para la tabla

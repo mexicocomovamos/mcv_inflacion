@@ -208,6 +208,7 @@ if(v_quincena==1){
 }
 
 d_inpc <- as_tibble(d_inpc)
+d_inpc <- left_join(d_inpc, d_inpc_complete %>% select(ccif,id_ccif_0, encadenamiento) %>% filter(!is.na(encadenamiento)))
 
 if(v_quincena==1){
     
@@ -219,6 +220,7 @@ if(v_quincena==1){
                date = as.Date.numeric(date)) %>% 
         select(fecha = date, inpc = values) %>% 
         arrange(fecha) %>% 
+        mutate(inpc_a = inpc/1.3609522607803) %>% # Factor de encadenamiento del INPC
         glimpse
     
 } else{
@@ -229,6 +231,7 @@ if(v_quincena==1){
         filter(date > "2016-01-02") %>% 
         select(fecha = date, inpc = values) %>% 
         arrange(fecha) %>% 
+        mutate(inpc_a = inpc/1.3609522607803) %>% # Factor de encadenamiento del INPC
         glimpse
     
 }
@@ -253,7 +256,7 @@ if(v_quincena==1){
         filter(date > "2016-01-02") %>% 
         mutate(date = ifelse(date_shortcut %% 2 == 0, ymd(date)+days(15), date),
                date = as.Date.numeric(date)) %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values, encadenamiento) %>% 
         arrange(fecha) %>% 
         unique() %>% 
         glimpse
@@ -263,11 +266,11 @@ if(v_quincena==1){
     d_inpc_prods <- d_inpc %>% 
         drop_na(ponderador_inpc_id_ccif_4) %>% 
         filter(date > "2016-01-02") %>% 
-        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values) %>% 
+        select(fecha = date, ccif, id_ccif_0, ponderador = ponderador_inpc_id_ccif_4, values, encadenamiento) %>% 
         arrange(fecha) %>% 
-        unique() %>% 
-        glimpse
+        unique() 
 }
+
 
 if(v_quincena == 1){
     
@@ -277,8 +280,8 @@ if(v_quincena == 1){
         group_by(ccif, id_ccif_0) %>% 
         mutate(var_quincenal = ((values - lag(values))/(lag(values)))) %>% 
         mutate(var_anual = c(((values - lag(values, 24))/lag(values, 24)))) %>% 
-        mutate(incidencia_quincenal = ((values - lag(values))/lag(inpc))*ponderador) %>% 
-        mutate(incidencia_anual = ((values - lag(values, 24))/lag(inpc, 24))*ponderador) %>% 
+        mutate(incidencia_quincenal = ((values_a - lag(values_a))/lag(inpc_a))*ponderador) %>% 
+        mutate(incidencia_anual = ((values_a - lag(values_a, 24))/lag(inpc_a, 24))*ponderador) %>% 
         arrange(ccif, rev(fecha)) %>% 
         ungroup()
 
@@ -304,18 +307,14 @@ if(v_quincena == 1){
         left_join(d_inpc_total, by = "fecha") %>% 
         unique() %>% 
         group_by(ccif, id_ccif_0) %>% 
+        # Generamos los indices aditivos
+        mutate(values_a = values/encadenamiento) %>% 
+        # Ahora si, sacamos la incidencia
         mutate(
-            # ccif = case_when(
-            #     id_ccif_0 == "11_111_1111_272" ~ "Loncherías, fondas, torterías y taquerías",
-            #     id_ccif_0 == "04_045_0452_144" ~ "Gas LP",
-            #     id_ccif_0 == "08_083_0830_235" ~ "Paquetes de internet, telefonía y televisión de paga",
-            #     id_ccif_0 == "04_045_0452_145" ~ "Gas natural",
-            #     T ~ ccif
-            # ),
             var_mensual = (values - lag(values))/lag(values),
-            incidencia_mensual = ((values - lag(values))/lag(inpc))*ponderador,
+            incidencia_mensual = ((values_a - lag(values_a))/lag(inpc_a))*ponderador,
             var_anual = (values - lag(values, 12))/lag(values, 12),
-            incidencia_anual = ((values - lag(values, 12))/lag(inpc, 12))*ponderador
+            incidencia_anual = ((values_a - lag(values_a, 12))/lag(inpc_a, 12))*ponderador
         ) %>% 
         arrange(ccif, rev(fecha)) %>% 
         ungroup() %>% 
@@ -503,7 +502,8 @@ ggsave(g, filename = paste_info("99_svg/01_03_03_01_01_incidencia_mensual.svg"),
 
 ## 1.2. Incidencia anual ----
 titulo <- "Genéricos con mayor y\nmenor incidencia anual"
-nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general."
+nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general.\n
+[NO PUBLICAR HASTA AGOSTO DEL 2025]"
 ifelse(
     v_quincena == 1, 
     subtitulo <- 
@@ -570,11 +570,12 @@ g <-
     )
 
 
-
-g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
-ggsave(g, filename = paste_info("01_02_incidencia_anual.png"), 
-       width = 10, height = 15, 
-       dpi = 200, bg= "transparent")
+# OJO!!!!!!
+# DESBLOQUEAR HASTA AGOSTO DEL 2025, POR SUGERENCIA DEL INEGI
+# g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
+# ggsave(g, filename = paste_info("01_02_incidencia_anual.png"), 
+#        width = 10, height = 15, 
+#        dpi = 200, bg= "transparent")
 
 # ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_03_01_02_incidencia_anual.eps"),
 #        device = "eps",
@@ -732,28 +733,25 @@ ggplot(
         legend.margin = margin(8, 8, 8, 8)
     )
 
-g
-ggsave(g + theme(plot.title = element_blank(),
-                 plot.subtitle = element_blank(),
-                 plot.margin= margin(0.4, 0.4, 0.4, 0.4, "cm")), filename = paste_info("01_03_incidencia_anual_sin_fondo.png"), 
-       width = 16, height = 9, 
-       dpi = 200, bg= "transparent")
-g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-ggsave(g, filename = paste_info("01_03_incidencia_anual.png"), 
-       width = 9, height = 16, 
-       dpi = 200, bg= "transparent")
+# [NO PUBLICAR!] DESBLOQUEAR HASTA AGOSTO DEL 2025. 
+# ADEMÁS, CALCULAR PRIMERO LOS GRANDES FACTORES DE ENCADENAMIENTO !!!
 
+# g
+# ggsave(g + theme(plot.title = element_blank(),
+#                  plot.subtitle = element_blank(),
+#                  plot.margin= margin(0.4, 0.4, 0.4, 0.4, "cm")), filename = paste_info("01_03_incidencia_anual_sin_fondo.png"), 
+#        width = 16, height = 9, 
+#        dpi = 200, bg= "transparent")
+# g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+# ggsave(g, filename = paste_info("01_03_incidencia_anual.png"), 
+#        width = 9, height = 16, 
+#        dpi = 200, bg= "transparent")
 # 3. Incidencia anual por concepto y componente ----
-d_inpc_ponds_comp <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ponds.xlsx")) %>% 
+
+d_inpc_ponds_comp_prod <- readxl::read_excel("01_datos_crudos/01_03_inpc_concepto_ccif_ponds_NEW.xlsx") %>%
     glimpse
 
-# d_inpc_ponds_comp_prod <- readxl::read_excel(paste_inp("01_03_inpc_concepto_ccif_ponds.xlsx")) %>% 
-#     glimpse
-d_inpc_ponds_comp_prod <- readxl::read_excel("01_datos_crudos/01_03_inpc_concepto_ccif_ponds_NEW.xlsx") %>% 
-    glimpse
-
-
-names(d_inpc_ponds_comp_prod) %>% writeLines()
+# names(d_inpc_ponds_comp_prod) %>% writeLines()
 
 if(v_quincena==1){
     
@@ -1018,10 +1016,12 @@ g <-
         legend.margin = margin(8, 8, 8, 8)
     )
 
-g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-ggsave(g, filename = paste_info("01_04_incidencia_anual_componente.png"), 
-       width = 16, height = 9, 
-       dpi = 200, bg= "transparent")
+# NO PUBLICAR HASTA AGOSTO DEL 2025, O CUANDO INEGI LO INDIQUE
+# ADEMÁS, REVISAR ANTES EL CÁLCULO DE LOS FACTORES DE ENCADENAMIENTO DE GRANDES AGRUPACIONES
+# g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+# ggsave(g, filename = paste_info("01_04_incidencia_anual_componente.png"), 
+#        width = 16, height = 9, 
+#        dpi = 200, bg= "transparent")
 
 ## 3.2. Por concepto ----
 
@@ -1207,11 +1207,13 @@ g2 <-
         legend.margin = margin(1, 4.5, 6, 8)
     )
 
-g <- grid.arrange(g1, g2)
-g <- ggimage::ggbackground(as_ggplot(g), paste_info("00_plantillas/01_inegi.pdf"))
-ggsave(g, filename = paste_info("01_05_incidencia_anual_concepto.png"), 
-       width = 16, height = 9, 
-       dpi = 200, bg= "transparent")
+# NO PUBLICAR HASTA 2025. 
+# ADEMÁS, VERIFICAR EL CÁLCULO DE LOS GRANDES FACTORES DE ENCADENAMIENTO
+# g <- grid.arrange(g1, g2)
+# g <- ggimage::ggbackground(as_ggplot(g), paste_info("00_plantillas/01_inegi.pdf"))
+# ggsave(g, filename = paste_info("01_05_incidencia_anual_concepto.png"), 
+#        width = 16, height = 9, 
+#        dpi = 200, bg= "transparent")
 
 saveRDS(
     d_inpc,

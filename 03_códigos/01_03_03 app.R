@@ -331,7 +331,7 @@ gen_barras_cambio_anual <- function(genericos, fecha_inicio = "2018-12-01", tipo
 
 # Generacion de tablas 
 # genericos = "Ron"
-gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincenales"){
+gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincenales", fecha_inicio = "2018-12-01"){
     
     fecha_inicio_s <- "2018-12-01"
     
@@ -351,7 +351,9 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
         dx <- datos %>% 
             as_tibble() %>% 
             filter(ccif %in% genericos) %>% 
-            mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
+            mutate(ccif = ifelse(ccif == "Total", 
+                                 yes = "General", 
+                                 no = ccif)) %>% 
             select(date_shortcut, ccif, fecha = date, values,quincena) %>% 
             filter(fecha >= fecha_inicio_s) %>% 
             mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
@@ -371,6 +373,24 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
                    `Valor Índice` = values, 
                    `Crecimiento anual (%)` = tasa, 
                    `Crecimiento sexenio (%)` = tasa_sexenal)
+        
+        dx2 <- datos %>% 
+            as_tibble() %>% 
+            filter(ccif %in% genericos) %>% 
+            mutate(ccif = ifelse(ccif == "Total", 
+                                 yes = "General", 
+                                 no = ccif)) %>% 
+            select(date_shortcut, ccif, fecha = date, values,quincena) %>% 
+            filter(fecha >= fecha_inicio) %>% 
+            group_by(ccif) %>% 
+            filter(fecha %in% c(min(fecha), max(fecha))) %>% 
+            filter(date_shortcut %in% c(min(date_shortcut), max(date_shortcut))) %>% 
+            group_by(ccif) %>% 
+            summarise(`Tasa acumulada desde fecha inicio:` = 100*(-diff(values)/last(values)) %>% round(2)) %>% 
+            rename(`Genérico` = ccif)
+        
+        dx <- left_join(dx, dx2)
+        
     } else {
         dx <- datos %>% 
             as_tibble() %>% 
@@ -390,11 +410,30 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             filter(fecha == maxima_fecha) %>% 
             filter(quincena == max(quincena)) %>% 
             arrange(-tasa) %>% 
-            select(Fecha = fecha, 
+            select(
+                # Fecha = fecha, 
                    `Genérico` = ccif,
                    `Valor Índice` = values, 
                    `Crecimiento anual (%)` = tasa, 
                    `Crecimiento sexenio (%)` = tasa_sexenal)
+        
+        dx2 <- datos %>% 
+            as_tibble() %>% 
+            # filter(ccif %in% genericos) %>% 
+            mutate(ccif = ifelse(ccif == "Total", 
+                                 yes = "General", 
+                                 no = ccif)) %>% 
+            select(date_shortcut, ccif, fecha = date, values,quincena) %>% 
+            filter(fecha >= fecha_inicio) %>% 
+            group_by(ccif) %>% 
+            filter(fecha %in% c(min(fecha), max(fecha))) %>% 
+            filter(date_shortcut %in% c(min(date_shortcut), max(date_shortcut))) %>% 
+            group_by(ccif) %>% 
+            summarise(`Tasa acumulada desde fecha inicio:` = 100*(-diff(values)/last(values)) %>% round(2)) %>% 
+            rename(`Genérico` = ccif)
+        
+        dx <- left_join(dx, dx2)
+        
     }
     
     DT::datatable(dx,
@@ -416,7 +455,6 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
 # Aplicación: ----
 
 library(shiny)
-# source("global.R")
 
 ui <- fluidPage(
     h1("Monitor de inflación"),
@@ -430,6 +468,8 @@ ui <- fluidPage(
             selectizeInput("selTipoDatos", 
                            "Seleccione tipo de datos", 
                            choices = c("Datos mensuales", "Datos quincenales")),
+            dateInput("selFechaInicio", label = "Seleccione fecha de inicio de la gráfica", 
+                      value = "2018-12-01"),
             downloadButton("descarga_graficas", "Descargue la gráfica")
         ),
         mainPanel = mainPanel(
@@ -453,15 +493,15 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
     output$grafica_evolucion <- renderPlot({
-        gen_grafica(genericos = input$selGenerico, tipo_datos = input$selTipoDatos)
+        gen_grafica(genericos = input$selGenerico, tipo_datos = input$selTipoDatos, fecha_inicio = input$selFechaInicio)
     })
     
     output$grafica_cambio <- renderPlot({
-        gen_barras_cambio_anual(genericos = input$selGenerico, tipo_datos = input$selTipoDatos)
+        gen_barras_cambio_anual(genericos = input$selGenerico, tipo_datos = input$selTipoDatos,fecha_inicio = input$selFechaInicio)
     })
     
     output$tabla <- DT::renderDT({
-        gen_tabla(genericos = input$selGenerico, mostrar_todos = input$rdMostrarTodo, tipo_datos = input$selTipoDatos)
+        gen_tabla(genericos = input$selGenerico, mostrar_todos = input$rdMostrarTodo, tipo_datos = input$selTipoDatos, fecha_inicio = input$selFechaInicio)
     })
     
     output$descarga_graficas <- downloadHandler(
