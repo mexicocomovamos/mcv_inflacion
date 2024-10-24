@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -278,6 +278,7 @@ if(v_quincena == 1){
         left_join(d_inpc_total, by = "fecha") %>% 
         unique() %>%
         group_by(ccif, id_ccif_0) %>% 
+        mutate(values_a = values/encadenamiento) %>% 
         mutate(var_quincenal = ((values - lag(values))/(lag(values)))) %>% 
         mutate(var_anual = c(((values - lag(values, 24))/lag(values, 24)))) %>% 
         mutate(incidencia_quincenal = ((values_a - lag(values_a))/lag(inpc_a))*ponderador) %>% 
