@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -237,15 +237,21 @@ if(v_quincena==1){
 }
 
 # Guardamos datos ----
-
 if(v_quincena == 1){
+    # d_inpc %>%
+    #     as_tibble() %>% 
+    #     openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion_quincenas.xlsx")    
     d_inpc %>%
         as_tibble() %>% 
-        openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion_quincenas.xlsx")    
+        saveRDS("05_aplicacion/total_datos_inflacion_quincenas.rds")
+    
 } else {
+    # d_inpc %>%
+    #     as_tibble() %>% 
+    #     openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion_mes.xlsx")    
     d_inpc %>%
         as_tibble() %>% 
-        openxlsx::write.xlsx("02_datos_limpios/total_datos_inflacion_mes.xlsx")    
+        saveRDS("05_aplicacion/total_datos_inflacion_mes.rds")
 }
 
 # 1. Incidencia por productos ----

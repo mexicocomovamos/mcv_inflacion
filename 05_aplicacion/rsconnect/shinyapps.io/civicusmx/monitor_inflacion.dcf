@@ -1,0 +1,12 @@
+name: monitor_inflacion
+title: monitor_inflacion
+username: civicusmx
+account: civicusmx
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13609357
+bundleId: 9531422
+url: https://civicusmx.shinyapps.io/monitor_inflacion/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

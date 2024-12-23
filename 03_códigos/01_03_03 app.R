@@ -32,23 +32,29 @@ mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
                      mcv_blacks[3], mcv_blacks[2])
 
 # Ponderadores y claves: 
-d_inpc_complete <- readxl::read_excel("01_datos_crudos/01_03_inpc_complete_NewVersion.xlsx") %>% 
-        mutate(ponderador = ponderador_inpc_id_ccif_1) %>%
-        mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_2, no = ponderador)) %>%
-        mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_3, no = ponderador)) %>%
-        mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_4, no = ponderador))
+# d_inpc_complete <- readxl::read_excel("01_datos_crudos/01_03_inpc_complete_NewVersion.xlsx") %>% 
+#         mutate(ponderador = ponderador_inpc_id_ccif_1) %>%
+#         mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_2, no = ponderador)) %>%
+#         mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_3, no = ponderador)) %>%
+#         mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_4, no = ponderador))
 
 # Datos mensuales 
 datos_m <- readxl::read_xlsx("02_datos_limpios/total_datos_inflacion_mes.xlsx") %>% 
     as_tibble() %>% 
     mutate(date_shortcut2 = as.numeric(str_extract(date_shortcut, pattern = "\\d"))) %>% 
-    mutate(quincena = 2)
+    mutate(quincena = 2) %>% 
+    unique()
 
 # Datos quincenales 
 datos_q <- readxl::read_xlsx("02_datos_limpios/total_datos_inflacion_quincenas.xlsx") %>% 
     as_tibble() %>% 
-    mutate(date_shortcut2 = as.numeric(str_extract(date_shortcut, pattern = "\\d"))) %>% 
-    mutate(quincena = ifelse((date_shortcut2 %% 2 == 0), yes = 1, no = 2))
+    mutate(date_shortcut2 = as.numeric(str_extract(date_shortcut, pattern = "\\d+"))) %>% 
+    mutate(quincena = ifelse((date_shortcut2 %% 2 == 0), yes = 1, no = 2))  %>% 
+    unique()
+
+# datos_q$date2 <- NA_POSIXct_
+datos_q$date[datos_q$quincena == 1] <- datos_q$date[datos_q$quincena == 1] + days(15)
+datos_q$date[datos_q$quincena == 2] <- datos_q$date[datos_q$quincena == 2] + days(28)
 
 # Fecha máxima y quincena máxima: 
 # maxima_fecha <- datos$date %>% max() # Obtiene la fecha máxima con información disponible
@@ -62,8 +68,9 @@ sel_genericos <- unique(datos_m$ccif) %>% sort() # Obtenemos el vector de genér
 ## 03.1 Gráfica de evolución ----
 
 # Argumentos de prueba
-# genericos = c("Total", "Renta de vivienda", "Ron")
-fecha_inicio = "2018-12-01"
+# genericos = c("Renta de vivienda")
+# tipo_datos = "Datos quincenales"
+# fecha_inicio = "2018-12-01"
 gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Datos quincenales"){
     eje_y <- "Índice base\n2ª quincena de julio 2018 = 100"
     nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
@@ -161,8 +168,8 @@ gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Da
                         segment.ncp = 3,
                         segment.angle = 20,
                         segment.color = NA) + 
-        scale_discrete_manual(aesthetics = "linewidth", values = c(1,2)) + 
-        scale_discrete_manual(aesthetics = "fontface", values = c("bold","bold")) + 
+        scale_discrete_manual(aesthetics = "linewidth", values = c(2,1)) + 
+        scale_discrete_manual(aesthetics = "fontface", values = c("bold","italic")) + 
         scale_color_manual(values = paleta) +
         scale_x_datetime(
             date_labels = "%b %y",
@@ -350,6 +357,7 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
     if(mostrar_todos == F){
         dx <- datos %>% 
             as_tibble() %>% 
+            unique() %>% 
             filter(ccif %in% genericos) %>% 
             mutate(ccif = ifelse(ccif == "Total", 
                                  yes = "General", 
@@ -376,6 +384,7 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
         
         dx2 <- datos %>% 
             as_tibble() %>% 
+            unique() %>% 
             filter(ccif %in% genericos) %>% 
             mutate(ccif = ifelse(ccif == "Total", 
                                  yes = "General", 
@@ -393,6 +402,7 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
         
     } else {
         dx <- datos %>% 
+            unique() %>% 
             as_tibble() %>% 
             mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
             select(date_shortcut, ccif, fecha = date, values,quincena) %>% 
@@ -419,6 +429,7 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
         
         dx2 <- datos %>% 
             as_tibble() %>% 
+            unique() %>% 
             # filter(ccif %in% genericos) %>% 
             mutate(ccif = ifelse(ccif == "Total", 
                                  yes = "General", 
