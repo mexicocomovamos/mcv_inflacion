@@ -56,7 +56,7 @@ datos_q <- readRDS("total_datos_inflacion_quincenas.rds") %>%
     # readxl::read_xlsx("total_datos_inflacion_quincenas.xlsx") %>% 
     as_tibble() %>% 
     mutate(date_shortcut2 = as.numeric(str_extract(date_shortcut, pattern = "\\d+"))) %>% 
-    mutate(quincena = ifelse((date_shortcut2 %% 2 == 0), yes = 1, no = 2))  %>% 
+    mutate(quincena = ifelse((date_shortcut2 %% 2 == 0), yes = 2, no = 1))  %>% 
     unique() %>% 
     mutate(date = as.POSIXct(date,format="%Y-%m-%d"))
 
@@ -380,6 +380,9 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             mutate(tasa = (values/lag(values, 12*lag_m))-1) %>% 
             mutate(tasa = tasa*100) %>% 
             mutate(tasa = round(tasa, 2)) %>% 
+            mutate(tasa_m = (values/lag(values, 1*lag_m))-1) %>%
+            mutate(tasa_m = tasa_m*100) %>% 
+            mutate(tasa_m = round(tasa_m, 2)) %>% 
             mutate(tasa_sexenal = (values/first(values))-1) %>% 
             mutate(tasa_sexenal = tasa_sexenal*100) %>% 
             mutate(tasa_sexenal = round(tasa_sexenal, 2)) %>% 
@@ -390,7 +393,9 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
                    `Genérico` = ccif,
                    `Valor Índice` = values, 
                    `Crecimiento anual (%)` = tasa, 
-                   `Crecimiento sexenio (%)` = tasa_sexenal)
+                   `Crecimiento mensual (%)` = tasa_m,
+                   `Crecimiento sexenio (%)` = tasa_sexenal) %>% 
+            unique()
         
         dx2 <- datos %>% 
             as_tibble() %>% 
@@ -415,7 +420,7 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             unique() %>% 
             as_tibble() %>% 
             mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
-            select(date_shortcut, ccif, fecha = date, values,quincena) %>% 
+            select(date_shortcut,id_ccif_0, ccif, fecha = date, values,quincena) %>% 
             filter(fecha >= fecha_inicio_s) %>% 
             mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
             arrange(fecha) %>% 
@@ -423,6 +428,9 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             mutate(tasa = (values/lag(values, 12*lag_m))-1) %>% 
             mutate(tasa = tasa*100) %>% 
             mutate(tasa = round(tasa, 2)) %>% 
+            mutate(tasa_m = (values/lag(values, 1*lag_m))-1) %>%
+            mutate(tasa_m = tasa_m*100) %>% 
+            mutate(tasa_m = round(tasa_m, 2)) %>% 
             mutate(tasa_sexenal = (values/first(values))-1) %>% 
             mutate(tasa_sexenal = tasa_sexenal*100) %>% 
             mutate(tasa_sexenal = round(tasa_sexenal, 2)) %>% 
@@ -432,26 +440,34 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             arrange(-tasa) %>% 
             select(
                 # Fecha = fecha, 
+                    id_ccif_0, 
                    `Genérico` = ccif,
                    `Valor Índice` = values, 
                    `Crecimiento anual (%)` = tasa, 
-                   `Crecimiento sexenio (%)` = tasa_sexenal)
+                   `Crecimiento mensual (%)` = tasa_m,
+                   `Crecimiento sexenio (%)` = tasa_sexenal) %>% 
+            unique()
         
         dx2 <- datos %>% 
+            # filter(ccif == "Electricidad") %>% 
             as_tibble() %>% 
             unique() %>% 
             # filter(ccif %in% genericos) %>% 
             mutate(ccif = ifelse(ccif == "Total", 
                                  yes = "General", 
                                  no = ccif)) %>% 
-            select(date_shortcut, ccif, fecha = date, values,quincena) %>% 
+            select(date_shortcut, id_ccif_0, ccif, fecha = date, values,quincena) %>% 
             filter(fecha >= fecha_inicio) %>% 
-            group_by(ccif) %>% 
+            group_by(id_ccif_0, ccif) %>% 
             filter(fecha %in% c(min(fecha), max(fecha))) %>% 
             filter(date_shortcut %in% c(min(date_shortcut), max(date_shortcut))) %>% 
-            group_by(ccif) %>% 
+            group_by(id_ccif_0, ccif) %>% 
             summarise(`Tasa acumulada desde fecha inicio:` = 100*(-diff(values)/last(values)) %>% round(2)) %>% 
-            rename(`Genérico` = ccif)
+            rename(`Genérico` = ccif) %>% 
+            unique()
+        
+        # dx2 %>% 
+        #     filter(Genérico == "Electricidad")
         
         dx <- left_join(dx, dx2)
         
