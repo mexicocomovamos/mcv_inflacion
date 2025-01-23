@@ -79,7 +79,11 @@ sel_genericos <- unique(datos_m$ccif) %>% sort() # Obtenemos el vector de genér
 # genericos = c("Renta de vivienda")
 # tipo_datos = "Datos quincenales"
 # fecha_inicio = "2018-12-01"
-gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Datos quincenales"){
+gen_grafica <- function(genericos, 
+                        fecha_inicio = "2018-12-01", 
+                        tipo_datos = "Datos quincenales", 
+                        tipo_grafica = "Evolución INPC"){
+    
     eje_y <- "Índice base\n2ª quincena de julio 2018 = 100"
     nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
     
@@ -130,6 +134,8 @@ gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Da
         
     }
     
+    if(tipo_grafica == "Evolución INPC"){
+    
     fyvs <- datos %>% 
         as_tibble() %>% 
         filter(ccif %in% genericos) %>% 
@@ -145,6 +151,26 @@ gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Da
                            format(round(values, 1), nsmall = 1) %>% str_squish(), 
                            " [", format(round(tasa*100, 2), nsmall = 2) %>% str_squish(), "%]")) %>% 
         mutate(ccif = factor(ccif, levels = genericos %>% str_replace_all(c("Total" = "General"))))
+    
+    } else if(tipo_grafica == "Evolución niveles"){
+        
+        fyvs <- datos %>% 
+            as_tibble() %>% 
+            filter(ccif %in% genericos) %>% 
+            mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
+            select(date_shortcut, ccif, fecha = date, values, quincena) %>% 
+            filter(fecha >= fecha_inicio) %>% 
+            mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
+            group_by(ccif) %>%
+            arrange(ccif) %>% 
+            mutate(tasa = 100*(values/last(values))) %>% 
+            mutate(values = 100*(values/last(values))) %>% 
+            mutate(cat = str_c(str_wrap(ccif,20), "\n", 
+                               format(round(values, 1), nsmall = 1) %>% str_squish(), 
+                               " [", format(round(tasa-100, 2), nsmall = 2) %>% str_squish(), "%]")) %>% 
+            mutate(ccif = factor(ccif, levels = genericos %>% str_replace_all(c("Total" = "General"))))
+        
+    }
     
  
     if(length(genericos) <= 17){
@@ -183,8 +209,8 @@ gen_grafica <- function(genericos, fecha_inicio = "2018-12-01", tipo_datos = "Da
         scale_color_manual(values = paleta) +
         scale_x_datetime(
             date_labels = "%b %y",
-            breaks = seq.POSIXt(from = max(fyvs$fecha), 
-                                to = min(fyvs$fecha), 
+            breaks = seq.POSIXt(from = max(fyvs$fecha),
+                                to = min(fyvs$fecha),
                                 by = "-6 month"),
             expand = expansion(mult = c(0.02, 0.2))
         ) + 
@@ -508,6 +534,7 @@ ui <- fluidPage(
                          inline = T),
             dateInput("selFechaInicio", label = "Seleccione fecha de inicio de la gráfica", 
                       value = "2018-12-01"),
+            radioButtons(inputId = "rdTipoGrafica", label = "Seleccione tipo de gráfica", choices = c("Evolución INPC", "Evolución niveles"), inline = T),
             downloadButton("descarga_graficas", "Descargue la gráfica")
         ),
         mainPanel = mainPanel(
@@ -532,7 +559,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
     output$grafica_evolucion <- renderPlot({
-        gen_grafica(genericos = input$selGenerico, tipo_datos = input$selTipoDatos, fecha_inicio = input$selFechaInicio)
+        gen_grafica(genericos = input$selGenerico, tipo_datos = input$selTipoDatos, fecha_inicio = input$selFechaInicio, tipo_grafica = input$rdTipoGrafica)
     })
     
     output$grafica_cambio <- renderPlot({
