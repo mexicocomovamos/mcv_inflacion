@@ -50,12 +50,12 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-# v_usuaria <- "juvenal"
-v_usuaria <- "axel"
+v_usuaria <- "juvenal"
+# v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 2
+v_quincena <- 1
 ####################################
 
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
@@ -408,7 +408,8 @@ v_id <- "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
 
 # Escribir datos en drive 
 googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "incidencia")
-
+# googlesheets4::read_sheet(v_id)
+# ?googlesheets4::write_sheet
 ## 2.5. Republicar en DW ----
 DatawRappr::dw_publish_chart(chart_id = "61FSx", api_key = dw_token)
 # Republicar mapa en DW
