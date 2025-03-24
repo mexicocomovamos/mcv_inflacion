@@ -41,6 +41,7 @@ if(!require("inegiR")) install.packages("inegiR") & require("inegiR")
 if(!require("ggalluvial")) install.packages("ggalluvial") & require("ggalluvial")
 if(!require("DatawRappr")) install.packages("DatawRappr") & require("DatawRappr") # devtools::install_github("munichrocker/DatawRappr")
 require(extrafont)
+library(gargle)
 
 loadfonts(device="pdf")
 loadfonts(device="postscript")
@@ -50,16 +51,27 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-# v_usuaria <- "juvenal"
-v_usuaria <- "axel"
+v_usuaria <- "juvenal"
+# v_usuaria <- "axel"
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 2
+v_quincena <- 1
 ####################################
 
+# Seccion de autenticación:
+options(gargle_oauth_cache = ".secrets")
+gargle::gargle_oauth_cache()
+list.files(".secrets/")
+
 googledrive::drive_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
-googlesheets4::gs4_auth(paste0(v_usuaria, "@mexicocomovamos.mx"))
+googlesheets4::gs4_auth(cache = ".secrets", paste0(v_usuaria, "@mexicocomovamos.mx"))
+
+
+# gs4_auth(
+#     cache = ".secrets",
+#     email = "juvenal@mexicocomovamos.mx"
+# )
 
 ## Funciones ----
 # Directorios de las carpetas 
