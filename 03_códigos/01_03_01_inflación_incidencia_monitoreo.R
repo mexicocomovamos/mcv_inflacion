@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -2944,11 +2944,11 @@ fyvs <- d_inpc %>%
     select(date_shortcut, ccif, fecha = date, values) %>%
     mutate(date_shortcut = as.numeric(date_shortcut)) %>%
     filter(fecha >= "2015-06-01") %>% 
-    #{if(v_quincena == 1){
-    #   filter(., !date_shortcut %% 2 == 0)
-    #} else {
-    #   filter(., !date_shortcut %% 2 == 1)
-    #}} %>%
+    {if(v_quincena == 1){
+      filter(., !date_shortcut %% 2 == 0)
+    } else {
+      .
+    }} %>%
     mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%
@@ -3047,11 +3047,11 @@ iafl <- d_inpc %>%
     mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>%
     select(date_shortcut, ccif, fecha = date, values) %>% 
     filter(fecha >= "2015-06-01") %>% 
-    #{if(v_quincena == 1){
-    #filter(., !date_shortcut %% 2 == 0)
-    #} else {
-    #filter(., !date_shortcut %% 2 == 1)
-    #}} %>%
+    {if(v_quincena == 1){
+    filter(., !date_shortcut %% 2 == 0)
+    } else {
+    .
+    }} %>%
     mutate(grosor = ifelse(ccif == "Total", yes = "Total", no = "Genéricos")) %>% 
     arrange(fecha) %>% 
     group_by(ccif) %>%

@@ -5,7 +5,7 @@ account: civicusmx
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13609357
-bundleId: 9627336
+bundleId: 10252047
 url: https://civicusmx.shinyapps.io/monitor_inflacion/
 version: 1
 asMultiple: FALSE
