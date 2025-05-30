@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # Paquetes ----
@@ -107,7 +107,7 @@ tiempo_espera <- 0.1
 # i = 449
 
 if(v_quincena==1){
-    
+    # i = 1
     for(i in 1:length(unique(d_inpc_complete$id_ccif_0))) {
         
         repeat {
@@ -131,7 +131,8 @@ if(v_quincena==1){
                         ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
                         id_ccif_4 = d_inpc_complete$id_ccif_4[i],
                         ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
-                    )
+                    ) %>% 
+                    mutate(inegi_api = d_inpc_complete$id_inegi_q[i])
                 d_inpc <- bind_rows(d_inpc, tempo)
                 rm(tempo)
                 Sys.sleep(tiempo_espera_og)
@@ -169,7 +170,8 @@ if(v_quincena==1){
                         ponderador_inpc_id_ccif_3 = d_inpc_complete$ponderador_inpc_id_ccif_3[i],
                         id_ccif_4 = d_inpc_complete$id_ccif_4[i],
                         ponderador_inpc_id_ccif_4 = d_inpc_complete$ponderador_inpc_id_ccif_4[i]
-                    )
+                    ) %>% 
+                    mutate(inegi_api = d_inpc_complete$id_inegi_q[i])
                 d_inpc <- bind_rows(d_inpc, tempo)
                 rm(tempo)
                 Sys.sleep(tiempo_espera_og)
