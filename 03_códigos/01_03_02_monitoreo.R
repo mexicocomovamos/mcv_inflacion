@@ -18,6 +18,11 @@
 Sys.setlocale("LC_TIME", "es_ES")
 options(scipen=999)
 
+# SELECCIONAR QUINCENA !!!!!!!!!!!!
+####################################
+v_quincena <- 1
+####################################
+
 ## Paquetes ----
 if(!require("lubridate")) install.packages("lubridate") & require("lubridate")
 if(!require("hot.deck"))  install.packages("hot.deck")  & require("hot.deck")
@@ -51,13 +56,8 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-# v_usuaria <- "juvenal"
-v_usuaria <- "axel"
-
-# SELECCIONAR QUINCENA !!!!!!!!!!!!
-####################################
-v_quincena <- 2
-####################################
+v_usuaria <- "juvenal"
+# v_usuaria <- "axel"
 
 # Seccion de autenticación:
 options(gargle_oauth_cache = ".secrets")

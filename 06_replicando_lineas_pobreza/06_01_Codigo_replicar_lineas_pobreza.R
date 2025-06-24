@@ -106,7 +106,7 @@ inpc2  <- inpc2 %>%
 
 # LÍNEA DE POBREZA EXTREMA POR INGRESOS ----
 
-fecha_sel <- "2025-03-01"
+# fecha_sel <- "2025-03-01" # Parámetro de prueba de la función
 
 gen_lineas_pobreza <- function(fecha_sel){
 
@@ -359,6 +359,8 @@ datos_lineas_final <- datos_lineas_pobreza %>%
 
 # Guardamos el dato 
 write_csv(datos_lineas_final, "01_09_lpei_coneval.csv")
+# Guardamos el dato en la carpeta de Datos Crudos
+write_csv(datos_lineas_final, "../../01_datos_crudos/líneas_de_pobreza_por_ingresos.csv")
 # Guardamos el dato en el repo de Semáforos
-write_csv(datos_lineas_final, "../../mcv_semaforos/01_datos_crudos/01_09_lpei_coneval.csv")
+write_csv(datos_lineas_final,"../../../mcv_semaforos/01_datos_crudos/01_09_lpei_coneval.csv")
 
