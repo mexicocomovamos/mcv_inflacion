@@ -20,7 +20,7 @@ options(scipen=999)
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 1
+v_quincena <- 2
 ####################################
 
 ## Paquetes ----
@@ -56,8 +56,8 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
 # v_usuaria <- "katia"
-v_usuaria <- "juvenal"
-# v_usuaria <- "axel"
+# v_usuaria <- "juvenal"
+v_usuaria <- "axel"
 
 # Seccion de autenticación:
 options(gargle_oauth_cache = ".secrets")
