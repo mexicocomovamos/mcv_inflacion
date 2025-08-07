@@ -20,7 +20,7 @@ options(scipen=999)
 
 # SELECCIONAR QUINCENA !!!!!!!!!!!!
 ####################################
-v_quincena <- 1
+v_quincena <- 2
 ####################################
 
 ## Paquetes ----
