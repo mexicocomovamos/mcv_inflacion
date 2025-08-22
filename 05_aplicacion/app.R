@@ -12,6 +12,7 @@ library(scales)
 library(DT)
 library(shinycssloaders)
 
+
 # 01. Datos ----
 
 mcv_discrete <- c(

@@ -357,6 +357,341 @@ datos_lineas_final <- datos_lineas_pobreza %>%
   do.call(rbind, .) %>% 
   arrange(Año, as.numeric(Mes))
 
+# # # # # # # # 
+
+# Hacemos las tablas de las líneas de pobreza ----
+fecha_sel <- str_c(year(today()), month(today())-1, "01", sep = "-") %>% 
+  as.Date()
+
+archivos_canastas <- tibble(archivos = list.files("conformacion_canastas", recursive = T), 
+                            archivos_completo = list.files("conformacion_canastas", recursive = T, full.names = T),
+                            fecha = str_extract(archivos, pattern = "\\d+\\-\\d+\\-\\d+"), 
+                            tipo_canasta = str_remove(archivos, pattern = "\\_\\d+\\-\\d+\\-\\d+\\.rds")) %>% 
+  separate(tipo_canasta, into = c("tipo", "area"), sep = "\\/") %>% 
+  mutate(fecha = as.Date(fecha, format = "%Y-%m-%d")) %>% 
+  filter(fecha == fecha_sel)
+
+ra <- readRDS(archivos_canastas$archivos_completo[1]) %>% 
+  select(clave, nombres, `Valor monetario mensual (Rural)` = valor_monetario_mensual)
+ua <- readRDS(archivos_canastas$archivos_completo[2]) %>% 
+  select(clave, nombres, `Valor monetario mensual (Urbano)` = valor_monetario_mensual)
+
+canasta_alimentaria <- left_join(ra, ua)
+
+cna_r <- readRDS(archivos_canastas$archivos_completo[3]) %>% 
+  rename(`Costo mensual (Rural)` = costo)
+cna_u <- readRDS(archivos_canastas$archivos_completo[4])  %>% 
+  rename(`Costo mensual (Urbano)` = costo)
+
+cna <- left_join(cna_r, cna_u) %>% 
+  rename(`Grupo de bienes` = grupo2)
+
+
+if(is.null(datos_lineas_pobreza[[1]])){
+  datos_ya_arriba <- datos_lineas_final
+} else {
+  datos_ya_arriba <- datos_lineas_final %>% 
+    rbind(datos_lineas_pobreza %>% 
+            do.call(rbind, .) %>% 
+            arrange(Año, as.numeric(Mes)) )
+}
+
+# Guardamos las tablas
+library(grid)
+library(gridExtra)
+library(pdftools)
+library(png)
+library(dplyr)
+
+nb <- function(x, n){
+  round(x = x, digits = n) %>% 
+    format(nsmall = n) %>% 
+    prettyNum(big.mark = ",")
+}
+
+# 1) Preparar el fondo: convertir la primera página del PDF a PNG
+tpl_pdf <- "../../03_infobites/00_plantillas/01_00_00_plantilla_blanco.pdf"
+
+tpl_png <- pdftools::pdf_convert(
+  pdf = tpl_pdf,
+  format = "png", 
+  pages  = 1,
+  dpi    = 300
+)[1]
+
+# Leer el PNG como matriz raster
+bg_rast <- readPNG(tpl_png)
+bg_grob <- rasterGrob(bg_rast,
+                      width  = unit(1, "npc"),
+                      height = unit(1, "npc"))
+
+# 2) Crear nueva tibble con fila de totales
+cna_tot <- cna %>%
+  summarise(
+    `Costo mensual (Rural)` = sum(`Costo mensual (Rural)`),
+    `Costo mensual (Urbano)` = sum(`Costo mensual (Urbano)`)
+  ) %>%
+  mutate(`Grupo de bienes` = "Canasta básica no alimentaria") %>%
+  select(`Grupo de bienes`, everything())
+
+cna2 <- bind_rows(cna, cna_tot)
+
+# 3) Formatear montos con símbolo de pesos y 2 decimales
+cna_fmt <- cna2 %>%
+  mutate(
+    `Costo mensual (Rural)` = str_c("$", nb(`Costo mensual (Rural)`, 2)),
+    # sprintf("$%.2f", `Costo mensual (Rural)`),
+    `Costo mensual (Urbano)` = str_c("$", nb(`Costo mensual (Urbano)`, 2))
+    # sprintf("$%.2f", `Costo mensual (Urbano)`)
+  )
+
+# 4) Construir la tabla con estilos
+tbl_theme <- ttheme_default(
+  core = list(
+    fg_params = list(
+      col        = "black",
+      fontfamily = "Ubuntu",
+      fontface   = "plain",
+      fontsize   = 12
+    )
+  ),
+  colhead = list(
+    fg_params = list(
+      col        = "white",
+      fontfamily = "Ubuntu",
+      fontface   = "bold",
+      fontsize   = 14
+    ),
+    bg_params = list(fill = "#6950d8"),
+    padding   = unit(c(12, 12), "pt")  # filas de encabezado más altas
+  ),
+  base_size = 12
+)
+
+tbl <- tableGrob(cna_fmt, rows = NULL, theme = tbl_theme)
+
+# Pintar líneas en morado
+for(i in seq_len(nrow(tbl$layout))) {
+  l <- tbl$layout[i, ]
+  if (l$name %in% c("hline", "vline")) {
+    grob_index <- tbl$layout[i, "z"]
+    tbl$grobs[[grob_index]]$gp <- gpar(col = "#6950d8", lwd = 1)
+  }
+}
+
+# 5) Título
+title_grob <- textGrob(
+  "Montos de los bienes de la canasta básica no alimentaria",
+  x    = 0.68, y = 0.92,
+  just = "right",
+  gp   = gpar(
+    fontfamily = "Ubuntu",
+    fontface   = "bold",
+    fontsize   = 18,
+    col        = "#6950d8"
+  )
+)
+
+fecha_sel
+subtitle_grob <- textGrob(
+  str_c("Al mes de ", month(fecha_sel, label = T, abbr = F), " del ", year(fecha_sel)),
+  x    = 0.275, y = 0.87,
+  just = "right",
+  gp   = gpar(
+    fontfamily = "Ubuntu",
+    # fontface   = "bold",
+    fontsize   = 16,
+    col        = "gray50"
+  )
+)
+
+caption_grob <- textGrob(
+  "Elaborado por México, ¿Cómo vamos? con datos del INEGI y metodología del CONEVAL",
+  x    = 0.84, y = 0.026,
+  just = "right",
+  gp   = gpar(
+    fontfamily = "Ubuntu",
+    fontface   = "bold",
+    fontsize   = 15,
+    col        = "white"
+  )
+)
+
+# 6) Renderizar PNG de 16×9 pulgadas
+output_file <- "../../03_infobites/48_02_cna_tabla.png"
+png(
+  filename = output_file,
+  width    = 16*0.65, height = 9*0.65,
+  units    = "in", res = 300,
+  bg       = "transparent"
+)
+
+grid.newpage()
+# Fondo
+grid.draw(bg_grob)
+# Título
+grid.draw(title_grob)
+grid.draw(subtitle_grob)
+grid.draw(caption_grob)
+# Tabla (centrada bajo el título)
+pushViewport(viewport(y = 0.45, height = 0.8))
+grid.draw(tbl)
+popViewport()
+
+dev.off()
+
+message("¡Listo! La tabla se guardó en: ", output_file)
+
+# 1) Preparar el fondo: convertir la primera página del PDF a PNG
+tpl_pdf <- "../../03_infobites/00_plantillas/01_00_00_plantilla_blanco.pdf"
+tpl_png <- pdftools::pdf_convert(
+  pdf   = tpl_pdf,
+  format = "png", 
+  pages  = 1,
+  dpi    = 300
+)[1]
+
+bg_rast <- readPNG(tpl_png)
+bg_grob <- rasterGrob(bg_rast,
+                      width  = unit(1, "npc"),
+                      height = unit(1, "npc"))
+
+# 2) Crear nueva tibble con fila de totales
+can_tot <- canasta_alimentaria %>%
+  ungroup() %>% 
+  summarise(
+    `Valor monetario mensual (Rural)` = sum(`Valor monetario mensual (Rural)`, na.rm = T),
+    `Valor monetario mensual (Urbano)` = sum(`Valor monetario mensual (Urbano)`, na.rm = T)
+  ) %>%
+  mutate(
+    clave   = "",
+    nombres = "Total canasta alimentaria"
+  ) %>%
+  select(clave, nombres, everything())
+
+can2 <- bind_rows(canasta_alimentaria, can_tot) %>% 
+  rename(Clave = clave, Nombres = nombres)
+
+canasta_alimentaria$clave[canasta_alimentaria$nombres == "Chile"] <- "A115-A118"
+
+# 3) Formatear montos con separador de miles, dos decimales y símbolo $
+can_fmt <- can2 %>%
+  mutate(
+    `Valor monetario mensual (Rural)` = ifelse(is.na(`Valor monetario mensual (Rural)`), yes = "", no = str_c("$", nb(`Valor monetario mensual (Rural)`, 2))),
+    `Valor monetario mensual (Urbano)` = ifelse(is.na(`Valor monetario mensual (Urbano)`), yes = "", no = str_c("$", nb(`Valor monetario mensual (Urbano)`, 2)))
+  )
+
+# 4) Construir la tabla con estilo
+tbl_theme <- ttheme_default(
+  core = list(
+    fg_params = list(
+      col        = "black",
+      fontfamily = "Ubuntu",
+      fontface   = "plain",
+      fontsize   = 12
+    )
+  ),
+  colhead = list(
+    fg_params = list(
+      col        = "white",
+      fontfamily = "Ubuntu",
+      fontface   = "bold",
+      fontsize   = 14
+    ),
+    bg_params = list(fill = "#6950d8"),
+    padding   = unit(c(12, 12), "pt")
+  ),
+  base_size = 12
+)
+
+tbl <- tableGrob(can_fmt, rows = NULL, theme = tbl_theme)
+
+# Pintar líneas en morado
+for(i in seq_len(nrow(tbl$layout))) {
+  l <- tbl$layout[i, ]
+  if (l$name %in% c("hline", "vline")) {
+    grob_index <- tbl$layout[i, "z"]
+    tbl$grobs[[grob_index]]$gp <- gpar(col = "#6950d8", lwd = 1)
+  }
+}
+
+# 5) Negritas en fila de totales (última fila)
+n_rows <- nrow(can_fmt)
+for(j in seq_along(tbl$grobs)) {
+  g <- tbl$grobs[[j]]
+  if(inherits(g, "text")) {
+    pos <- tbl$layout[j, c("t","l")]
+    if(pos["t"] == n_rows + 1) {
+      tbl$grobs[[j]]$gp <- gpar(fontface = "bold", fontfamily = "Ubuntu", fontsize = 12)
+    }
+  }
+}
+
+# 6) Título y elementos de texto
+title_grob <- textGrob(
+  "Montos de la canasta básica alimentaria",
+  x    = 0.03, y = 0.95,
+  just = "left",
+  gp   = gpar(
+    fontfamily = "Ubuntu",
+    fontface   = "bold",
+    fontsize   = 46,
+    col        = "#6950d8"
+  )
+)
+
+subtitle_grob <- textGrob(
+  str_c("Al mes de ", month(fecha_sel, label = TRUE, abbr = FALSE),
+        " del ", year(fecha_sel)),
+  x    = 0.03, y = 0.91,
+  just = "left",
+  gp   = gpar(
+    fontfamily = "Ubuntu",
+    fontsize   = 38,
+    col        = "gray50"
+  )
+)
+
+caption_grob <- textGrob(
+  "Elaborado por México, ¿Cómo vamos? con datos del INEGI y metodología del CONEVAL",
+  x    = 0.03, y = 0.026,
+  just = "left",
+  gp   = gpar(
+    fontfamily = "Ubuntu",
+    fontface   = "bold",
+    fontsize   = 30,
+    col        = "white"
+  )
+)
+
+# 7) Renderizar PNG de tamaño deseado
+output_file <- 
+  # "canasta_alimentaria.png"
+  "../../03_infobites/48_03_canasta_alimentaria_tabla.png"
+png(
+  filename = output_file,
+  width    = 16*1.6, height = 9*1.6,
+  units    = "in", res = 300,
+  bg       = "transparent"
+)
+
+grid.newpage()
+grid.draw(bg_grob)
+grid.draw(title_grob)
+grid.draw(subtitle_grob)
+grid.draw(caption_grob)
+
+pushViewport(viewport(x = 0.5, y = 0.45, width = 0.95, height = 0.85))
+grid.draw(tbl)
+popViewport()
+
+dev.off()
+
+message("¡Listo! La tabla se guardó en: ", output_file)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 # Guardamos el dato 
 write_csv(datos_lineas_final, "01_09_lpei_coneval.csv")
 # Guardamos el dato en la carpeta de Datos Crudos
