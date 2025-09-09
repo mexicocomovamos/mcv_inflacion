@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # Paquetes ----
@@ -511,8 +511,7 @@ ggsave(g, filename = paste_info("99_svg/01_03_03_01_01_incidencia_mensual.svg"),
 
 ## 1.2. Incidencia anual ----
 titulo <- "Genéricos con mayor y\nmenor incidencia anual"
-nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general.\n
-[NO PUBLICAR HASTA AGOSTO DEL 2025]"
+nota <- "La incidencia anual es la contribución en puntos porcentuales que cada genérico aporta a la inflación general"
 ifelse(
     v_quincena == 1, 
     subtitulo <- 
@@ -579,12 +578,10 @@ g <-
     )
 
 
-# OJO!!!!!!
-# DESBLOQUEAR HASTA AGOSTO DEL 2025, POR SUGERENCIA DEL INEGI
-# g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
-# ggsave(g, filename = paste_info("01_02_incidencia_anual.png"), 
-#        width = 10, height = 15, 
-#        dpi = 200, bg= "transparent")
+
+g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi_long.pdf"))
+ggsave(g, filename = paste_info("01_02_incidencia_anual.png"), width = 10, height = 15, 
+        dpi = 200, bg= "transparent")
 
 # ggsave(g, filename = paste_info("99_formatos_eps_para_trad/01_03_03_01_02_incidencia_anual.eps"),
 #        device = "eps",
