@@ -1,30 +1,9 @@
 # Opciones ----
-# Configuración de locale para español (compatible con shinyapps.io)
-tryCatch({
-  # Intentar configurar locale en español
-  if(.Platform$OS.type == "windows") {
-    Sys.setlocale("LC_TIME", "Spanish")
-    Sys.setlocale("LC_CTYPE", "Spanish") 
-  } else {
-    # Para Linux/Unix (incluyendo shinyapps.io)
-    Sys.setlocale("LC_TIME", "es_ES.UTF-8")
-    Sys.setlocale("LC_CTYPE", "es_ES.UTF-8")
-    Sys.setlocale("LC_COLLATE", "es_ES.UTF-8")
-    Sys.setlocale("LC_MONETARY", "es_ES.UTF-8")
-  }
-}, error = function(e) {
-  # Si falla, intentar alternativas
-  tryCatch({
-    Sys.setlocale("LC_TIME", "C")
-    warning("No se pudo configurar locale en español, usando configuración por defecto")
-  }, error = function(e2) {
-    message("Configuración de locale no disponible")
-  })
-})
+Sys.setlocale("LC_TIME", "es_ES")
+Sys.setlocale("LC_TIME", "es_ES.UTF-8")
+Sys.setlocale("LC_TIME", "español")
 
-# Configurar opciones adicionales
 options(scipen=999)
-options(encoding = "UTF-8")
 
 # Librerias ----
 library(tidyverse)
@@ -33,32 +12,10 @@ library(scales)
 library(DT)
 library(shinycssloaders)
 library(openxlsx)
-library(plotly)
-library(shiny)
-library(lubridate)
 
-# Librerías para manejo de fuentes y texto
-library(ggtext)
-library(showtext)
-
-# Configuración de fuentes para shinyapps.io
-tryCatch({
-  # Añadir fuente Ubuntu desde Google Fonts
-  showtext::font_add_google("Ubuntu", "Ubuntu")
-  
-  # Habilitar showtext para usar fuentes personalizadas
-  showtext::showtext_auto()
-  
-  # Configurar DPI para mejor calidad en shinyapps.io
-  showtext::showtext_opts(dpi = 192)
-  
-}, error = function(e) {
-  warning("No se pudo cargar la fuente Ubuntu, usando fuente por defecto")
-})
 
 # 01. Datos ----
 
-# Paleta de colores mejorada con mayor contraste
 mcv_discrete <- c(
     "#6950d8", "#3CEAFA", "#00b783", "#ff6260", "#ffaf84", "#ffbd41"
 )
@@ -72,309 +29,109 @@ mcv_semaforo <- c(
     "#ff6260" # rojo
 )
 mcv_blacks <- c("black", "#D2D0CD", "#777777")
+mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D", 
+                     "#C6B2E3", "#E8B32E", "#0A93C4", "#974DF0", 
+                     "#00D2D1", "#FF43FA", mcv_blacks[4],
+                     mcv_blacks[3], mcv_blacks[2])
 
-# Paleta mejorada para mejor contraste
-mcv_discrete_12_improved <- c(
-    "#ff6260",    # Rojo fuerte para General
-    "#00b783",    # Verde para segunda más importante
-    "#6950d8",    # Púrpura principal
-    "#E84D9A",    # Rosa
-    "#E8866D",    # Coral
-    "#E8B32E",    # Amarillo
-    "#0A93C4",    # Azul
-    "#974DF0",    # Púrpura claro
-    "#00D2D1",    # Cyan
-    "#FF43FA",    # Magenta
-    "#8B4513",    # Marrón
-    "#2E8B57",    # Verde mar
-    "#4682B4"     # Azul acero
-)
+# Ponderadores y claves: 
+# d_inpc_complete <- readxl::read_excel("01_datos_crudos/01_03_inpc_complete_NewVersion.xlsx") %>% 
+#         mutate(ponderador = ponderador_inpc_id_ccif_1) %>%
+#         mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_2, no = ponderador)) %>%
+#         mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_3, no = ponderador)) %>%
+#         mutate(ponderador = ifelse(is.na(ponderador), yes = ponderador_inpc_id_ccif_4, no = ponderador))
 
 # Datos mensuales 
+
 datos_m <- readRDS("total_datos_inflacion_mes.rds") %>% 
+    # readxl::read_xlsx("total_datos_inflacion_mes.xlsx") %>% 
     as_tibble() %>% 
     mutate(date_shortcut2 = as.numeric(str_extract(date_shortcut, pattern = "\\d"))) %>% 
     mutate(quincena = 2) %>% 
     unique() %>% 
-    mutate(date = as.POSIXct(date,format="%Y-%m-%d")) %>% 
-    group_by(ccif) %>% 
-    filter(str_length(id_ccif_0) == min(str_length(id_ccif_0)))
+    mutate(date = as.POSIXct(date,format="%Y-%m-%d"))
+
+class(datos_m$date)
 
 # Datos quincenales 
 datos_q <- readRDS("total_datos_inflacion_quincenas.rds") %>% 
+    # readxl::read_xlsx("total_datos_inflacion_quincenas.xlsx") %>% 
     as_tibble() %>% 
     mutate(date_shortcut2 = as.numeric(str_extract(date_shortcut, pattern = "\\d+"))) %>% 
     mutate(quincena = ifelse((date_shortcut2 %% 2 == 0), yes = 2, no = 1))  %>% 
     unique() %>% 
-    mutate(date = as.POSIXct(date,format="%Y-%m-%d")) %>% 
-    group_by(ccif) %>% 
-    filter(str_length(id_ccif_0) == min(str_length(id_ccif_0)))
+    mutate(date = as.POSIXct(date,format="%Y-%m-%d"))
 
+# datos_q$date2 <- NA_POSIXct_
 datos_q$date[datos_q$quincena == 1] <- datos_q$date[datos_q$quincena == 1] + days(15)
 datos_q$date[datos_q$quincena == 2] <- datos_q$date[datos_q$quincena == 2] + days(28)
 
-# Controles
-sel_genericos <- unique(datos_m$ccif) %>% sort()
+# Fecha máxima y quincena máxima: 
+# maxima_fecha <- datos$date %>% max() # Obtiene la fecha máxima con información disponible
+# v_quincena   <- datos %>% filter(date == maxima_fecha) %>% pull(quincena) %>% max() # Obtiene la quincena máxima con información disponible
 
-# Función para nombres de meses en español (independiente del locale del sistema)
-nombre_mes_es <- function(numero_mes) {
-  meses_es <- c("enero", "febrero", "marzo", "abril", "mayo", "junio",
-                "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre")
-  return(meses_es[as.numeric(numero_mes)])
-}
+# 02. Controles: ----
+sel_genericos <- unique(datos_m$ccif) %>% sort() # Obtenemos el vector de genéricos para generar el control
 
-# Función para calcular intervalos dinámicos del eje X ----
-get_dynamic_x_breaks <- function(fecha_min, fecha_max, tipo_datos) {
-    # Calcular diferencia en meses
-    diff_months <- interval(fecha_min, fecha_max) %/% months(1)
-    
-    if(tipo_datos == "Datos mensuales") {
-        # Para datos mensuales
-        if(diff_months <= 12) {
-            interval_months <- 2  # Cada 2 meses
-        } else if(diff_months <= 24) {
-            interval_months <- 3  # Cada 3 meses
-        } else if(diff_months <= 48) {
-            interval_months <- 6  # Cada 6 meses
-        } else {
-            interval_months <- 12 # Cada año
-        }
-    } else {
-        # Para datos quincenales
-        if(diff_months <= 6) {
-            interval_months <- 1  # Cada mes
-        } else if(diff_months <= 18) {
-            interval_months <- 3  # Cada 3 meses
-        } else if(diff_months <= 36) {
-            interval_months <- 6  # Cada 6 meses
-        } else {
-            interval_months <- 12 # Cada año
-        }
-    }
-    
-    return(paste0("-", interval_months, " month"))
-}
+# 03. Gráficas ----
 
-# Función de gráfica mejorada ----
-gen_grafica_mejorada <- function(genericos, 
-                        fecha_inicio = "2018-12-01", 
-                        tipo_datos = "Datos quincenales", 
-                        tipo_grafica = "Evolución niveles"){
-    
-    nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
-    
-    if(tipo_datos == "Datos mensuales"){
-        datos = datos_m
-        maxima_fecha <- datos$date %>% max()
-        v_quincena = datos$quincena[1]
-        subtitulo <- str_c("Al mes de ", nombre_mes_es(month(maxima_fecha)),
-                           " del ", year(maxima_fecha))
-        lag_m = 1
-    } else {
-        datos = datos_q
-        maxima_fecha <- datos$date %>% max()
-        v_quincena = datos$quincena[1]
-        subtitulo <- str_c(ifelse(v_quincena == 1, 
-                                  yes = "A la 1ª quincena de ", 
-                                  no = "A la 2ª quincena de "), 
-                           nombre_mes_es(month(maxima_fecha)),
-                           " del ", year(maxima_fecha))
-        lag_m = 2
-    }
-    
-    if(tipo_grafica == "Evolución INPC"){
-        eje_y <- "Índice base\n2ª quincena de julio 2018 = 100"
-        fyvs <- datos %>% 
-            as_tibble() %>% 
-            filter(ccif %in% genericos) %>% 
-            mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
-            select(date_shortcut, ccif, fecha = date, values, quincena) %>% 
-            filter(fecha >= fecha_inicio) %>% 
-            mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
-            group_by(ccif) %>%
-            arrange(ccif) %>% 
-            mutate(tasa = (lag(values, 12*lag_m) - values)/values) %>% 
-            mutate(tasa = lead(tasa, 12*lag_m)) %>%
-            mutate(cat = str_c(str_wrap(ccif,25), " ", 
-                               format(round(values, 1), nsmall = 1) %>% str_squish(), 
-                               " [", format(round(tasa*100, 2), nsmall = 2) %>% str_squish(), "%]")) %>% 
-            mutate(ccif = factor(ccif, levels = genericos %>% str_replace_all(c("Total" = "General"))))
-        
-    } else if(tipo_grafica == "Evolución niveles"){
-        
-        fyvs <- datos %>% 
-            as_tibble() %>% 
-            filter(ccif %in% genericos) %>% 
-            mutate(ccif = ifelse(ccif == "Total", yes = "General", no = ccif)) %>% 
-            select(date_shortcut, ccif, fecha = date, values, quincena) %>% 
-            unique() %>% 
-            filter(fecha >= fecha_inicio) %>% 
-            mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
-            group_by(ccif) %>%
-            arrange(ccif) %>% 
-            mutate(tasa = 100*(values/last(values))) %>% 
-            mutate(values = 100*(values/last(values))) %>% 
-            mutate(cat = str_c(str_wrap(ccif,25), " ", 
-                               format(round(values, 1), nsmall = 1) %>% str_squish(), 
-                               " [", format(round(tasa-100, 2), nsmall = 2) %>% str_squish(), "%]")) %>% 
-            mutate(ccif = factor(ccif, levels = genericos %>% str_replace_all(c("Total" = "General"))))
-        
-        fecha_mas_minima <- fyvs %>% filter(fecha == min(fecha)) %>% filter(quincena == min(quincena))
-        
-        eje_y <- str_c("Valor = 100 ", 
-                       ifelse(tipo_datos == "Datos mensuales", 
-                              yes = 
-                                  str_c("correspondiente al mes de ", 
-                                        month(fecha_mas_minima$fecha, label = T, abbr = F), 
-                                        " de ", year(fecha_mas_minima$fecha)       
-                                        ), 
-                              no = str_c(
-                                  "en la ", fecha_mas_minima$quincena, "ª quincena de ", 
-                                  month(fecha_mas_minima$fecha, label = T, abbr = F), 
-                                  " de ", year(fecha_mas_minima$fecha)))) %>% 
-            str_wrap(25)
-    }
+## 03.1 Gráfica de evolución ----
 
-    # Crear paleta con General destacado
-    if(length(genericos) <= 17){
-        paleta <- mcv_discrete_12_improved[1:length(genericos)]
-        # Asegurar que General tenga el color rojo más fuerte
-        if("General" %in% (genericos %>% str_replace_all(c("Total" = "General")))){
-            idx_general <- which((genericos %>% str_replace_all(c("Total" = "General"))) == "General")
-            paleta[idx_general] <- "#ff6260"  # Rojo fuerte para General
-        }
-    } else {
-        paleta <- rainbow(n = length(genericos))
-    }
-    
-    # Preparar datos para etiquetas sin solapamiento
-    etiquetas_finales <- fyvs %>% 
-        unique() %>% 
-        filter(fecha == max(fecha)) %>% 
-        filter(quincena == max(quincena)) %>% 
-        unique() %>%
-        arrange(desc(values)) %>%
-        mutate(
-            y_position = values,
-            # Crear etiquetas más compactas
-            etiqueta_corta = str_c(
-                str_wrap(ccif, 20), "\n", 
-                format(round(values, 1), nsmall = 1),
-                " [", format(round(ifelse(tipo_grafica == "Evolución INPC", tasa*100, tasa-100), 1), nsmall = 1), "%]"
-            )
-        )
-    
-    # Calcular intervalo dinámico para el eje X
-    x_break_interval <- get_dynamic_x_breaks(min(fyvs$fecha), max(fyvs$fecha), tipo_datos)
-
-    g <- fyvs %>% 
-        ggplot(aes(x = fecha, 
-                   y = values, 
-                   group = ccif, 
-                   color = ccif)) +
-        # Líneas principales con diferentes grosores
-        geom_line(aes(size = grosor),
-                  lineend = "round",
-                  alpha = 0.9,
-                  show.legend = F) +
-        # Puntos finales más grandes
-        geom_point(data = etiquetas_finales,
-                   aes(y = y_position),
-                   size = 3.5,
-                   alpha = 0.9,
-                   show.legend = F) +
-        # Etiquetas mejoradas con mejor posicionamiento
-        geom_text_repel(data = etiquetas_finales,
-                        aes(label = etiqueta_corta, 
-                            y = y_position,
-                            fontface = grosor), 
-                        direction = "y",
-                        family = "Arial", 
-                        nudge_x = 120,  # Más separación del gráfico
-                        hjust = "left",
-                        size = 5.2,     # Texto más grande
-                        lineheight = 0.9,
-                        segment.curvature = -0.1,
-                        segment.ncp = 3,
-                        segment.angle = 20,
-                        segment.color = "grey50",
-                        segment.alpha = 0.6,
-                        min.segment.length = 0,
-                        max.overlaps = Inf,
-                        force = 2,      # Mayor fuerza para separar etiquetas
-                        force_pull = 0.1) + 
-        # Escalas mejoradas
-        scale_discrete_manual(aesthetics = "size", values = c("General" = 2.5, "Genéricos" = 1.5)) + 
-        scale_discrete_manual(aesthetics = "fontface", values = c("General" = "bold", "Genéricos" = "plain")) + 
-        scale_color_manual(values = paleta) +
-        scale_x_datetime(
-            date_labels = "%b %y",
-            breaks = seq.POSIXt(from = max(fyvs$fecha),
-                                to = min(fyvs$fecha),
-                                by = x_break_interval),
-            expand = expansion(mult = c(0.02, 0.25))  # Más espacio a la derecha para etiquetas
-        ) + 
-        scale_y_continuous(expand = expansion(c(0.05, 0.15))) + 
-        theme_minimal() +
-        labs(
-            title = "\nÍndice de precios al consumidor de genéricos\nseleccionados",
-            subtitle = subtitulo, 
-            caption = str_c("<b style = 'color:gray'>", nota, "</b><br><br><b style = 'color:white;'>Elaboración propia con los datos de inflación de INEGI</b>"),
-            color = "", 
-            shape = "", 
-            y = eje_y
-        ) +
-        theme(
-            text = element_text(family = "Ubuntu"),
-            plot.title = element_text(size = 29, face = "bold", colour = "#6950D8", 
-                                    margin = margin(0,0,10,0)),
-            plot.title.position = "plot",
-            plot.subtitle = element_text(size = 23, colour = "#777777", 
-                                       margin = margin(0,0,20,0)),
-            plot.caption = ggtext::element_markdown(size = 25, 
-                                                    # colour = "#777777", 
-                                      margin = margin(15,0,0,0)),
-            plot.margin = margin(t = 0.5, r = 2, b = 0.2, l = 0.5, "cm"),  # Más margen derecho
-            panel.grid.minor = element_blank(),
-            panel.grid.major.x = element_line(color = "#f0f0f0", size = 0.5),
-            panel.grid.major.y = element_line(color = "#f0f0f0", size = 0.5),
-            panel.background = element_rect(fill = "transparent", colour = NA),
-            # text = element_text(family = "Arial"),
-            axis.title.x = element_blank(),
-            axis.title.y = element_text(size = 20, margin = margin(0,15,0,0)),
-            axis.text.x = element_text(size = 20, angle = 45, vjust = 1, hjust = 1),
-            axis.text.y = element_text(size = 20),
-            legend.position = "none"
-        )
-    
-    
-    g
-}
-
-# Mantener funciones originales para compatibilidad
+# Argumentos de prueba
+# genericos = c("Renta de vivienda")
+# tipo_datos = "Datos quincenales"
+# fecha_inicio = "2018-12-01"
 gen_grafica <- function(genericos, 
                         fecha_inicio = "2018-12-01", 
                         tipo_datos = "Datos quincenales", 
                         tipo_grafica = "Evolución niveles"){
     
+    # eje_y <- "Índice base\n2ª quincena de julio 2018 = 100"
     nota <- "*Las desagregaciones del INPC solo tienen valor informativo."
     
     if(tipo_datos == "Datos mensuales"){
+        
         datos = datos_m
         maxima_fecha <- datos$date %>% max()
         v_quincena = datos$quincena[1]
-        subtitulo <- str_c("Al mes de ", nombre_mes_es(month(maxima_fecha)),
+        subtitulo <- str_c("Al mes de ", str_replace_all(month(maxima_fecha),
+                                                         c("^1$" = "enero", 
+                                                           "^2$" = "febrero", 
+                                                           "^3$" = "marzo", 
+                                                           "^4$" = "abril", 
+                                                           "^5$" = "mayo", 
+                                                           "^6$" = "junio", 
+                                                           "^7$" = "julio", 
+                                                           "^8$" = "agosto",
+                                                           "^9$" = "septiembre", 
+                                                           "^10$" = "octubre", 
+                                                           "^11$" = "noviembre", 
+                                                           "^12$" = "diciembre")),
                            " del ", year(maxima_fecha))
         lag_m = 1
         
     } else {
         datos = datos_q
+        # datos$date[datos$date_shortcut  %% 2 == 0] <- datos$date[datos$date_shortcut  %% 2 == 0] + days(14)
+        
         maxima_fecha <- datos$date %>% max()
         v_quincena = datos$quincena[1]
         subtitulo <- str_c(ifelse(v_quincena == 1, 
                                   yes = "A la 1ª quincena de ", 
                                   no = "A la 2ª quincena de "), 
-                           nombre_mes_es(month(maxima_fecha)),
+                           str_replace_all(month(maxima_fecha),
+                                           c("^1$" = "enero", 
+                                             "^2$" = "febrero", 
+                                             "^3$" = "marzo", 
+                                             "^4$" = "abril", 
+                                             "^5$" = "mayo", 
+                                             "^6$" = "junio", 
+                                             "^7$" = "julio", 
+                                             "^8$" = "agosto",
+                                             "^9$" = "septiembre", 
+                                             "^10$" = "octubre", 
+                                             "^11$" = "noviembre", 
+                                             "^12$" = "diciembre")),
                            " del ", year(maxima_fecha))
         lag_m = 2
         
@@ -393,7 +150,7 @@ gen_grafica <- function(genericos,
         arrange(ccif) %>% 
         mutate(tasa = (lag(values, 12*lag_m) - values)/values) %>% 
         mutate(tasa = lead(tasa, 12*lag_m)) %>%
-        mutate(cat = str_c(str_wrap(ccif,25), "\n", 
+        mutate(cat = str_c(str_wrap(ccif,20), "\n", 
                            format(round(values, 1), nsmall = 1) %>% str_squish(), 
                            " [", format(round(tasa*100, 2), nsmall = 2) %>% str_squish(), "%]")) %>% 
         mutate(ccif = factor(ccif, levels = genericos %>% str_replace_all(c("Total" = "General"))))
@@ -411,7 +168,7 @@ gen_grafica <- function(genericos,
             arrange(ccif) %>% 
             mutate(tasa = 100*(values/last(values))) %>% 
             mutate(values = 100*(values/last(values))) %>% 
-            mutate(cat = str_c(str_wrap(ccif,25), "\n", 
+            mutate(cat = str_c(str_wrap(ccif,20), "\n", 
                                format(round(values, 1), nsmall = 1) %>% str_squish(), 
                                " [", format(round(tasa-100, 2), nsmall = 2) %>% str_squish(), "%]")) %>% 
             mutate(ccif = factor(ccif, levels = genericos %>% str_replace_all(c("Total" = "General"))))
@@ -439,6 +196,8 @@ gen_grafica <- function(genericos,
     } else {
         paleta <- rainbow(n = length(genericos))
     }
+    
+    # class(max(fyvs$fecha))
     
     # Decidir si usar leyenda o etiquetas según el número de elementos
     usar_leyenda <- length(genericos) > 6
@@ -551,10 +310,11 @@ gen_grafica <- function(genericos,
                   legend.text = element_text(size = 26),
                   legend.position = "none")
     }
+    
     g
 }
 
-# Resto del código original (funciones de barras, tablas, etc.)
+# genericos = c("Aceites y grasas")
 gen_barras_cambio_anual <- function(genericos, fecha_inicio = "2018-12-01", 
                                     tipo_datos = "Datos mensuales"){
     
@@ -564,18 +324,43 @@ gen_barras_cambio_anual <- function(genericos, fecha_inicio = "2018-12-01",
         datos = datos_m
         maxima_fecha <- datos$date %>% max()
         v_quincena = datos$quincena[1]
-        subtitulo <- str_c("Al mes de ", nombre_mes_es(month(maxima_fecha)),
+        subtitulo <- str_c("Al mes de ", str_replace_all(month(maxima_fecha),
+                                                         c("^1$" = "enero", 
+                                                           "^2$" = "febrero", 
+                                                           "^3$" = "marzo", 
+                                                           "^4$" = "abril", 
+                                                           "^5$" = "mayo", 
+                                                           "^6$" = "junio", 
+                                                           "^7$" = "julio", 
+                                                           "^8$" = "agosto",
+                                                           "^9$" = "septiembre", 
+                                                           "^10$" = "octubre", 
+                                                           "^11$" = "noviembre", 
+                                                           "^12$" = "diciembre")),
                            " del ", year(maxima_fecha))
         lag_m = 1
         
     } else {
         datos = datos_q
+        # datos$date[datos$date_shortcut  %% 2 == 0] <- datos$date[datos$date_shortcut  %% 2 == 0] + days(14)
         maxima_fecha <- datos$date %>% max()
         v_quincena = datos$quincena[1]
         subtitulo <- str_c(ifelse(v_quincena == 1, 
                                   yes = "A la 1ª quincena de ", 
                                   no = "A la 2ª quincena de "), 
-                           nombre_mes_es(month(maxima_fecha)),
+                           str_replace_all(month(maxima_fecha),
+                                           c("^1$" = "enero", 
+                                             "^2$" = "febrero", 
+                                             "^3$" = "marzo", 
+                                             "^4$" = "abril", 
+                                             "^5$" = "mayo", 
+                                             "^6$" = "junio", 
+                                             "^7$" = "julio", 
+                                             "^8$" = "agosto",
+                                             "^9$" = "septiembre", 
+                                             "^10$" = "octubre", 
+                                             "^11$" = "noviembre", 
+                                             "^12$" = "diciembre")),
                            " del ", year(maxima_fecha))
         lag_m = 2
         
@@ -588,7 +373,9 @@ gen_barras_cambio_anual <- function(genericos, fecha_inicio = "2018-12-01",
         select(date_shortcut, ccif, fecha = date, values, quincena) %>% 
         filter(fecha >= fecha_inicio) %>% 
         mutate(grosor = ifelse(ccif == "General", yes = "General", no = "Genéricos")) %>% 
+        # arrange(fecha) %>% 
         group_by(ccif) %>%
+        # mutate(tasa = (values/lag(values, 12))-1) %>% 
         mutate(tasa = (lag(values, 12*lag_m) - values)/values) %>% 
         mutate(tasa = lead(tasa, 12*lag_m)) %>%
         mutate(cat = str_c(ccif, "\n", 
@@ -756,6 +543,7 @@ gen_datos_cambio_anual <- function(genericos, fecha_inicio = "2018-12-01", tipo_
 }
 
 # Generacion de tablas 
+# genericos = "Ron"
 gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincenales", fecha_inicio = "2018-12-01"){
     
     fecha_inicio_s <- "2018-12-01"
@@ -847,6 +635,7 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             filter(quincena == max(quincena)) %>% 
             arrange(-tasa) %>% 
             select(
+                # Fecha = fecha, 
                     id_ccif_0, 
                    `Genérico` = ccif,
                    `Valor Índice` = values, 
@@ -856,8 +645,10 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             unique()
         
         dx2 <- datos %>% 
+            # filter(ccif == "Electricidad") %>% 
             as_tibble() %>% 
             unique() %>% 
+            # filter(ccif %in% genericos) %>% 
             mutate(ccif = ifelse(ccif == "Total", 
                                  yes = "General", 
                                  no = ccif)) %>% 
@@ -871,11 +662,16 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
             rename(`Genérico` = ccif) %>% 
             unique()
         
+        # dx2 %>% 
+        #     filter(Genérico == "Electricidad")
+        
         dx <- left_join(dx, dx2)
+        
     }
     
     DT::datatable(dx,
                   options = list(
+                      # autoWidth = TRUE,
                       language = list(url = 'https://cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json'),
                       pageLength = 25,
                       scrollX = TRUE,
@@ -886,14 +682,20 @@ gen_tabla <- function(genericos, mostrar_todos = F, tipo_datos = "Datos quincena
                       )
                   )
     )
+    
 }
 
-# Aplicación Shiny mejorada ----
+# Aplicación: ----
+
+library(shiny)
 
 ui <- fluidPage(
+  # Incluir Google Fonts para Ubuntu y Font Awesome para iconos
   tags$head(
+    # Favicon
     tags$link(rel = "icon", type = "image/png", href = "https://mexicocomovamos.mx/wp-content/uploads/2024/03/mcv-10aniv.svg"),
     
+    # Meta tags para compartir en redes sociales
     tags$meta(property = "og:title", content = "México ¿Cómo vamos? - Monitor de Inflación"),
     tags$meta(property = "og:description", content = "Monitor interactivo de inflación en México"),
     tags$meta(property = "og:type", content = "website"),
@@ -901,6 +703,7 @@ ui <- fluidPage(
     tags$meta(name = "twitter:title", content = "México ¿Cómo vamos? - Monitor de Inflación"),
     tags$meta(name = "twitter:description", content = "Monitor interactivo de inflación en México"),
     
+    # Title
     tags$title("México ¿Cómo vamos? - Monitor de Inflación"),
     
     tags$link(
@@ -929,6 +732,7 @@ ui <- fluidPage(
           text-decoration: none !important;
         }
         
+        /* Responsive */
         @media (max-width: 1024px) {
           .mcv-main-header > div > div {
             flex-direction: column;
@@ -953,12 +757,14 @@ ui <- fluidPage(
           }
         }
         
+        /* Estilos para el contenedor principal */
         .main-content {
           background-color: #f7f7f7;
           min-height: 100vh;
           padding: 5px 0;
         }
         
+        /* Estilos para wellPanel */
         .well {
           background-color: white !important;
           border-radius: 12px;
@@ -968,6 +774,7 @@ ui <- fluidPage(
           padding: 15px !important;
         }
         
+        /* Estilos para la sección de gráficas */
         .graph-container {
           background-color: white;
           border-radius: 12px;
@@ -977,16 +784,19 @@ ui <- fluidPage(
           border: 1px solid #e9ecef;
         }
         
+        /* Optimización para sidebar */
         .sidebar {
           padding: 15px !important;
         }
         
+        /* Contenedor principal más ancho */
         .main-container {
           max-width: 1400px !important;
           margin: 0 auto;
           padding: 10px 15px;
         }
         
+        /* Ajuste de columnas para mejor aprovechamiento */
         @media (min-width: 1200px) {
           .col-sm-4 {
             max-width: 300px;
@@ -998,6 +808,7 @@ ui <- fluidPage(
           }
         }
         
+        /* Estilos para tabs */
         .nav-tabs {
           border-bottom: 3px solid #6551D0;
         }
@@ -1014,6 +825,7 @@ ui <- fluidPage(
           border-bottom: 3px solid #6551D0;
         }
         
+        /* Estilos para botones */
         .btn-primary {
           background-color: #6551D0;
           border-color: #6551D0;
@@ -1040,19 +852,7 @@ ui <- fluidPage(
           border-color: #009670;
         }
         
-        .btn-info {
-          background-color: #17a2b8;
-          border-color: #17a2b8;
-          font-family: 'Ubuntu', sans-serif;
-          font-weight: 500;
-          border-radius: 8px;
-        }
-        
-        .btn-info:hover {
-          background-color: #138496;
-          border-color: #117a8b;
-        }
-        
+        /* Estilos para inputs */
         .form-control {
           border-radius: 8px;
           border: 2px solid #e9ecef;
@@ -1069,16 +869,6 @@ ui <- fluidPage(
           color: #333;
           font-family: 'Ubuntu', sans-serif;
           margin-bottom: 8px;
-        }
-        
-        .improvement-badge {
-          background-color: #17a2b8;
-          color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 12px;
-          font-weight: 500;
-          margin-left: 10px;
         }
       ")
     )
@@ -1124,8 +914,7 @@ ui <- fluidPage(
         ),
         div(
           style = "display: flex; align-items: center; gap: 20px;",
-          span("Monitor de Inflación 2025", style = "font-weight: 600;"),
-          span(class = "improvement-badge", "VERSIÓN MEJORADA")
+          span("Monitor de Inflación 2025", style = "font-weight: 600;")
         )
       )
     )
@@ -1253,24 +1042,6 @@ ui <- fluidPage(
             dateInput("selFechaInicio", label = "Seleccione fecha de inicio de la gráfica", 
                       value = "2018-12-01"),
             radioButtons(inputId = "rdTipoGrafica", label = "Seleccione tipo de gráfica", choices = c("Evolución INPC", "Evolución niveles"), inline = T),
-            
-            # Nuevos controles para versión mejorada
-            div(
-              style = "margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;",
-              h5("🔧 Opciones de Mejora", 
-                 style = "color: #17a2b8; font-weight: 600; margin-bottom: 15px; font-family: 'Ubuntu', sans-serif;"),
-              checkboxInput("useImprovedVersion", 
-                           "Usar versión mejorada de la gráfica", 
-                           value = TRUE),
-              conditionalPanel(
-                condition = "input.useImprovedVersion == true",
-                p("✅ Etiquetas mejoradas", style = "font-size: 12px; color: #28a745; margin: 5px 0;"),
-                p("✅ Mejor contraste de colores", style = "font-size: 12px; color: #28a745; margin: 5px 0;"),
-                p("✅ Intervalos dinámicos en eje X", style = "font-size: 12px; color: #28a745; margin: 5px 0;"),
-                p("✅ Diseño optimizado", style = "font-size: 12px; color: #28a745; margin: 5px 0;")
-              )
-            ),
-            
             div(
               style = "margin-top: 20px;",
               h5("Descargar Visualización", 
@@ -1350,54 +1121,35 @@ ui <- fluidPage(
   )
 )
 
+# gen_barras_cambio_anual(genericos = "Total")
+
 server <- function(input, output, session) {
     output$grafica_evolucion <- renderPlot({
-        if(input$useImprovedVersion) {
-            gen_grafica_mejorada(genericos = input$selGenerico, 
-                               tipo_datos = input$selTipoDatos, 
-                               fecha_inicio = input$selFechaInicio, 
-                               tipo_grafica = input$rdTipoGrafica)
-        } else {
-            gen_grafica(genericos = input$selGenerico, 
-                       tipo_datos = input$selTipoDatos, 
-                       fecha_inicio = input$selFechaInicio, 
-                       tipo_grafica = input$rdTipoGrafica)
-        }
+        gen_grafica(genericos = input$selGenerico, tipo_datos = input$selTipoDatos, fecha_inicio = input$selFechaInicio, tipo_grafica = input$rdTipoGrafica)
     })
     
     output$grafica_cambio <- renderPlot({
-        gen_barras_cambio_anual(genericos = input$selGenerico, 
-                               tipo_datos = input$selTipoDatos,
-                               fecha_inicio = input$selFechaInicio)
+        gen_barras_cambio_anual(genericos = input$selGenerico, tipo_datos = input$selTipoDatos,fecha_inicio = input$selFechaInicio)
     })
     
     output$tabla <- DT::renderDT({
-        gen_tabla(genericos = input$selGenerico, 
-                 mostrar_todos = input$rdMostrarTodo, 
-                 tipo_datos = input$selTipoDatos, 
-                 fecha_inicio = input$selFechaInicio)
+        gen_tabla(genericos = input$selGenerico, mostrar_todos = input$rdMostrarTodo, tipo_datos = input$selTipoDatos, fecha_inicio = input$selFechaInicio)
     })
     
     output$descarga_graficas <- downloadHandler(
         filename = function(){
             if(input$pestañas == "Evolución"){
-                str_c("evolucion_inflacion", ifelse(input$useImprovedVersion, "_mejorada", ""), ".png")
+                str_c("evolucion_inflacion.png")
             } else {
                 str_c("evolucion_cambio.png")
             }
         }, content = function(file){
             if(input$pestañas == "Evolución"){
-                plot_func <- if(input$useImprovedVersion) gen_grafica_mejorada else gen_grafica
-                
-                plot_a_imprimir <- plot_func(genericos = input$selGenerico,
-                                             fecha_inicio = input$selFechaInicio, 
-                                             tipo_datos = input$selTipoDatos, 
-                                             tipo_grafica = input$rdTipoGrafica)
-                
-                plot_a_imprimir <- ggimage::ggbackground(gg = plot_a_imprimir, background = "www/01_plantilla_blanca_cuadrada.pdf")
-                
                 ggsave(file,
-                       plot = plot_a_imprimir,
+                       plot = gen_grafica(genericos = input$selGenerico,
+                                          fecha_inicio = input$selFechaInicio, 
+                                          tipo_datos = input$selTipoDatos, 
+                                          tipo_grafica = input$rdTipoGrafica),
                        device = "png", 
                        height = 12,
                        width = 12)
@@ -1424,9 +1176,11 @@ server <- function(input, output, session) {
             }
         }, 
         content = function(file){
+            # Crear un workbook
             wb <- openxlsx::createWorkbook()
             
             if(input$pestañas == "Evolución"){
+                # Obtener datos de evolución
                 datos_descarga <- gen_datos_evolucion(
                     genericos = input$selGenerico,
                     fecha_inicio = input$selFechaInicio, 
@@ -1434,31 +1188,35 @@ server <- function(input, output, session) {
                     tipo_grafica = input$rdTipoGrafica
                 )
                 
+                # Agregar hoja al workbook
                 openxlsx::addWorksheet(wb, "Datos Evolución")
                 openxlsx::writeData(wb, "Datos Evolución", datos_descarga)
                 
+                # Añadir metadatos
                 openxlsx::addWorksheet(wb, "Metadatos")
                 metadatos <- data.frame(
-                    Parámetro = c("Genéricos seleccionados", "Tipo de datos", "Fecha inicio", "Tipo de gráfica", "Versión mejorada", "Fecha descarga"),
+                    Parámetro = c("Genéricos seleccionados", "Tipo de datos", "Fecha inicio", "Tipo de gráfica", "Fecha descarga"),
                     Valor = c(paste(input$selGenerico, collapse = ", "), 
                              input$selTipoDatos, 
                              input$selFechaInicio, 
                              input$rdTipoGrafica,
-                             input$useImprovedVersion,
                              format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
                 )
                 openxlsx::writeData(wb, "Metadatos", metadatos)
                 
             } else if(input$pestañas == "Cambio Anual") {
+                # Obtener datos de cambio anual
                 datos_descarga <- gen_datos_cambio_anual(
                     genericos = input$selGenerico,
                     fecha_inicio = input$selFechaInicio,
                     tipo_datos = input$selTipoDatos
                 )
                 
+                # Agregar hoja al workbook
                 openxlsx::addWorksheet(wb, "Datos Cambio Anual")
                 openxlsx::writeData(wb, "Datos Cambio Anual", datos_descarga)
                 
+                # Añadir metadatos
                 openxlsx::addWorksheet(wb, "Metadatos")
                 metadatos <- data.frame(
                     Parámetro = c("Genéricos seleccionados", "Tipo de datos", "Fecha inicio", "Fecha descarga"),
@@ -1470,6 +1228,7 @@ server <- function(input, output, session) {
                 openxlsx::writeData(wb, "Metadatos", metadatos)
                 
             } else if(input$pestañas == "Tabla") {
+                # Obtener datos de la tabla
                 datos_descarga <- gen_tabla(
                     genericos = input$selGenerico, 
                     mostrar_todos = input$rdMostrarTodo, 
@@ -1477,15 +1236,19 @@ server <- function(input, output, session) {
                     fecha_inicio = input$selFechaInicio
                 )
                 
+                # Convertir DT a dataframe si es necesario
                 if("datatables" %in% class(datos_descarga)){
+                    # Extraer los datos del objeto DT
                     datos_df <- datos_descarga$x$data
                 } else {
                     datos_df <- as.data.frame(datos_descarga)
                 }
                 
+                # Agregar hoja al workbook
                 openxlsx::addWorksheet(wb, "Tabla Inflación")
                 openxlsx::writeData(wb, "Tabla Inflación", datos_df)
                 
+                # Añadir metadatos
                 openxlsx::addWorksheet(wb, "Metadatos")
                 metadatos <- data.frame(
                     Parámetro = c("Genéricos seleccionados", "Mostrar todos", "Tipo de datos", "Fecha inicio", "Fecha descarga"),
@@ -1498,6 +1261,7 @@ server <- function(input, output, session) {
                 openxlsx::writeData(wb, "Metadatos", metadatos)
             }
             
+            # Aplicar estilos al encabezado
             headerStyle <- openxlsx::createStyle(fgFill = "#6551D0", fontColour = "white", textDecoration = "bold")
             if(input$pestañas == "Evolución"){
                 openxlsx::addStyle(wb, "Datos Evolución", headerStyle, rows = 1, cols = 1:ncol(datos_descarga), gridExpand = TRUE)
@@ -1507,6 +1271,7 @@ server <- function(input, output, session) {
                 openxlsx::addStyle(wb, "Tabla Inflación", headerStyle, rows = 1, cols = 1:ncol(datos_df), gridExpand = TRUE)
             }
             
+            # Guardar el archivo
             openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
         }
     )
