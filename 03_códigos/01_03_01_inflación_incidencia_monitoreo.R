@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # Paquetes ----
@@ -1091,7 +1091,7 @@ inflaciones <- lapply(1:nrow(tabla_composicion), function(k){
 
 inflacion_total <- inflaciones %>% 
     do.call(rbind, .) %>% 
-    filter(date_shortcut %% 2 == 1) %>% 
+    filter((str_extract(date_shortcut, "\\d") %>% as.numeric()) %% 2 == 1) %>% 
     filter(date == max(date)) %>% 
     filter(tipo == "Total") %>% 
     pull(incidencia)
@@ -1099,7 +1099,7 @@ inflacion_total <- inflaciones %>%
 tt2 <- 
     inflaciones %>% 
     do.call(rbind, .) %>%
-    filter(date_shortcut %% 2 == 1) %>% 
+    filter((str_extract(date_shortcut, "\\d") %>% as.numeric()) %% 2 == 1) %>% 
     select(fecha = date, inpc_tipo = tipo, 
            suby_no_suby_tipo = subtipo, 
            ponderador, incidencia_anual = incidencia) %>% 
