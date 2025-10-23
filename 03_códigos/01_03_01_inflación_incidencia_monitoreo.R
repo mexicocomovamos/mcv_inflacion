@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -937,6 +937,7 @@ tt <- d_incidencia_suby_no_suby                                    %>%
 titulo <- "Incidencia anual por componente del INPC"
 subtitulo <- "La incidencia anual es la contribución en puntos porcentuales que cada componente aporta a la inflación general."
 eje_y <- "Puntos aportados a la inflación general"
+
 if(v_quincena==1){
     nota <- paste0("A la 1ª quincena de ", 
                    as.character(month(max(d_inpc$date), abbr = F, label = T)),
@@ -1061,7 +1062,7 @@ inflaciones <- lapply(1:nrow(tabla_composicion), function(k){
     
     if(v_quincena==1){
         
-        inegi_series(
+        serie <- inegi_series(
             serie    = tabla_composicion$api_quincenal[k],
             token    = v_token_inegi, 
             database = "BIE", 
@@ -1071,10 +1072,13 @@ inflaciones <- lapply(1:nrow(tabla_composicion), function(k){
                    categoria = tabla_composicion$categoria[k], 
                    ponderador = tabla_composicion$ponderador[k]) %>% 
             mutate(incidencia = values*(ponderador/100))
+        print(k)
+        Sys.sleep(1)
+        return(serie)
         
     } else {
         
-        inegi_series(
+        serie <- inegi_series(
             serie    = tabla_composicion$api_mensual[k],
             token    = v_token_inegi, 
             database = "BIE", 
@@ -1084,7 +1088,9 @@ inflaciones <- lapply(1:nrow(tabla_composicion), function(k){
                    categoria = tabla_composicion$categoria[k], 
                    ponderador = tabla_composicion$ponderador[k]) %>% 
             mutate(incidencia = values*(ponderador/100))
-        
+        print(k)
+        Sys.sleep(1)
+        return(serie)
     }
     
 })
@@ -1163,14 +1169,17 @@ g <-
         hjust = 1,
         size = 5, fontface = "bold"
     ) +
-    scale_x_date(
-        expand = expansion(mult = c(0.01, 0.25)),
-        minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
-        breaks = seq.Date(to = min(tt$fecha), 
-                          from = max(tt$fecha), 
-                          by = "-2 month") %>% rev(),
-        date_labels = "%b-%y"
-    ) +
+    scale_x_date(expand = expansion(mult = c(0.01, 0.25)), 
+                 date_breaks = "6 months", 
+                 date_labels = "%b-%Y") + 
+    # scale_x_date(
+    #     expand = expansion(mult = c(0.01, 0.25)),
+    #     # minor_breaks = seq.Date(min(tt$fecha), max(tt$fecha), "1 month"),
+    #     breaks = seq.Date(to = min(tt$fecha), 
+    #                       from = max(tt$fecha), 
+    #                       by = "-4 month") %>% rev(),
+    #     date_labels = "%b-%y"
+    # ) +
     scale_y_continuous(labels = scales::comma_format(suffix = ".0")) + 
     scale_fill_manual("", values = c(mcv_discrete_12[7], mcv_discrete_12[9],
                                      mcv_discrete_12[4], mcv_discrete_12[6])) +
@@ -1191,7 +1200,7 @@ g <-
         panel.background = element_rect(fill = "transparent",colour = NA),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 25),
-        axis.text.x = element_text(size = 20, angle = 90, vjust = 0.5),
+        axis.text.x = element_text(size = 20, angle = 90, hjust = 1, vjust = 0.5),
         axis.text.y = element_text(size = 25),
         text = element_text(family = "Ubuntu"),
         legend.text = element_text(size = 15),
@@ -1201,13 +1210,15 @@ g <-
         legend.margin = margin(8, 8, 8, 8)
     )
 
-g
+# TODO
+# REVISAR
+# g
 # NO PUBLICAR HASTA AGOSTO DEL 2025, O CUANDO INEGI LO INDIQUE
 # ADEMÁS, REVISAR ANTES EL CÁLCULO DE LOS FACTORES DE ENCADENAMIENTO DE GRANDES AGRUPACIONES
-g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
-ggsave(g, filename = paste_info("01_04_incidencia_anual_componente.png"),
-       width = 16, height = 9,
-       dpi = 200, bg= "transparent")
+# g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.pdf"))
+# ggsave(g, filename = paste_info("01_04_incidencia_anual_componente.png"),
+#        width = 16, height = 9,
+#        dpi = 200, bg= "transparent")
 
 
 
