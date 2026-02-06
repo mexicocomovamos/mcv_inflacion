@@ -55,7 +55,7 @@ require(tidyverse)
 
 ## Credenciales de google ----
 # v_usuaria <- "regina"
-# v_usuaria <- "katia"
+# v_usuaria <- "samantha"
 # v_usuaria <- "juvenal"
 v_usuaria <- "axel"
 
@@ -346,7 +346,7 @@ df_formato <- d_monitoreo %>%
             ccif == v_productos[22] ~ pegar_logo("22_Vivienda")
         )) %>% 
     # Dejar solo datos de la última actualización 
-    filter(fecha == max(fecha)) %>% 
+    filter(date == max(date)) %>% 
     # Distinguir entre productos subyacentes y no subyacentes
     mutate(tipo = if_else(
         ccif %in% v_subyacente, "subyacente", "nosubyacente")) %>% 
@@ -392,7 +392,7 @@ DatawRappr::dw_publish_chart(chart_id = "uNVW9", api_key = dw_token) #ERA zt54l
 df_formato <- d_monitoreo %>% 
     rename(ccif = nombre)%>% 
     # Dejar solo datos de la última actualización 
-    filter(fecha == max(fecha)) %>% 
+    filter(date == max(date)) %>% 
     # Crear variables para tabla (Markdown y html)
     mutate(
         # Símbolo de cambio 
