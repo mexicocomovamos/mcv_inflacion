@@ -55,9 +55,9 @@ require(tidyverse)
 
 ## Credenciales de google ----
 # v_usuaria <- "regina"
-# v_usuaria <- "samantha"
+ v_usuaria <- "samantha"
 # v_usuaria <- "juvenal"
-v_usuaria <- "axel"
+#v_usuaria <- "axel"
 
 # Seccion de autenticación:
 options(gargle_oauth_cache = ".secrets")
@@ -127,7 +127,7 @@ source(paste_code("00_token.R"))
 #     glimpse()
 
 library(readxl)
-INPC_all_series_quincenal <- read_excel("01_datos_crudos/INPC_all_series_quincenal_indices.xlsx")%>%
+INPC_all_series_quincenal <- read_excel("01_datos_crudos/INPC_quincenal_indices.xlsx")%>%
     mutate(nombre = tolower(nombre))
 
 ## 1.1. Identificadores de productos para seguimiento ----
@@ -363,6 +363,27 @@ df_web <- df_formato                %>%
         by = "id")            %>% 
     select(-c(starts_with("id"), starts_with("tipo")))
 
+## 1.4. Guardar en Drive (EXCEL Y DATAWRAPPER DE PORBANDO) -------------------------------------------------------------------
+
+# # Obtener identificador del archivo en drive
+# # v_id <- as.character(
+# #     googledrive::drive_get(
+# #         "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
+# 
+# v_id = "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
+# 
+# 
+# #PROBANDO
+# #https://docs.google.com/spreadsheets/d/1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0/edit?usp=sharing
+# v_id_probando ="1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0"
+# # Escribir datos en drive 
+# googlesheets4::write_sheet(ss = v_id_probando, data = df_web, sheet = "anual_prueba")
+# 
+# #POBRANDO
+# ## 1.5. Republicar en DW ----
+# dw_token <- "KftdHWtUwH9a0Y58oOIZAJBdp4NPpdsIsRcpZuKeTtjWEQ7Itke423IyYlGIN8i7"
+# DatawRappr::dw_publish_chart(chart_id = "uNVW9", api_key = dw_token) #ERA zt54l
+
 ## 1.4. Guardar en Drive -------------------------------------------------------------------
 
 # Obtener identificador del archivo en drive
@@ -372,17 +393,12 @@ df_web <- df_formato                %>%
 
 v_id = "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
 
-
-#PROBANDO
-#https://docs.google.com/spreadsheets/d/1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0/edit?usp=sharing
-v_id_probando ="1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0"
 # Escribir datos en drive 
-googlesheets4::write_sheet(ss = v_id_probando, data = df_web, sheet = "anual_prueba")
+googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "tasas")
 
-#POBRANDO
 ## 1.5. Republicar en DW ----
-dw_token <- "KftdHWtUwH9a0Y58oOIZAJBdp4NPpdsIsRcpZuKeTtjWEQ7Itke423IyYlGIN8i7"
-DatawRappr::dw_publish_chart(chart_id = "uNVW9", api_key = dw_token) #ERA zt54l
+
+DatawRappr::dw_publish_chart(chart_id = "zt54l", api_key = dw_token)
 
 # 2. Procesamiento para tabla de incidencia --------------------------------------------------
 ## 2.3. Preparación web -----
@@ -456,6 +472,37 @@ df_web <- df_formato                %>%
         by = "id")            %>% 
     select(-c(starts_with("id"), starts_with("tipo")))
 
+## 2.4. Guardar en Drive (EXCEL Y DATAWRAPPER DE PRUEBA) -------------------------------------------------------------------
+# 
+# # Obtener identificador del archivo en drive
+# # v_id <- as.character(
+# #     googledrive::drive_get(
+# #         "https://docs.google.com/spreadsheets/d/1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8/edit#gid=0")[1, 2])
+# v_id <- "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
+# 
+# # Escribir datos en drive 
+# googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "incidencia")
+# # googlesheets4::read_sheet(v_id)
+# # ?googlesheets4::write_sheet
+# 
+# 
+# #PROBANDO
+# #https://docs.google.com/spreadsheets/d/1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0/edit?usp=sharing
+# v_id <- "1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0"
+# 
+# # Escribir datos en drive 
+# googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "mensual_prueba")
+# 
+# 
+# DatawRappr::dw_publish_chart(chart_id = "JlKiJ", api_key = dw_token)
+# 
+# ## 2.5. Republicar en DW ----
+# DatawRappr::dw_publish_chart(chart_id = "61FSx", api_key = dw_token)
+# # Republicar mapa en DW
+# DatawRappr::dw_publish_chart(chart_id = "Yixxr", api_key = dw_token)
+# # Republicar gráfica general en DW 5NRUj
+# DatawRappr::dw_publish_chart(chart_id = "5NRUj", api_key = dw_token)
+
 ## 2.4. Guardar en Drive -------------------------------------------------------------------
 
 # Obtener identificador del archivo en drive
@@ -468,25 +515,12 @@ v_id <- "1r1etquU3ClNcyOf8gxJDn3gqGGWYZH1T5EGxe5GdOB8"
 googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "incidencia")
 # googlesheets4::read_sheet(v_id)
 # ?googlesheets4::write_sheet
-
-
-#PROBANDO
-#https://docs.google.com/spreadsheets/d/1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0/edit?usp=sharing
-v_id <- "1YM2YR4UxOvaWRfVjMH0-t5-hykiITyWewFF_dzYB2C0"
-
-# Escribir datos en drive 
-googlesheets4::write_sheet(ss = v_id, data = df_web, sheet = "mensual_prueba")
-
-
-DatawRappr::dw_publish_chart(chart_id = "JlKiJ", api_key = dw_token)
-
-
-
 ## 2.5. Republicar en DW ----
 DatawRappr::dw_publish_chart(chart_id = "61FSx", api_key = dw_token)
 # Republicar mapa en DW
 DatawRappr::dw_publish_chart(chart_id = "Yixxr", api_key = dw_token)
 # Republicar gráfica general en DW 5NRUj
 DatawRappr::dw_publish_chart(chart_id = "5NRUj", api_key = dw_token)
+
 
 # FIN --------------------------------------------------------------------------
