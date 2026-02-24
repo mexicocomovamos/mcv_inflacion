@@ -127,8 +127,14 @@ source(paste_code("00_token.R"))
 #     glimpse()
 
 library(readxl)
-INPC_all_series_quincenal <- read_excel("01_datos_crudos/INPC_quincenal_indices.xlsx")%>%
-    mutate(nombre = tolower(nombre))
+
+if (v_quincena == 2) {
+    INPC_all_series <- read_excel("01_datos_crudos/INPC_mensual_indices.xlsx") %>%
+        mutate(nombre = tolower(nombre))
+} else if (v_quincena == 1) {
+    INPC_all_series <- read_excel("01_datos_crudos/INPC_quincenal_indices.xlsx") %>%
+        mutate(nombre = tolower(nombre))
+}
 
 ## 1.1. Identificadores de productos para seguimiento ----
 
@@ -147,7 +153,7 @@ prod_subyacentes <- tribble(
     "restaurantes y similares",                     "268"
 )
 
-ident_suby <- INPC_all_series_quincenal %>% 
+ident_suby <- INPC_all_series %>% 
     inner_join(prod_subyacentes, by = c("nombre", "code"))%>% 
     mutate(tipo = "Subyacente") 
 
@@ -169,7 +175,7 @@ prod_nosubyacentes <- tribble(
     "gasolina de bajo octanaje",     "214"
 )
 
-ident_nosuby <- INPC_all_series_quincenal %>% 
+ident_nosuby <- INPC_all_series %>% 
     inner_join(prod_nosubyacentes, by = c("nombre", "code"))%>% 
     mutate(tipo = "No subyacente") 
 
@@ -202,7 +208,7 @@ if(v_quincena == 1){
         rename(values = valor)%>% 
         arrange(date) %>% 
         left_join(
-            INPC_all_series_quincenal %>% 
+            INPC_all_series %>% 
                 filter(nombre=="índice general",
                        date > "2015-12-17",
                        str_detect(fecha, "1Q"))%>% 
@@ -232,10 +238,9 @@ if(v_quincena == 1){
         rename(values = valor)%>% 
         arrange(date) %>% 
         left_join(
-            INPC_all_series_quincenal %>% 
+            INPC_all_series %>% 
                 filter(nombre=="índice general",
-                       date > "2015-12-17",
-                       str_detect(fecha, "1Q"))%>% 
+                       date > "2015-12-17")%>% 
                 mutate(code = "00",
                        tipo = "general",
                        valor = as.numeric(valor))%>% 
