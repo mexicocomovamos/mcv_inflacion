@@ -23,4 +23,11 @@
 v_token_inegi <- "682ad7f9-19fe-47f0-abec-e4c2ab2f2948"
 dw_token <- "2G3RKs3H5y6dtkQC520BmkHHmkeCIggUqSyFZcQBuuQjXCR7GX8sIrwUk7NZHWoy"
 
+# Token personal del SIE de Banxico (Sistema de Información Económica).
+# Se usa en 01_03_07_componentes_conceptos_BMX.R para traer las series
+# agregadas del INPC (subyacente/no subyacente + 9 conceptos), que INEGI retiró
+# del API del BIE con la actualización 2024.
+# Obtención: https://www.banxico.org.mx/SieAPIRest/service/v1/token
+v_token_banxico <- "8f5bb376963606f4413db0ff2f6c68538d22249cbd94a5217de9206d71c877ee"
+
 # FIN. -------------------------------------------------------------------------
