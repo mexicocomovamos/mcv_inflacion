@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -233,7 +233,8 @@ g <-
           legend.text = element_text(size = 30),
           legend.position = "bottom")
 
-g <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.png"))
+g <- ggimage::ggbackground(g, "04_infobites/00_plantillas/01_inegi.pdf")
+                           # paste_info("00_plantillas/01_inegi.png"))
 ggsave(g, filename = paste_info("02_01_ccif.png"), 
        width = 16, height = 9, 
        #type = "cairo", device = "png", 
@@ -1665,7 +1666,7 @@ for(i in seq_along(categorias)){
         scale_x_date(
             date_labels = "%b %y",
             breaks = seq.Date(from = as.Date("2015-06-01"), 
-                              to = max(d_plot$fecha), 
+                              to = as.Date(max(d_plot$fecha)), 
                               by = "6 month"),
             expand = expansion(mult = c(0.02, 0.2))
         ) +
@@ -1688,8 +1689,10 @@ for(i in seq_along(categorias)){
                   legend.text = element_text(size = 30),
                   legend.position = "none")
     
-    g_final <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.png"))
-    ggsave(g_final, filename = paste_info(file_name), width = 16, height = 9, dpi = 200)}
+    g_final <- g 
+    # g_final <- ggimage::ggbackground(g, paste_info("00_plantillas/01_inegi.png"))
+    ggsave(g_final, filename = paste_info(file_name), width = 16, height = 9, dpi = 200)
+}
 
 # FIN. -------------------------------------------------------------------------
 

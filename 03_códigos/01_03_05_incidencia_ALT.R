@@ -28,6 +28,7 @@
 #   - 04_infobites/99_svg/01_03_03_01_01_incidencia_{mensual|quincenal}.svg
 #   - 04_infobites/01_04_incidencia_anual_componente_{mensual|quincenal}.png
 #   - 04_infobites/01_05_incidencia_anual_concepto_{mensual|quincenal}.png
+#   - 04_infobites/01_06_tweet_incidencia_{mensual|quincenal}.html
 #   - 05_aplicacion/total_datos_inflacion_{mes|quincenas}.rds
 #------------------------------------------------------------------------------#
 
@@ -51,7 +52,7 @@ loadfonts(device = "postscript")
 
 ####################################################
 # Seleccionar corrida: 1 = primera quincena, 2 = mensual
-v_quincena <- 2
+v_quincena <- 1
 
 # Fecha de inicio del eje X para las gráficas de componente y concepto
 # (secciones 13-14). Por defecto se fija en agosto de 2024 (primer mes
@@ -817,3 +818,284 @@ archivo_conc <- paste_info(paste0(
 ggsave(g_conc, filename = archivo_conc,
        width = 12, height = 6, dpi = 200, bg = "transparent")
 message("Generado: ", archivo_conc)
+
+# 16. HTML con hilo de tweets de incidencia -----------------------------------
+# Genera un HTML con el hilo de 3 tweets listos para copiar (texto + imagen):
+#   1. Genéricos con mayor y menor incidencia del corte (del período).
+#   2. Top 3 conceptos con mayor incidencia anual + variación del primero.
+#   3. Principal componente: aporte en puntos y % del total de la inflación
+#      anual.
+# Funciona para ambas corridas; ajusta texto ("esta quincena"/"este mes",
+# "1ª quincena de X"/"X") e imágenes según `v_quincena`.
+
+periodicidad_texto <- if (v_quincena == 1) "quincenal" else "mensual"
+
+# --- Tweet 1: genéricos con mayor / menor incidencia del período --------------
+if (v_quincena == 1) {
+  top3 <- d_incidencia_prods_last %>%
+    filter(!is.na(incidencia_quincenal)) %>%
+    arrange(desc(incidencia_quincenal)) %>%
+    slice_head(n = 3) %>%
+    pull(ccif) %>%
+    str_to_lower()
+
+  bottom3 <- d_incidencia_prods_last %>%
+    filter(!is.na(incidencia_quincenal)) %>%
+    arrange(incidencia_quincenal) %>%
+    slice_head(n = 3) %>%
+    pull(ccif) %>%
+    str_to_lower()
+} else {
+  top3 <- d_incidencia_prods_last %>%
+    filter(!is.na(incidencia_mensual)) %>%
+    arrange(desc(incidencia_mensual)) %>%
+    slice_head(n = 3) %>%
+    pull(ccif) %>%
+    str_to_lower()
+
+  bottom3 <- d_incidencia_prods_last %>%
+    filter(!is.na(incidencia_mensual)) %>%
+    arrange(incidencia_mensual) %>%
+    slice_head(n = 3) %>%
+    pull(ccif) %>%
+    str_to_lower()
+}
+
+# Formatea un vector de strings como "X, Y y Z"
+listar_es <- function(items) {
+  n <- length(items)
+  if (n == 0) return("")
+  if (n == 1) return(items[1])
+  if (n == 2) return(paste(items, collapse = " y "))
+  paste0(paste(items[1:(n - 1)], collapse = ", "), " y ", items[n])
+}
+
+tweets <- list(
+  list(
+    texto = paste0(
+      "⬆️ Los genéricos con mayor incidencia ", periodicidad_texto,
+      " en el alza de precios fueron ", listar_es(top3), ".\n",
+      "⬇️ A la baja fueron ", listar_es(bottom3), "."
+    ),
+    imagen = if (v_quincena == 1) "01_01_incidencia_quincenal.png"
+             else                  "01_01_incidencia_mensual.png",
+    alt = paste0("Genéricos con mayor y menor incidencia ", periodicidad_texto)
+  )
+)
+
+# --- Tweets 2 y 3: conceptos y componentes (anual, ambas corridas) -----------
+# Blindaje de la fecha de corte de Banxico: en la corrida quincenal
+# (v_quincena == 1) filtramos a observaciones con día <= 15, porque Banxico
+# puede haber publicado la 2Q antes de que corramos la 1Q de INEGI. Sin este
+# filtro, `fecha_max_bmx` apuntaría a la 2Q y el texto "1ª quincena de X"
+# quedaría desalineado. En la corrida mensual usamos el último dato tal cual.
+if (v_quincena == 1) {
+  corte_bmx <- incidencias_bmx %>%
+    filter(day(date) <= 15) %>%
+    pull(date) %>%
+    max()
+} else {
+  corte_bmx <- max(incidencias_bmx$date)
+}
+
+inflacion_corte <- df_total %>%
+  filter(date == corte_bmx) %>%
+  pull(inflacion)
+
+# Concordancia gramatical por concepto leaf (artículo + verbo en plural/sing.)
+articulos_concepto <- c(
+  "alimentos, bebidas y tabaco"  = "los",
+  "mercancías no alimenticias"   = "las",
+  "vivienda"                     = "la",
+  "educación (colegiaturas)"     = "la",
+  "otros servicios"              = "",
+  "frutas y verduras"            = "las",
+  "pecuarios"                    = "los",
+  "energéticos"                  = "los",
+  "tarifas autorizadas gobierno" = "las"
+)
+verbo_concepto <- c(
+  "alimentos, bebidas y tabaco"  = "presentan",
+  "mercancías no alimenticias"   = "presentan",
+  "vivienda"                     = "presenta",
+  "educación (colegiaturas)"     = "presenta",
+  "otros servicios"              = "presentan",
+  "frutas y verduras"            = "presentan",
+  "pecuarios"                    = "presentan",
+  "energéticos"                  = "presentan",
+  "tarifas autorizadas gobierno" = "presentan"
+)
+
+conceptos_leaf <- c(
+  "Alimentos, bebidas y tabaco", "Mercancías no alimenticias",
+  "Vivienda", "Educación (colegiaturas)", "Otros servicios",
+  "Frutas y verduras", "Pecuarios", "Energéticos",
+  "Tarifas autorizadas gobierno"
+)
+
+top_conceptos <- incidencias_bmx %>%
+  filter(date == corte_bmx, concepto %in% conceptos_leaf) %>%
+  arrange(desc(incidencia_anual)) %>%
+  slice_head(n = 3)
+
+nombres_lower <- str_to_lower(top_conceptos$concepto)
+arts <- unname(articulos_concepto[nombres_lower])
+arts[is.na(arts)] <- ""
+
+items_listados <- ifelse(
+  arts == "", nombres_lower, paste(arts, nombres_lower)
+)
+
+sujeto_primero <- if (arts[1] == "") {
+  str_to_sentence(nombres_lower[1])
+} else {
+  paste(str_to_sentence(arts[1]), nombres_lower[1])
+}
+verbo_primero   <- verbo_concepto[[nombres_lower[1]]]
+var_primero_pct <- top_conceptos$var_anual[1] * 100
+
+imagen_conceptos <- if (v_quincena == 1) {
+  "01_05_incidencia_anual_concepto_quincenal.png"
+} else {
+  "01_05_incidencia_anual_concepto_mensual.png"
+}
+
+tweets[[length(tweets) + 1]] <- list(
+  texto = paste0(
+    "Los conceptos del Índice Nacional de Precios al Consumidor con mayor ",
+    "incidencia en la inflación anual observada son ",
+    listar_es(items_listados), ". ",
+    sujeto_primero, " ", verbo_primero,
+    " además una variación anual de ",
+    format(round(var_primero_pct, 1), nsmall = 1),
+    "% en el nivel de precios."
+  ),
+  imagen = imagen_conceptos,
+  alt = "Incidencia anual por componente y concepto del INPC"
+)
+
+# Principal componente (top 1 de los 4 componentes)
+top_componente <- incidencias_bmx %>%
+  filter(date == corte_bmx, concepto %in% orden_componentes) %>%
+  arrange(desc(incidencia_anual)) %>%
+  slice(1)
+
+componente_nombre <- str_to_lower(top_componente$concepto)
+tipo_nombre       <- str_to_lower(top_componente$tipo)
+incidencia_val    <- top_componente$incidencia_anual
+pct_total         <- (incidencia_val / inflacion_corte) * 100
+
+if (v_quincena == 1) {
+  periodo_corto <- "esta quincena"
+  periodo_mes   <- paste0(
+    "la 1ª quincena de ", str_to_lower(format(corte_bmx, "%B"))
+  )
+} else {
+  periodo_corto <- "este mes"
+  periodo_mes   <- str_to_lower(format(corte_bmx, "%B"))
+}
+
+imagen_componente <- if (v_quincena == 1) {
+  "01_04_incidencia_anual_componente_quincenal.png"
+} else {
+  "01_04_incidencia_anual_componente_mensual.png"
+}
+
+tweets[[length(tweets) + 1]] <- list(
+  texto = paste0(
+    "El principal componente de la inflación durante ", periodo_corto,
+    " fue el de ", componente_nombre, " de la inflación ", tipo_nombre,
+    ", que aportó ", format(round(incidencia_val, 1), nsmall = 1),
+    " puntos del ", format(round(inflacion_corte, 1), nsmall = 1),
+    "% de la inflación anual de ", periodo_mes,
+    " (un ", format(round(pct_total, 1), nsmall = 1), "% del total)."
+  ),
+  imagen = imagen_componente,
+  alt = "Incidencia anual por componente del INPC"
+)
+
+# --- Construcción del HTML ---------------------------------------------------
+fecha_corte_txt <- format(max(ultimo$date), "%d/%m/%Y")
+n_tweets <- length(tweets)
+
+# `lapply` sobre el índice porque necesitamos numerar "Tweet i / n".
+tweets_html <- lapply(seq_along(tweets), function(i) {
+  t <- tweets[[i]]
+  paste0(
+    '  <article class="tweet">\n',
+    '    <header class="tweet-num">Tweet ', i, ' / ', n_tweets, '</header>\n',
+    '    <p class="tweet-texto" id="tweet-texto-', i, '">', t$texto, '</p>\n',
+    '    <img src="', t$imagen, '" alt="', t$alt, '">\n',
+    '    <p class="conteo">Caracteres: ', nchar(t$texto), ' / 280</p>\n',
+    '    <div class="acciones">\n',
+    '      <button onclick="copiarTexto(', i, ')">Copiar texto</button>\n',
+    '      <button onclick="copiarImagen(\'', t$imagen, '\')">Copiar imagen</button>\n',
+    '    </div>\n',
+    '  </article>'
+  )
+})
+tweets_html <- paste(unlist(tweets_html), collapse = "\n")
+
+html_content <- paste0(
+  '<!DOCTYPE html>\n',
+  '<html lang="es">\n',
+  '<head>\n',
+  '  <meta charset="UTF-8">\n',
+  '  <title>Hilo de tweets de incidencia ', periodicidad_texto, '</title>\n',
+  '  <style>\n',
+  '    body { font-family: "Ubuntu", "Helvetica Neue", sans-serif;\n',
+  '           max-width: 640px; margin: 2em auto; padding: 1em; color: #333; }\n',
+  '    h1 { color: #6950D8; font-size: 1.3em; margin-bottom: 0.2em; }\n',
+  '    .meta { color: #777; font-size: 0.9em; margin-bottom: 1.5em; }\n',
+  '    .tweet { background: #f7f7f7; border-left: 4px solid #6950D8;\n',
+  '             padding: 1em 1.2em; margin-bottom: 1.5em;\n',
+  '             border-radius: 0 4px 4px 0; }\n',
+  '    .tweet-num { color: #6950D8; font-size: 0.85em;\n',
+  '                 font-weight: bold; margin-bottom: 0.6em;\n',
+  '                 text-transform: uppercase; letter-spacing: 0.05em; }\n',
+  '    .tweet-texto { white-space: pre-wrap; font-size: 1.05em;\n',
+  '                   line-height: 1.55; margin: 0 0 0.8em 0; }\n',
+  '    .tweet img { display: block; max-width: 100%; height: auto;\n',
+  '                 border-radius: 4px; }\n',
+  '    .conteo { color: #777; font-size: 0.85em; margin: 0.6em 0 0 0; }\n',
+  '    .acciones { margin-top: 0.8em; }\n',
+  '    button { background: #6950D8; color: white; border: none;\n',
+  '             padding: 0.5em 1em; cursor: pointer; margin-right: 0.4em;\n',
+  '             border-radius: 4px; font-size: 0.95em; }\n',
+  '    button:hover { background: #4D3BAD; }\n',
+  '  </style>\n',
+  '</head>\n',
+  '<body>\n',
+  '  <h1>Hilo de tweets de incidencia ', periodicidad_texto, '</h1>\n',
+  '  <p class="meta">Fecha de corte: ', fecha_corte_txt, '</p>\n',
+  tweets_html, '\n',
+  '  <script>\n',
+  '    function copiarTexto(i) {\n',
+  '      const texto = document.getElementById("tweet-texto-" + i).innerText;\n',
+  '      navigator.clipboard.writeText(texto).then(function () {\n',
+  '        alert("Texto del tweet " + i + " copiado al portapapeles");\n',
+  '      });\n',
+  '    }\n',
+  '    async function copiarImagen(src) {\n',
+  '      try {\n',
+  '        const res = await fetch(src);\n',
+  '        const blob = await res.blob();\n',
+  '        await navigator.clipboard.write([\n',
+  '          new ClipboardItem({ [blob.type]: blob })\n',
+  '        ]);\n',
+  '        alert("Imagen copiada al portapapeles");\n',
+  '      } catch (e) {\n',
+  '        alert("No se pudo copiar la imagen: " + e.message);\n',
+  '      }\n',
+  '    }\n',
+  '  </script>\n',
+  '</body>\n',
+  '</html>\n'
+)
+
+archivo_tweet <- paste_info(paste0(
+  "01_06_tweet_incidencia_", periodicidad_texto, ".html"
+))
+
+writeLines(html_content, archivo_tweet, useBytes = TRUE)
+message("Tweet HTML generado: ", archivo_tweet)

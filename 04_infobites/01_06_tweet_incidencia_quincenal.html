@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Hilo de tweets de incidencia quincenal</title>
+  <style>
+    body { font-family: "Ubuntu", "Helvetica Neue", sans-serif;
+           max-width: 640px; margin: 2em auto; padding: 1em; color: #333; }
+    h1 { color: #6950D8; font-size: 1.3em; margin-bottom: 0.2em; }
+    .meta { color: #777; font-size: 0.9em; margin-bottom: 1.5em; }
+    .tweet { background: #f7f7f7; border-left: 4px solid #6950D8;
+             padding: 1em 1.2em; margin-bottom: 1.5em;
+             border-radius: 0 4px 4px 0; }
+    .tweet-num { color: #6950D8; font-size: 0.85em;
+                 font-weight: bold; margin-bottom: 0.6em;
+                 text-transform: uppercase; letter-spacing: 0.05em; }
+    .tweet-texto { white-space: pre-wrap; font-size: 1.05em;
+                   line-height: 1.55; margin: 0 0 0.8em 0; }
+    .tweet img { display: block; max-width: 100%; height: auto;
+                 border-radius: 4px; }
+    .conteo { color: #777; font-size: 0.85em; margin: 0.6em 0 0 0; }
+    .acciones { margin-top: 0.8em; }
+    button { background: #6950D8; color: white; border: none;
+             padding: 0.5em 1em; cursor: pointer; margin-right: 0.4em;
+             border-radius: 4px; font-size: 0.95em; }
+    button:hover { background: #4D3BAD; }
+  </style>
+</head>
+<body>
+  <h1>Hilo de tweets de incidencia quincenal</h1>
+  <p class="meta">Fecha de corte: 01/04/2026</p>
+  <article class="tweet">
+    <header class="tweet-num">Tweet 1 / 3</header>
+    <p class="tweet-texto" id="tweet-texto-1">⬆️ Los genéricos con mayor incidencia quincenal en el alza de precios fueron jitomate, gasolina de alto octanaje y gas doméstico lp.
+⬇️ A la baja fueron electricidad, tomate verde y pollo.</p>
+    <img src="01_01_incidencia_quincenal.png" alt="Genéricos con mayor y menor incidencia quincenal">
+    <p class="conteo">Caracteres: 188 / 280</p>
+    <div class="acciones">
+      <button onclick="copiarTexto(1)">Copiar texto</button>
+      <button onclick="copiarImagen('01_01_incidencia_quincenal.png')">Copiar imagen</button>
+    </div>
+  </article>
+  <article class="tweet">
+    <header class="tweet-num">Tweet 2 / 3</header>
+    <p class="tweet-texto" id="tweet-texto-2">Los conceptos del Índice Nacional de Precios al Consumidor con mayor incidencia en la inflación anual observada son las frutas y verduras, otros servicios y los alimentos, bebidas y tabaco. Las frutas y verduras presentan además una variación anual de 23.0% en el nivel de precios.</p>
+    <img src="01_05_incidencia_anual_concepto_quincenal.png" alt="Incidencia anual por componente y concepto del INPC">
+    <p class="conteo">Caracteres: 281 / 280</p>
+    <div class="acciones">
+      <button onclick="copiarTexto(2)">Copiar texto</button>
+      <button onclick="copiarImagen('01_05_incidencia_anual_concepto_quincenal.png')">Copiar imagen</button>
+    </div>
+  </article>
+  <article class="tweet">
+    <header class="tweet-num">Tweet 3 / 3</header>
+    <p class="tweet-texto" id="tweet-texto-3">El principal componente de la inflación durante esta quincena fue el de servicios de la inflación subyacente, que aportó 1.7 puntos del 4.5% de la inflación anual de la 1ª quincena de abril (un 38.4% del total).</p>
+    <img src="01_04_incidencia_anual_componente_quincenal.png" alt="Incidencia anual por componente del INPC">
+    <p class="conteo">Caracteres: 211 / 280</p>
+    <div class="acciones">
+      <button onclick="copiarTexto(3)">Copiar texto</button>
+      <button onclick="copiarImagen('01_04_incidencia_anual_componente_quincenal.png')">Copiar imagen</button>
+    </div>
+  </article>
+  <script>
+    function copiarTexto(i) {
+      const texto = document.getElementById("tweet-texto-" + i).innerText;
+      navigator.clipboard.writeText(texto).then(function () {
+        alert("Texto del tweet " + i + " copiado al portapapeles");
+      });
+    }
+    async function copiarImagen(src) {
+      try {
+        const res = await fetch(src);
+        const blob = await res.blob();
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: blob })
+        ]);
+        alert("Imagen copiada al portapapeles");
+      } catch (e) {
+        alert("No se pudo copiar la imagen: " + e.message);
+      }
+    }
+  </script>
+</body>
+</html>
+
