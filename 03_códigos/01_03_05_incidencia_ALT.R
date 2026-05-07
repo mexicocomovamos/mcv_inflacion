@@ -52,7 +52,7 @@ loadfonts(device = "postscript")
 
 ####################################################
 # Seleccionar corrida: 1 = primera quincena, 2 = mensual
-v_quincena <- 1
+v_quincena <- 2
 
 # Fecha de inicio del eje X para las gráficas de componente y concepto
 # (secciones 13-14). Por defecto se fija en agosto de 2024 (primer mes
