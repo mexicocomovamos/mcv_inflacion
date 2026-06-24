@@ -56,7 +56,7 @@ require(tidyverse)
 ## Credenciales de google ----
 # v_usuaria <- "regina"
  # v_usuaria <- "samantha"
-v_usuaria <- "juvenal"
+v_usuaria <- "samantha"
 #v_usuaria <- "axel"
 
 # Seccion de autenticación:
