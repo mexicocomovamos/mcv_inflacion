@@ -8,7 +8,7 @@ options(scipen=999)
 
 ####################################################
 # Seleccionar quincena 
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Paquetes ----
@@ -105,9 +105,15 @@ if (v_quincena == 2) {
     INPC_all_series <- read_excel("01_datos_crudos/INPC_mensual_indices.xlsx") %>%
         mutate(nombre = tolower(nombre))
 } else if (v_quincena == 1) {
+    # Solo la 1Q de cada mes, para que lag(12) sea variación anual
     INPC_all_series <- read_excel("01_datos_crudos/INPC_quincenal_indices.xlsx") %>%
-        mutate(nombre = tolower(nombre))
+        mutate(nombre = tolower(nombre)) %>%
+        filter(str_detect(fecha, "1Q"))
 }
+
+# read_excel() devuelve POSIXct; scale_x_date() exige Date
+INPC_all_series <- INPC_all_series %>%
+    mutate(date = as.Date(date))
 
 
 
