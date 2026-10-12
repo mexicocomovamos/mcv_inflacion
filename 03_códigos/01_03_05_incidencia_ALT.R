@@ -99,6 +99,9 @@ paste_app  <- function(x) paste0("05_aplicacion/",    x)
 mcv_semaforo    <- c("#00b783", "#E8D92E", "#ffbd41", "#ff6260")
 mcv_morados     <- c("#6950D8", "#A99BE9")
 mcv_blacks      <- c("black", "#D2D0CD", "#777777")
+# Colores de las barras de incidencia: naranja = suma a la inflación,
+# azul = resta a la inflación
+mcv_incidencia  <- c("#E8743B", "#2e86c1")
 mcv_discrete_7  <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D", "#E8B32E", "#0A93C4", "#974DF0")
 mcv_discrete_12 <- c("#4D5BF0", "#0ACF5F", "#E84D9A", "#E8866D",
                      "#C6B2E3", "#E8B32E", "#0A93C4", "#974DF0",
@@ -364,7 +367,10 @@ if (v_quincena == 1) {
 }
 
 g <- g +
-  scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
+  # Línea de referencia en cero: separa los genéricos que suman de los que restan
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "#777777",
+             linewidth = 0.8) +
+  scale_fill_manual("", values = mcv_incidencia) +
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.1),
     expand = expansion(c(0.15, 0.15))
@@ -463,7 +469,10 @@ if (nrow(d_incidencia_anual_prods_last_20) == 0) {
       ),
       family = "Ubuntu", size = 4, fontface = "bold"
     ) +
-    scale_fill_manual("", values = c(mcv_semaforo[1], mcv_semaforo[4])) +
+    # Línea de referencia en cero
+    geom_vline(xintercept = 0, linetype = "dashed", colour = "#777777",
+               linewidth = 0.8) +
+    scale_fill_manual("", values = mcv_incidencia) +
     scale_x_continuous(
       labels = scales::number_format(accuracy = 0.1),
       expand = expansion(c(0.15, 0.15))
