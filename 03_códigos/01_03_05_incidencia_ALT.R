@@ -52,7 +52,7 @@ loadfonts(device = "postscript")
 
 ####################################################
 # Seleccionar corrida: 1 = primera quincena, 2 = mensual
-v_quincena <- 2
+v_quincena <- 1
 ####################################################
 
 # Fecha de inicio del eje X para las gráficas de componente y concepto

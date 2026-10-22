@@ -19,7 +19,7 @@
 #   3. Correr todo el script desde el root del proyecto (mcv_inflacion.Rproj).
 #
 # Nota sobre colores: igual que en el pipeline oficial, los 10 genéricos con
-# mayor incidencia se pintan en verde y los 10 con menor incidencia en rojo.
+# mayor incidencia se pintan en naranja y los 10 con menor incidencia en azul.
 # El orden de captura no importa: el script ordena por incidencia.
 #
 # Salidas (con el sufijo `v_sufijo`, por defecto "_manual" para no pisar los
@@ -42,18 +42,18 @@ loadfonts(device = "postscript")
 
 ####################################################
 # Seleccionar corrida: 1 = primera quincena, 2 = mensual
-v_quincena <- 2
+v_quincena <- 1
 
 # Periodo de referencia de los datos capturados
 v_anio <- 2026
-v_mes  <- 9       # 1 = enero, ..., 12 = diciembre
+v_mes  <- 10      # 1 = enero, ..., 12 = diciembre
 
 # Sufijo para los archivos de salida. "" reemplaza los PNG oficiales.
 v_sufijo <- "_manual"
 
-# Número de genéricos que se pintan en verde (los de mayor incidencia). Los
-# restantes se pintan en rojo.
-v_n_verde <- 10
+# Número de genéricos que se pintan en naranja (los de mayor incidencia). Los
+# restantes se pintan en azul.
+v_n_alza <- 10
 ####################################################
 
 paste_info <- function(x) paste0("04_infobites/", x)
@@ -62,6 +62,8 @@ paste_info <- function(x) paste0("04_infobites/", x)
 mcv_semaforo <- c("#00b783", "#E8D92E", "#ffbd41", "#ff6260")
 mcv_morados  <- c("#6950D8", "#A99BE9")
 mcv_blacks   <- c("black", "#D2D0CD", "#777777")
+# Naranja = mayor incidencia, azul = menor incidencia (idéntica a 01_03_05)
+mcv_incidencia <- c("#E8743B", "#2e86c1")
 
 # Abreviador de etiquetas largas (idéntico al pipeline oficial)
 str_wrap_long <- function(stringr, width = 40, string_limit = 40) {
@@ -81,31 +83,32 @@ meses_es <- c(
 # 1. Captura manual de datos ---------------------------------------------------
 # Capturar aquí los 20 genéricos (10 con mayor y 10 con menor incidencia).
 # `incidencia` en puntos porcentuales; `variacion_pct` en por ciento.
-# Fuente de los valores actuales: INEGI, INPC, Cuadro 2, septiembre de 2026.
+# Fuente de los valores actuales: INEGI, INPC, Cuadro 2, 1ª quincena de
+# octubre de 2026.
 datos_manuales <- tribble(
   ~generico,                                               ~incidencia, ~variacion_pct,
   # --- Productos genéricos con precios al alza ---
-  "Jitomate",                                                    0.133,          30.25,
-  "Cebolla",                                                     0.070,          23.00,
-  "Gas doméstico LP",                                            0.042,           3.14,
-  "Vivienda propia",                                             0.030,           0.22,
-  "Pollo",                                                       0.029,           1.78,
-  "Primaria",                                                    0.028,           6.00,
-  "Loncherías, fondas, torterías y taquerías",                   0.024,           0.42,
-  "Universidad",                                                 0.018,           1.50,
-  "Otras frutas",                                                0.016,           6.13,
-  "Transporte aéreo",                                            0.016,           6.59,
+  "Electricidad",                                                0.215,          18.51,
+  "Transporte aéreo",                                            0.039,          14.77,
+  "Tomate verde",                                                0.025,          22.07,
+  "Servicios profesionales",                                     0.021,           9.55,
+  "Vivienda propia",                                             0.020,           0.15,
+  "Gas doméstico LP",                                            0.019,           1.38,
+  "Calabacita",                                                  0.017,          16.27,
+  "Servicios turísticos en paquete",                             0.013,           6.80,
+  "Loncherías, fondas, torterías y taquerías",                   0.008,           0.15,
+  "Suavizantes y limpiadores",                                   0.008,           1.09,
   # --- Productos genéricos con precios a la baja ---
-  "Papa y otros tubérculos",                                    -0.056,         -13.92,
-  "Servicios profesionales",                                    -0.042,         -16.44,
-  "Paquetes de internet, telefonía y televisión de paga",       -0.022,          -2.06,
-  "Aguacate",                                                   -0.012,          -8.11,
-  "Suavizantes y limpiadores",                                  -0.010,          -1.30,
-  "Naranja",                                                    -0.008,          -5.65,
-  "Tequila",                                                    -0.007,          -2.62,
-  "Automóviles",                                                -0.007,          -0.29,
-  "Servicio de internet",                                       -0.006,          -0.78,
-  "Productos para el cabello",                                  -0.006,          -0.78
+  "Jitomate",                                                   -0.017,          -3.04,
+  "Limón",                                                      -0.012,         -10.43,
+  "Papa y otros tubérculos",                                    -0.008,          -2.53,
+  "Automóviles",                                                -0.008,          -0.35,
+  "Plátanos",                                                   -0.008,          -4.15,
+  "Taxi",                                                       -0.008,          -0.74,
+  "Aguacate",                                                   -0.008,          -4.79,
+  "Naranja",                                                    -0.006,          -4.58,
+  "Pollo",                                                      -0.006,          -0.34,
+  "Desodorantes personales",                                    -0.005,          -1.14
 )
 
 # 2. Validación de la captura --------------------------------------------------
@@ -128,8 +131,8 @@ if (max(abs(datos_manuales$variacion_pct)) < 1) {
 }
 
 # 3. Preparación de la tabla para graficar -------------------------------------
-# Se ordena por incidencia y se asigna el rango `n`: los primeros `v_n_verde`
-# van en verde y el resto en rojo (misma lógica que el pipeline oficial).
+# Se ordena por incidencia y se asigna el rango `n`: los primeros `v_n_alza`
+# van en naranja y el resto en azul (misma lógica que el pipeline oficial).
 d_grafica <- datos_manuales %>%
   mutate(
     ccif  = generico,
@@ -138,7 +141,7 @@ d_grafica <- datos_manuales %>%
   arrange(desc(incidencia)) %>%
   mutate(
     n     = row_number(),
-    grupo = ifelse(n <= v_n_verde, "1", "2"),
+    grupo = ifelse(n <= v_n_alza, "1", "2"),
     etiqueta = paste0(round(incidencia, 3), "\n[", round(variacion_pct, 2), "%]"),
     # Posición de la etiqueta: dentro de la barra si es larga, fuera si es corta
     hjust_etiqueta = case_when(
@@ -185,15 +188,16 @@ g <- ggplot(
   )
 ) +
   geom_col() +
-  # Línea vertical de referencia en cero
-  geom_vline(xintercept = 0, colour = mcv_blacks[1], linewidth = 0.6) +
+  # Línea de referencia en cero: separa los genéricos que suman de los que restan
+  geom_vline(xintercept = 0, linetype = "dashed", colour = mcv_blacks[3],
+             linewidth = 0.8) +
   geom_text(
     hjust    = d_grafica$hjust_etiqueta,
     family   = "Ubuntu",
     size     = 4,
     fontface = "bold"
   ) +
-  scale_fill_manual("", values = c("1" = mcv_semaforo[1], "2" = mcv_semaforo[4])) +
+  scale_fill_manual("", values = c("1" = mcv_incidencia[1], "2" = mcv_incidencia[2])) +
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.001),
     expand = expansion(c(0.15, 0.15))
