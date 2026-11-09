@@ -42,7 +42,7 @@ loadfonts(device = "postscript")
 
 ####################################################
 # Seleccionar corrida: 1 = primera quincena, 2 = mensual
-v_quincena <- 1
+v_quincena <- 2
 
 # Periodo de referencia de los datos capturados
 v_anio <- 2026
@@ -89,26 +89,26 @@ datos_manuales <- tribble(
   ~generico,                                               ~incidencia, ~variacion_pct,
   # --- Productos genéricos con precios al alza ---
   "Electricidad",                                                0.215,          18.51,
-  "Transporte aéreo",                                            0.039,          14.77,
-  "Tomate verde",                                                0.025,          22.07,
-  "Servicios profesionales",                                     0.021,           9.55,
-  "Vivienda propia",                                             0.020,           0.15,
-  "Gas doméstico LP",                                            0.019,           1.38,
-  "Calabacita",                                                  0.017,          16.27,
-  "Servicios turísticos en paquete",                             0.013,           6.80,
-  "Loncherías, fondas, torterías y taquerías",                   0.008,           0.15,
-  "Suavizantes y limpiadores",                                   0.008,           1.09,
+  "Transporte aéreo",                                            0.068,          26.36,
+  "Jitomate",                                                    0.055,           9.68,
+  "Gas doméstico LP",                                            0.051,           3.67,
+  "Tomate verde",                                                0.040,          35.58,
+  "Vivienda propia",                                             0.036,           0.26,
+  "Calabacita ",                                                 0.024,          23.22,
+  "Servicios profesionales ",                                    0.021,           9.88,
+  "Huevo",                                                       0.017,           2.16,
+  "Servicios turísticos en paquete ",                            0.016,           8.72,
   # --- Productos genéricos con precios a la baja ---
-  "Jitomate",                                                   -0.017,          -3.04,
-  "Limón",                                                      -0.012,         -10.43,
-  "Papa y otros tubérculos",                                    -0.008,          -2.53,
-  "Automóviles",                                                -0.008,          -0.35,
-  "Plátanos",                                                   -0.008,          -4.15,
-  "Taxi",                                                       -0.008,          -0.74,
-  "Aguacate",                                                   -0.008,          -4.79,
-  "Naranja",                                                    -0.006,          -4.58,
-  "Pollo",                                                      -0.006,          -0.34,
-  "Desodorantes personales",                                    -0.005,          -1.14
+  "Paquetes de internet, telefonía y televisión de paga",       -0.026,          -2.48,
+  "Papa y otros tubérculos ",                                   -0.022,          -6.29,
+  "Limón",                                                      -0.019,         -16.53,
+  "Naranja",                                                    -0.012,          -8.90,
+  "Automóviles",                                                -0.011,          -0.47,
+  "Plátanos ",                                                  -0.010,          -4.83,
+  "Aguacate",                                                   -0.009,          -7.20,
+  "Chile serrano",                                              -0.009,          -8.98,
+  "Taxi",                                                       -0.009,          -0.88,
+  "Leche pasteurizada y fresca",                                -0.004,          -0.37
 )
 
 # 2. Validación de la captura --------------------------------------------------
