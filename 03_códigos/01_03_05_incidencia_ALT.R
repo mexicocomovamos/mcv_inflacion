@@ -52,7 +52,7 @@ loadfonts(device = "postscript")
 
 ####################################################
 # Seleccionar corrida: 1 = primera quincena, 2 = mensual
-v_quincena <- 1
+v_quincena <- 2
 ####################################################
 
 # Fecha de inicio del eje X para las gráficas de componente y concepto
@@ -377,7 +377,7 @@ g <- g +
   ) +
   labs(
     title    = titulo,
-    subtitle = str_wrap(subtitulo, 40),
+    subtitle = str_wrap(subtitulo, 30),
     caption  = str_wrap(nota, 70)
   ) +
   theme_minimal() +
@@ -479,7 +479,7 @@ if (nrow(d_incidencia_anual_prods_last_20) == 0) {
     ) +
     labs(
       title    = titulo,
-      subtitle = str_wrap(subtitulo, 40),
+      subtitle = str_wrap(subtitulo, 30),
       caption  = str_wrap(nota, 70)
     ) +
     theme_minimal() +
